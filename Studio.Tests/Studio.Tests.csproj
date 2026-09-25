@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference the plain C# sources directly, avoiding a dependency on the
+         Godot.NET.Sdk so these tests can run in any standard .NET environment
+         (including CI without a Godot toolchain installed). -->
+    <Compile Include="../Studio/Core/Instance.cs" />
+    <Compile Include="../Studio/Core/InstanceService.cs" />
+    <Compile Include="../Studio/Core/ILuauRuntime.cs" />
+  </ItemGroup>
+</Project>
