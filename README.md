@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://noobietoria.dpdns.org/vector/logofull.svg" alt="Noobietoria Logo" width="400">
+  <img src="https://raw.githubusercontent.com/Noobietoria/Noobietoria/refs/heads/main/logofullwhite.svg" alt="Noobietoria Logo" width="400">
 </p>
 
 # Noobietoria
