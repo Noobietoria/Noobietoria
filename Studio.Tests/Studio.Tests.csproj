@@ -19,5 +19,6 @@
     <Compile Include="../Studio/Core/Instance.cs" />
     <Compile Include="../Studio/Core/InstanceService.cs" />
     <Compile Include="../Studio/Core/ILuauRuntime.cs" />
+    <Compile Include="../DedicatedServer/ServerDedicatedServer.cs" />
   </ItemGroup>
 </Project>

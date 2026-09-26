@@ -1,0 +1,15 @@
+<Project Sdk="Godot.NET.Sdk/4.7.0">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>Noobietoria.DedicatedServer</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The dedicated server hosts the authoritative Instance tree, which is
+         owned by Studio/Core (InstanceService, Instance, ...). -->
+    <ProjectReference Include="../Studio/Studio.csproj" />
+  </ItemGroup>
+</Project>
