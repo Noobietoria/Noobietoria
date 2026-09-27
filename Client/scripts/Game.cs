@@ -48,7 +48,7 @@ public partial class Game : Node3D
         // Announce ourselves; the server answers with the full roster.
         if (HasLivePeer)
         {
-            RpcId(1, RpcMethod.SubmitHandshake, ClientState.UserName, Net.ProtocolTag);
+            RpcId(1, RpcMethod.SubmitHandshake, ClientState.UserName, Net.ProtocolTag, ClientState.Ticket);
             AppendSystemMessage($"Connecting as {ClientState.UserName}…");
         }
         else
@@ -125,7 +125,7 @@ public partial class Game : Node3D
     // the server, but Godot requires an [Rpc] config on the sending side too. ----
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
-    private void SubmitHandshake(string playerName, string protocolTag) { }
+    private void SubmitHandshake(string playerName, string protocolTag, string ticket) { }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
     private void SendChat(string text) { }

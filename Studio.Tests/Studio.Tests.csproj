@@ -25,5 +25,8 @@
     <Compile Include="../Studio/Core/Instances/**.cs" />
     <Compile Include="../Studio/Core/Services/**.cs" />
     <Compile Include="../DedicatedServer/ServerDedicatedServer.cs" />
+    <Compile Include="../Shared/Protocol.cs" />
+    <Compile Include="../Shared/Platform/**.cs" />
+    <Compile Include="../DedicatedServer/Worlds/WorldCatalog.cs" />
   </ItemGroup>
 </Project>

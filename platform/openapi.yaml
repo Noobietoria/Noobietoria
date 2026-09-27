@@ -1,0 +1,148 @@
+openapi: 3.0.3
+info:
+  title: Noobietoria Platform API
+  version: "1.0"
+  description: >
+    Contract between the open-source Noobietoria runtime (Client,
+    DedicatedServer) and the closed-source platform backend
+    (Cloudflare Workers + D1/KV/R2, VPS game-server fleet).
+servers:
+  - url: https://api.noobietoria.example
+paths:
+  /v1/accounts/register:
+    post:
+      summary: Register a platform account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string, minLength: 3, maxLength: 24 }
+                password: { type: string, minLength: 8 }
+      responses:
+        "200":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+  /v1/accounts/login:
+    post:
+      summary: Log in to a platform account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        "200":
+          description: Account token (bearer, ~12h)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+  /v1/games:
+    get:
+      summary: List playable games (portal catalog)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Games with their default worlds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Game"
+  /v1/games/{gameId}/join:
+    post:
+      summary: Request a place assignment and join ticket
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Place assignment + signed join ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JoinResponse"
+  /v1/fleet/places:
+    post:
+      summary: "[fleet] Register/heartbeat a hosted place"
+      description: Called by NoobietoriaServer processes running on the VPS fleet.
+      security: [{ fleetAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [placeId, worldId, host, port, playersOnline]
+              properties:
+                placeId: { type: string }
+                worldId: { type: string }
+                host: { type: string }
+                port: { type: integer }
+                playersOnline: { type: integer }
+      responses:
+        "200": { description: Registered }
+  /v1/fleet/tickets/verify:
+    post:
+      summary: "[fleet] Optional online ticket verification"
+      description: >
+        Places verify tickets offline with the fleet secret; this endpoint
+        exists for revocation checks when the platform requires it.
+      security: [{ fleetAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ticket]
+              properties:
+                ticket: { type: string }
+      responses:
+        "200":
+          description: Ticket claims and revocation status
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+    fleetAuth:
+      type: apiKey
+      in: header
+      name: X-Fleet-Key
+  schemas:
+    Account:
+      type: object
+      required: [userId, username, token]
+      properties:
+        userId: { type: integer }
+        username: { type: string }
+        token: { type: string }
+    Game:
+      type: object
+      required: [gameId, title, description, worldId, playersOnline]
+      properties:
+        gameId: { type: string }
+        title: { type: string }
+        description: { type: string }
+        worldId: { type: string }
+        playersOnline: { type: integer }
+    JoinResponse:
+      type: object
+      required: [host, port, ticket, worldId]
+      properties:
+        host: { type: string }
+        port: { type: integer }
+        ticket: { type: string, description: "base64url(payload).base64url(HMAC-SHA256), see Shared/Platform/JoinTicket.cs" }
+        worldId: { type: string }

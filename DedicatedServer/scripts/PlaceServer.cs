@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using Noobietoria.Platform;
 using Noobietoria.Shared;
 
 namespace Noobietoria.DedicatedServer;
@@ -13,22 +14,42 @@ namespace Noobietoria.DedicatedServer;
 /// the client's /root/Main: PlaceServer("Main") + Players/Player-N stubs —
 /// so avatar RPC paths resolve on every peer.
 ///
+/// A place is attached to a World (WorldCatalog) that carries its identity
+/// and spawn layout, and can require platform join tickets (HMAC-signed by
+/// the closed backend, verified offline with the fleet secret).
+///
 /// Roster state (capacity, duplicate names, join order) lives in the
 /// <see cref="ServerDedicatedServer"/> domain layer, which also owns the
 /// authoritative Instance tree — one per place.
 /// </summary>
 public partial class PlaceServer : Node
 {
-    private readonly Dictionary<int, string> _players = new();
+    private readonly Dictionary<int, (string DisplayName, string Account)> _players = new();
     private ServerDedicatedServer _server = null!;
     private Node3D _playersRoot = null!;
+    private WorldDefinition _world = null!;
+    private byte[]? _ticketSecret;
 
     /// <summary>Logical name of the place (used for logging).</summary>
     public string PlaceName { get; set; } = "default";
 
+    /// <summary>World id this place hosts (resolved through WorldCatalog).</summary>
+    public string WorldId { get; set; } = "grasslands";
+
+    /// <summary>World definitions available to this server.</summary>
+    public WorldCatalog? Catalog { get; set; }
+
+    /// <summary>
+    /// Fleet secret used to verify platform join tickets. When set, players
+    /// MUST present a valid signed ticket; when null the place runs in dev
+    /// mode and accepts direct connections without a ticket.
+    /// </summary>
+    public byte[]? TicketSecret { get; set; }
+
     public override void _Ready()
     {
         _playersRoot = GetNode<Node3D>("Players");
+        _world = (Catalog ?? new WorldCatalog()).GetOrFallback(WorldId);
 
         _server = new ServerDedicatedServer(Net.MaxPlayers);
         _server.Start();
@@ -43,7 +64,7 @@ public partial class PlaceServer : Node
         Multiplayer.PeerConnected += OnPeerConnected;
         Multiplayer.PeerDisconnected += OnPeerDisconnected;
 
-        GD.Print($"[cluster:{PlaceName}] hosting place (max {_server.MaxPlayers} players).");
+        GD.Print($"[cluster:{PlaceName}] hosting world '{_world.WorldId}' (max {_server.MaxPlayers} players, tickets: {(TicketSecret != null ? "required" : "off")}).");
     }
 
     public override void _ExitTree()
@@ -59,14 +80,14 @@ public partial class PlaceServer : Node
 
     private void OnPeerDisconnected(long peerId)
     {
-        if (_players.TryGetValue((int)peerId, out string? name))
+        if (_players.TryGetValue((int)peerId, out var player))
         {
             _players.Remove((int)peerId);
-            _server.Leave(name);
-            GD.Print($"[cluster:{PlaceName}] {name} (#{peerId}) left. Players online: {_server.PlayerCount}");
+            _server.Leave(player.Account);
+            GD.Print($"[cluster:{PlaceName}] {player.DisplayName} (#{peerId}) left. Players online: {_server.PlayerCount}");
             _playersRoot.GetNodeOrNull($"Player-{peerId}")?.QueueFree();
-            Rpc(RpcMethod.PlayerLeft, (int)peerId, name);
-            Rpc(RpcMethod.ReceiveChat, 0, "server", $"{name} left the game.");
+            Rpc(RpcMethod.PlayerLeft, (int)peerId, player.DisplayName);
+            Rpc(RpcMethod.ReceiveChat, 0, "server", $"{player.DisplayName} left the game.");
         }
         else
         {
@@ -75,7 +96,7 @@ public partial class PlaceServer : Node
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
-    private void SubmitHandshake(string playerName, string protocolTag)
+    private void SubmitHandshake(string playerName, string protocolTag, string ticket)
     {
         int sender = Multiplayer.GetRemoteSenderId();
 
@@ -85,6 +106,18 @@ public partial class PlaceServer : Node
                 "Your client version does not match this server.");
             return;
         }
+
+        // Platform ticket: required when the fleet secret is configured;
+        // an optional ticket is still verified in dev mode so clients cannot
+        // forge platform identities.
+        JoinTicket.Payload? session = ValidateTicket(ticket);
+        if (session == null && (TicketSecret != null || !string.IsNullOrEmpty(ticket)))
+        {
+            Reject(sender, $"Rejected #{sender}: invalid or expired join ticket.",
+                "Your session ticket is invalid or expired — rejoin from the portal.");
+            return;
+        }
+        string account = session?.Username ?? $"guest-{sender % 10000:0000}";
 
         if (_players.Count >= Net.MaxPlayers)
         {
@@ -98,12 +131,12 @@ public partial class PlaceServer : Node
             name = name[..24];
 
         // Usernames must be unique in the domain layer — de-duplicate by peer id.
-        if (_server.IsOnline(name))
+        if (_server.IsOnline(account))
             name = $"{name[..Math.Min(name.Length, 19)]}#{sender % 1000:000}";
 
         try
         {
-            _server.Join(name);
+            _server.Join(account);
         }
         catch (InvalidOperationException e)
         {
@@ -111,16 +144,28 @@ public partial class PlaceServer : Node
             return;
         }
 
-        _players[sender] = name;
-        GD.Print($"[cluster:{PlaceName}] {name} (#{sender}) joined. Players online: {_server.PlayerCount}");
+        _players[sender] = (name, account);
+        GD.Print($"[cluster:{PlaceName}] {name} ({account}) joined. Players online: {_server.PlayerCount}");
 
         // Mirror the client's node layout so avatar state RPCs
         // (Players/Player-N relative to the place root) have a matching path.
         _playersRoot.AddChild(new PlayerRelay { Name = $"Player-{sender}" });
 
-        RpcId(sender, RpcMethod.HandshakeAccepted, $"Welcome to {PlaceName}!",
-            _players.Keys.ToArray(), _players.Values.ToArray());
+        string motd = string.IsNullOrEmpty(_world.Description)
+            ? $"Welcome to {_world.Name}!"
+            : $"{_world.Name} — {_world.Description}";
+        RpcId(sender, RpcMethod.HandshakeAccepted, motd,
+            _players.Keys.ToArray(), _players.Values.Select(p => p.DisplayName).ToArray());
         Rpc(RpcMethod.PlayerJoined, sender, name);
+    }
+
+    private JoinTicket.Payload? ValidateTicket(string ticket)
+    {
+        if (TicketSecret != null)
+            return JoinTicket.Validate(ticket, TicketSecret);
+        if (string.IsNullOrEmpty(ticket))
+            return null;
+        return JoinTicket.Validate(ticket, JoinTicket.DevSecret());
     }
 
     private void Reject(int peerId, string log, string reason)
@@ -134,7 +179,7 @@ public partial class PlaceServer : Node
     private void SendChat(string text)
     {
         int sender = Multiplayer.GetRemoteSenderId();
-        if (!_players.TryGetValue(sender, out string? name))
+        if (!_players.TryGetValue(sender, out var player))
             return;
 
         text = text.Trim();
@@ -143,8 +188,8 @@ public partial class PlaceServer : Node
         if (text.Length > 256)
             text = text[..256];
 
-        GD.Print($"[cluster:{PlaceName}][chat] {name}: {text}");
-        Rpc(RpcMethod.ReceiveChat, sender, name, text);
+        GD.Print($"[cluster:{PlaceName}][chat] {player.DisplayName}: {text}");
+        Rpc(RpcMethod.ReceiveChat, sender, player.DisplayName, text);
     }
 
     // ---- Stubs of the server-to-client RPCs. Their bodies only ever run on
