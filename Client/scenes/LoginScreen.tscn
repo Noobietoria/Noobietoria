@@ -1,0 +1,73 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/LoginScreen.cs" id="1"]
+
+[node name="LoginScreen" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="Center" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+
+[node name="Margin" type="MarginContainer" parent="Center/Panel"]
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 32
+
+[node name="Box" type="VBoxContainer" parent="Center/Panel/Margin"]
+custom_minimum_size = Vector2(420, 0)
+theme_override_constants/separation = 12
+
+[node name="Logo" type="Label" parent="Center/Panel/Margin/Box"]
+theme_override_font_sizes/font_size = 44
+text = "NOOBIETORIA"
+horizontal_alignment = 1
+
+[node name="Tagline" type="Label" parent="Center/Panel/Margin/Box"]
+theme_override_colors/font_color = Color(0.7, 0.73, 0.78, 1)
+text = "Millions of games. One account."
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Center/Panel/Margin/Box"]
+custom_minimum_size = Vector2(0, 16)
+
+[node name="UsernameLabel" type="Label" parent="Center/Panel/Margin/Box"]
+text = "Username"
+
+[node name="UsernameInput" type="LineEdit" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+max_length = 24
+text = "Newbie"
+placeholder_text = "Username"
+
+[node name="PasswordLabel" type="Label" parent="Center/Panel/Margin/Box"]
+text = "Password"
+
+[node name="PasswordInput" type="LineEdit" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+max_length = 64
+secret = true
+placeholder_text = "Password"
+
+[node name="Spacer2" type="Control" parent="Center/Panel/Margin/Box"]
+custom_minimum_size = Vector2(0, 6)
+
+[node name="LoginButton" type="Button" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+theme_override_font_sizes/font_size = 20
+text = "Log In"
+
+[node name="RegisterButton" type="Button" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+flat = true
+text = "Create a new account"
+
+[node name="StatusLabel" type="Label" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+theme_override_colors/font_color = Color(0.95, 0.75, 0.4, 1)
+horizontal_alignment = 1
