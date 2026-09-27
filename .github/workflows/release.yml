@@ -100,7 +100,7 @@ jobs:
           dotnet build Noobietoria.sln -c Debug --nologo > /dev/null
           "$GODOT" --headless --path Client --import > /dev/null 2>&1 || true
 
-          build/net.noobietoria.server/linux/NoobietoriaServer.x86_64 --headless \
+          stdbuf -oL build/net.noobietoria.server/linux/NoobietoriaServer.x86_64 --headless \
             --verbose -- --place alpha:24599 --places "$GITHUB_WORKSPACE/places-beta.json" > server-smoke.log 2>&1 &
           SERVER_PID=$!
 
