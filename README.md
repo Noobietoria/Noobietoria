@@ -71,6 +71,19 @@ sleep 2
 E2E_ROLE=b E2E_PORT=24599 godot --path Client --headless res://tests/E2E.tscn     # Beta, exits 0 on pass
 ```
 
+### Continuous integration
+
+Every push and pull request runs `.github/workflows/ci.yml`:
+
+1. **Strict .NET build** (ubuntu + windows) — warnings are errors, unit tests, vulnerable-package audit.
+2. **Real headless Godot 4.7.1** (checksum-pinned) — resource import gated on errors, scene validation for every `.tscn` (missing/broken references), smoke runs of each main scene, and the two-client E2E over real ENet. Failure logs are uploaded as artifacts.
+
+Run the same checks locally with `tools/validate_scenes.gd` inside any of the three projects:
+
+```bash
+godot --headless --path Client --script res://tools/validate_scenes.gd
+```
+
 ## Architecture Notes
 
 * `Studio/Core` is the engine-agnostic Instance tree; the dedicated server hosts an authoritative `InstanceService` through `ServerDedicatedServer` (domain layer, covered by `Studio.Tests`), while `DedicatedServer/scripts/ServerMain.cs` is the Godot ENet transport that feeds joins/leaves into it.
