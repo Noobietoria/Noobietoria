@@ -66,6 +66,18 @@ namespace Noobietoria.DedicatedServer
         public InstanceService Instances { get; }
 
         /// <summary>
+        /// DataStoreService available to ServerScripts — persistent key/value
+        /// storage backed by the platform database.
+        /// </summary>
+        public DataStoreService DataStores { get; } = new();
+
+        /// <summary>
+        /// HttpService available to ServerScripts — outbound HTTP to external
+        /// web services via Prepare/Request/Release.
+        /// </summary>
+        public HttpService Http { get; } = new();
+
+        /// <summary>
         /// Maximum number of players that may be connected at once.
         /// </summary>
         public int MaxPlayers { get; }
