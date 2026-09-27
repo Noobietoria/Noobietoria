@@ -16,3 +16,7 @@ window/size/viewport_height=720
 [dotnet]
 
 project/assembly_name="Client"
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true
