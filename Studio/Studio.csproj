@@ -3,10 +3,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RootNamespace>Noobietoria.Studio</RootNamespace>
-    <AssemblyName>NoobietoriaStudio</AssemblyName>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="..\Shared\**\*.cs" Link="Shared\%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
 </Project>

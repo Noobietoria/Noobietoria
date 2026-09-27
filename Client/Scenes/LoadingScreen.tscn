@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://kdgxbvbqcx8g"]
+
+[ext_resource type="FontFile" uid="uid://t2gll43225dg" path="res://Fonts/Nunito-ExtraBold.ttf" id="1_dhqi2"]
+[ext_resource type="FontFile" uid="uid://cfrrfevlbttws" path="res://Fonts/VarelaRound-Regular.ttf" id="2_2ij24"]
+
+[node name="Control" type="Control" unique_id=1117396637]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=707326164]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 2
+
+[node name="GameName" type="Label" parent="VBoxContainer" unique_id=114834345]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12941177, 1, 1, 1)
+theme_override_fonts/font = ExtResource("1_dhqi2")
+theme_override_font_sizes/font_size = 90
+text = "Random Game Name"
+
+[node name="LoadingText" type="Label" parent="VBoxContainer" unique_id=1956200152]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8039216, 0.47843137, 0.48235294, 1)
+theme_override_fonts/font = ExtResource("2_2ij24")
+theme_override_font_sizes/font_size = 37
+text = "Loading..."

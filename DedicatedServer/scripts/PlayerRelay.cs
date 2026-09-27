@@ -1,6 +1,6 @@
 using Godot;
 
-namespace Noobietoria.Server;
+namespace Noobietoria.DedicatedServer;
 
 /// <summary>
 /// Sits at /root/Main/Players, mirroring the client's node layout so that

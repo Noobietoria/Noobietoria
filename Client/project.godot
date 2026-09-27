@@ -15,4 +15,4 @@ window/size/viewport_height=720
 
 [dotnet]
 
-project/assembly_name="NoobietoriaClient"
+project/assembly_name="Client"
