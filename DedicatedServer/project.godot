@@ -1,1 +1,13 @@
+; Engine configuration file.
+config_version=5
 
+[application]
+
+config/name="Noobietoria Dedicated Server"
+run/main_scene="res://scenes/Main.tscn"
+config/features=PackedStringArray("4.7", "C#")
+config/icon="res://icon.svg"
+
+[dotnet]
+
+project/assembly_name="NoobietoriaServer"

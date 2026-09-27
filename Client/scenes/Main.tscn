@@ -1,0 +1,101 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/Game.cs" id="1"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+
+[sub_resource type="BoxMesh" id="FloorMesh"]
+size = Vector3(48, 1, 48)
+
+[sub_resource type="StandardMaterial3D" id="FloorMat"]
+albedo_color = Color(0.35, 0.42, 0.32, 1)
+
+[sub_resource type="BoxShape3D" id="FloorShape"]
+size = Vector3(48, 1, 48)
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+unique_name_in_owner = true
+shadow_enabled = true
+
+[node name="Floor" type="StaticBody3D" parent="."]
+
+[node name="Mesh" type="MeshInstance3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+material_override = SubResource("FloorMat")
+mesh = SubResource("FloorMesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("FloorShape")
+
+[node name="Players" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Cam" type="Camera3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 16)
+current = true
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Hint" type="Label" parent="UI"]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 500.0
+offset_bottom = 32.0
+text = "WASD move · Space jump · Enter to chat"
+
+[node name="RosterLabel" type="Label" parent="UI"]
+unique_name_in_owner = true
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -360.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 160.0
+grow_horizontal = 0
+text = "Players (1)"
+horizontal_alignment = 2
+
+[node name="ChatPanel" type="PanelContainer" parent="UI"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -268.0
+offset_right = 520.0
+offset_bottom = -12.0
+grow_vertical = 0
+
+[node name="ChatBox" type="VBoxContainer" parent="UI/ChatPanel"]
+theme_override_constants/separation = 6
+
+[node name="ChatLog" type="RichTextLabel" parent="UI/ChatPanel/ChatBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 170)
+bbcode_enabled = true
+scroll_following = true
+
+[node name="ChatRow" type="HBoxContainer" parent="UI/ChatPanel/ChatBox"]
+theme_override_constants/separation = 6
+
+[node name="ChatInput" type="LineEdit" parent="UI/ChatPanel/ChatBox/ChatRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+placeholder_text = "Say something… (Enter to send)"
+
+[node name="SendButton" type="Button" parent="UI/ChatPanel/ChatBox/ChatRow"]
+unique_name_in_owner = true
+text = "Send"

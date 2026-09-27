@@ -1,1 +1,18 @@
+; Engine configuration file.
+config_version=5
 
+[application]
+
+config/name="Noobietoria Studio"
+run/main_scene="res://scenes/StudioMain.tscn"
+config/features=PackedStringArray("4.7", "C#")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[dotnet]
+
+project/assembly_name="NoobietoriaStudio"

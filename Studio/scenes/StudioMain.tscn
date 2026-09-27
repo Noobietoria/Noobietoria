@@ -1,0 +1,104 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/StudioMain.cs" id="1"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+
+[sub_resource type="PlaneMesh" id="GroundMesh"]
+size = Vector2(80, 80)
+
+[sub_resource type="StandardMaterial3D" id="GroundMat"]
+albedo_color = Color(0.42, 0.46, 0.36, 1)
+
+[sub_resource type="BoxShape3D" id="GroundShape"]
+size = Vector3(80, 0.2, 80)
+
+[node name="StudioMain" type="Node3D"]
+script = ExtResource("1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+unique_name_in_owner = true
+shadow_enabled = true
+
+[node name="Cam" type="Camera3D" parent="."]
+unique_name_in_owner = true
+current = true
+
+[node name="Ground" type="StaticBody3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+material_override = SubResource("GroundMat")
+mesh = SubResource("GroundMesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+shape = SubResource("GroundShape")
+
+[node name="World" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="TopBar" type="PanelContainer" parent="UI"]
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 52.0
+grow_horizontal = 2
+
+[node name="Row" type="HBoxContainer" parent="UI/TopBar"]
+theme_override_constants/separation = 8
+
+[node name="NewButton" type="Button" parent="UI/TopBar/Row"]
+unique_name_in_owner = true
+text = "New"
+
+[node name="SaveButton" type="Button" parent="UI/TopBar/Row"]
+unique_name_in_owner = true
+text = "Save"
+
+[node name="LoadButton" type="Button" parent="UI/TopBar/Row"]
+unique_name_in_owner = true
+text = "Load"
+
+[node name="NameLabel" type="Label" parent="UI/TopBar/Row"]
+text = "Map:"
+
+[node name="MapNameInput" type="LineEdit" parent="UI/TopBar/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+text = "sample-map"
+
+[node name="TypeLabel" type="Label" parent="UI/TopBar/Row"]
+text = "Block:"
+
+[node name="BlockPicker" type="OptionButton" parent="UI/TopBar/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 0)
+
+[node name="StatusLabel" type="Label" parent="UI/TopBar/Row"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+vertical_alignment = 1
+
+[node name="Help" type="Label" parent="UI"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -36.0
+offset_right = 900.0
+offset_bottom = -12.0
+grow_vertical = 0
+text = "LMB place block · RMB drag rotate camera · RMB click (no drag) remove block · WASD/QE move · Shift boost"

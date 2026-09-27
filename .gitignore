@@ -1,0 +1,21 @@
+# Godot 4
+.godot/
+*.tmp
+export_presets.cfg
+
+# C# build artifacts
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
