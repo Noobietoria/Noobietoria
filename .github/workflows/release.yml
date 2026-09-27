@@ -101,15 +101,15 @@ jobs:
           "$GODOT" --headless --path Client --import > /dev/null 2>&1 || true
 
           build/net.noobietoria.server/linux/NoobietoriaServer.x86_64 --headless \
-            -- --place alpha:24599 --places "$GITHUB_WORKSPACE/places-beta.json" > server-smoke.log 2>&1 &
+            --verbose -- --place alpha:24599 --places "$GITHUB_WORKSPACE/places-beta.json" > server-smoke.log 2>&1 &
           SERVER_PID=$!
 
           # Wait until BOTH places report listening (the first run extracts
           # the self-contained .NET publish output, which takes a while).
           up=0
-          for i in $(seq 1 45); do
+          for i in $(seq 1 60); do
             if [ "$(grep -c 'listening on' server-smoke.log || true)" -ge 2 ]; then up=1; break; fi
-            sleep 2
+            sleep 3
           done
           if [ "$up" -ne 1 ]; then
             echo "::error::exported server never reported both places listening"
