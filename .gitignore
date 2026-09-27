@@ -16,6 +16,9 @@ artifacts/
 .idea/
 *.swp
 
+# Exported builds
+build/
+
 # OS
 .DS_Store
 Thumbs.db
