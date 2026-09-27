@@ -17,6 +17,7 @@ namespace Noobietoria.Studio.Core
         Gui,
         Messaging,
         Script,
+        Avatar,
     }
 
     /// <summary>
@@ -54,6 +55,8 @@ namespace Noobietoria.Studio.Core
                     "Climbable truss; same properties as Part plus ClimbSpeed."),
                 new("Attachment", InstanceCategory.Spatial,
                     "Named point with Position and Orientation, parented to a Part or Model."),
+                new("SpawnLocation", InstanceCategory.Spatial,
+                    "Spawn point for players/NPCs, referenced by SpawnService (see the InstanceService docs example)."),
 
                 // Structure
                 new("Folder", InstanceCategory.Structure, "Plain container; only Name and Parent matter."),
@@ -75,6 +78,11 @@ namespace Noobietoria.Studio.Core
                 // Messaging
                 new("NetworkEvent", InstanceCategory.Messaging,
                     "Client/server messaging primitive; the Name identifies it in code."),
+
+                // Avatar
+                new("Accessory", InstanceCategory.Avatar,
+                    "Marketplace item (Items and Clothes only) equipped on a Player/NPC via the "
+                    + "IngameAccessoriesID property; Gamepasses cannot be equipped."),
 
                 // Script
                 new("ServerScript", InstanceCategory.Script,
@@ -115,6 +123,8 @@ namespace Noobietoria.Studio.Core
                     => new TrussPart(name, rootContainer),
                 InstanceCategory.Spatial when string.Equals(spec.TypeName, "Attachment", StringComparison.OrdinalIgnoreCase)
                     => new Attachment(name, rootContainer),
+                InstanceCategory.Spatial when string.Equals(spec.TypeName, "SpawnLocation", StringComparison.OrdinalIgnoreCase)
+                    => new SpawnLocation(name, rootContainer),
                 InstanceCategory.Spatial => new Part(name, spec.TypeName, rootContainer),
 
                 InstanceCategory.Structure when string.Equals(spec.TypeName, "Model", StringComparison.OrdinalIgnoreCase)
@@ -133,6 +143,7 @@ namespace Noobietoria.Studio.Core
                 },
 
                 InstanceCategory.Messaging => new NetworkEvent(name, rootContainer),
+                InstanceCategory.Avatar => new Accessory(name, rootContainer),
                 _ => new ScriptInstance(name, spec.TypeName, rootContainer),
             };
         }

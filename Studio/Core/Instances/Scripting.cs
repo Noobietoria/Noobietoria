@@ -36,10 +36,19 @@ namespace Noobietoria.Studio.Core
     /// code. Recommend parenting under ReplicatedStorage so both sides can
     /// reach it.
     ///
-    /// See: https://noobietoria.github.io/Docs/en/instance/#networkevent
+    /// Documented limits: payloads up to 64KB per call, and FireAllClients
+    /// should not exceed 20 calls per second.
+    ///
+    /// See: https://noobietoria.github.io/Docs/en/api/#networkevent
     /// </summary>
     public class NetworkEvent : Instance
     {
+        /// <summary>Maximum serialized payload per call (64KB).</summary>
+        public const long MaxPayloadBytes = 64 * 1024;
+
+        /// <summary>Documented upper bound for FireAllClients calls per second.</summary>
+        public const int MaxFireAllClientsPerSecond = 20;
+
         public NetworkEvent(string name, string rootContainer)
             : base(name, "NetworkEvent", rootContainer)
         {

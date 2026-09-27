@@ -10,10 +10,11 @@ namespace Noobietoria.Studio.Tests
         private static readonly string[] AllDocumentedTypes =
         {
             "Part", "Sphere", "Wedge", "Cylinder", "MeshPart", "Triangle", "Mesh",
-            "TrussPart", "Attachment",
+            "TrussPart", "Attachment", "SpawnLocation",
             "Folder", "Model",
             "Frame", "TextLabel", "TextButton", "ImageLabel", "ImageButton", "TextBox", "ScrollingFrame",
             "NetworkEvent",
+            "Accessory",
             "ServerScript", "ClientScript", "ModuleScript",
         };
 
@@ -120,6 +121,46 @@ namespace Noobietoria.Studio.Tests
 
             Assert.Equal(new Vector3Data(0, 2, 0), attachment.Position);
             Assert.Equal(new Vector3Data(0, 90, 0), attachment.Orientation);
+        }
+
+        [Fact]
+        public void SpawnLocation_IsASpatialPart()
+        {
+            var service = new InstanceService();
+
+            var spawn = (SpawnLocation)service.Create("SpawnMain", "SpawnLocation", "Workspace");
+
+            Assert.Equal("SpawnLocation", spawn.Type);
+            Assert.Equal(new Vector3Data(0, 0, 0), spawn.Position);
+            Assert.Equal(new Vector3Data(1, 1, 1), spawn.Size);
+
+            spawn.Position = new Vector3Data(0, 10, 0);
+            Assert.Equal(new Vector3Data(0, 10, 0), spawn.Position);
+        }
+
+        [Fact]
+        public void Accessory_OnlyItemAndClothesKindsAreEquippable()
+        {
+            var service = new InstanceService();
+
+            var hat = (Accessory)service.Create("TopHat", "Accessory", "Workspace");
+            hat.Kind = "Clothes";
+            hat.AccessoryId = "acc-1234";
+
+            Assert.Equal("Clothes", hat.Kind);
+            Assert.Equal("acc-1234", hat.AccessoryId);
+
+            Assert.True(Accessory.IsEquippableKind("Item"));
+            Assert.True(Accessory.IsEquippableKind("clothes"));   // case-insensitive
+            Assert.False(Accessory.IsEquippableKind("Gamepass")); // docs: Gamepasses cannot be equipped
+            Assert.False(Accessory.IsEquippableKind(null));
+        }
+
+        [Fact]
+        public void NetworkEvent_ExposesDocumentedLimits()
+        {
+            Assert.Equal(64 * 1024, NetworkEvent.MaxPayloadBytes);
+            Assert.Equal(20, NetworkEvent.MaxFireAllClientsPerSecond);
         }
 
         [Fact]
