@@ -1,0 +1,222 @@
+name: release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: 4.7.1
+  TEMPLATES_SHA256: ef9a708be51ecd974cd7dccdcafd7a1870da3d3e1c24c072bdbb9818c7a7db63
+
+jobs:
+  export-linux:
+    name: Linux + Windows exports & smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Cache export templates
+        id: templates
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot/export_templates
+          key: godot-templates-${{ env.GODOT_VERSION }}-mono
+
+      - name: Install Godot and export templates
+        if: steps.templates.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64.zip"
+          echo "${{ env.TEMPLATES_SHA256 }}  godot.zip" | sha256sum -c -
+          unzip -q godot.zip -d godot-bin
+          chmod +x godot-bin/*/Godot_v*_mono_linux.x86_64
+          echo "GODOT=$PWD/godot-bin/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64/Godot_v${GODOT_VERSION}-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
+
+          curl -fsSL -o templates.tpz \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz"
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+          unzip -q templates.tpz -d ~/.local/share/godot/export_templates/
+          mv ~/.local/share/godot/export_templates/templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono/
+          rmdir ~/.local/share/godot/export_templates/templates
+
+      - name: Restore Godot binary from cache (templates cache hit)
+        if: steps.templates.outputs.cache-hit == 'true'
+        run: |
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64.zip"
+          echo "${{ env.TEMPLATES_SHA256 }}  godot.zip" | sha256sum -c -
+          unzip -q godot.zip -d godot-bin
+          chmod +x godot-bin/*/Godot_v*_mono_linux.x86_64
+          echo "GODOT=$PWD/godot-bin/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64/Godot_v${GODOT_VERSION}-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
+
+      - name: Build assemblies
+        run: dotnet build Noobietoria.sln -c Release --nologo
+
+      - name: Export Windows builds (.exe)
+        run: |
+          set -e
+          mkdir -p build/net.noobietoria.client/windows build/net.noobietoria.studio/windows build/net.noobietoria.server/windows
+          "$GODOT" --headless --path Client          --export-release "Windows Desktop" "$GITHUB_WORKSPACE/build/net.noobietoria.client/windows/NoobietoriaClient.exe"
+          "$GODOT" --headless --path Studio          --export-release "Windows Desktop" "$GITHUB_WORKSPACE/build/net.noobietoria.studio/windows/NoobietoriaStudio.exe"
+          "$GODOT" --headless --path DedicatedServer --export-release "Windows Desktop" "$GITHUB_WORKSPACE/build/net.noobietoria.server/windows/NoobietoriaServer.exe"
+
+      - name: Export Linux builds
+        run: |
+          set -e
+          mkdir -p build/net.noobietoria.client/linux build/net.noobietoria.studio/linux build/net.noobietoria.server/linux
+          "$GODOT" --headless --path Client          --export-release "Linux" "$GITHUB_WORKSPACE/build/net.noobietoria.client/linux/NoobietoriaClient.x86_64"
+          "$GODOT" --headless --path Studio          --export-release "Linux" "$GITHUB_WORKSPACE/build/net.noobietoria.studio/linux/NoobietoriaStudio.x86_64"
+          "$GODOT" --headless --path DedicatedServer --export-release "Linux" "$GITHUB_WORKSPACE/build/net.noobietoria.server/linux/NoobietoriaServer.x86_64"
+          chmod +x build/net.noobietoria.server/linux/NoobietoriaServer.x86_64
+          chmod +x build/net.noobietoria.client/linux/NoobietoriaClient.x86_64
+          chmod +x build/net.noobietoria.studio/linux/NoobietoriaStudio.x86_64
+
+      - name: Smoke test the exported Linux dedicated server (multi-place)
+        run: |
+          set -e
+          echo '[{"name":"beta","port":24598}]' > "$GITHUB_WORKSPACE/places-beta.json"
+          build/net.noobietoria.server/linux/NoobietoriaServer.x86_64 --headless \
+            -- --place alpha:24599 --places "$GITHUB_WORKSPACE/places-beta.json" > server-smoke.log 2>&1 &
+          SERVER_PID=$!
+          sleep 8
+
+          E2E_ROLE=solo E2E_PORT=24599 timeout 60 "$GODOT" --headless --path Client res://tests/E2E.tscn > solo-a.log 2>&1 &
+          SOLO_A_PID=$!
+          sleep 4
+          E2E_ROLE=solo E2E_PORT=24598 timeout 60 "$GODOT" --headless --path Client res://tests/E2E.tscn > solo-b.log 2>&1
+          SOLO_B_EXIT=$?
+          wait "$SOLO_A_PID"; SOLO_A_EXIT=$?
+
+          E2E_ROLE=a E2E_PORT=24599 timeout 60 "$GODOT" --headless --path Client res://tests/E2E.tscn > e2e-a.log 2>&1 &
+          CLIENT_A_PID=$!
+          sleep 4
+          E2E_ROLE=b E2E_PORT=24599 timeout 60 "$GODOT" --headless --path Client res://tests/E2E.tscn > e2e-b.log 2>&1
+          CLIENT_B_EXIT=$?
+          wait "$CLIENT_A_PID"; CLIENT_A_EXIT=$?
+          kill "$SERVER_PID" 2>/dev/null || true
+
+          cat server-smoke.log solo-a.log solo-b.log e2e-a.log e2e-b.log
+          fail=0
+          [ "$SOLO_A_EXIT" -ne 0 ] && { echo "::error::solo place alpha failed ($SOLO_A_EXIT)"; fail=1; }
+          [ "$SOLO_B_EXIT" -ne 0 ] && { echo "::error::solo place beta failed ($SOLO_B_EXIT)"; fail=1; }
+          [ "$CLIENT_A_EXIT" -ne 0 ] && { echo "::error::E2E Alpha failed ($CLIENT_A_EXIT)"; fail=1; }
+          [ "$CLIENT_B_EXIT" -ne 0 ] && { echo "::error::E2E Beta failed ($CLIENT_B_EXIT)"; fail=1; }
+          exit $fail
+
+      - name: Package
+        run: |
+          set -e
+          cd build
+          zip -r -q net.noobietoria.client-windows.zip net.noobietoria.client/windows
+          zip -r -q net.noobietoria.studio-windows.zip net.noobietoria.studio/windows
+          zip -r -q net.noobietoria.server-windows.zip net.noobietoria.server/windows
+          zip -r -q net.noobietoria.client-linux.zip net.noobietoria.client/linux
+          zip -r -q net.noobietoria.studio-linux.zip net.noobietoria.studio/linux
+          zip -r -q net.noobietoria.server-linux.zip net.noobietoria.server/linux
+
+      - name: Upload Linux + Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: builds-linux-windows
+          path: |
+            build/*.zip
+          if-no-files-found: error
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-logs-linux
+          path: "*.log"
+          if-no-files-found: ignore
+
+  export-macos:
+    name: macOS exports (.dmg)
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Cache export templates
+        id: templates
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Application Support/Godot/export_templates
+          key: godot-templates-${{ env.GODOT_VERSION }}-mono
+
+      - name: Install Godot and export templates
+        if: steps.templates.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_macos.universal.zip"
+          unzip -q godot.zip -d godot-bin
+          chmod +x godot-bin/*/Godot_mono.app/Contents/MacOS/Godot
+          echo "GODOT=$PWD/godot-bin/Godot_v${GODOT_VERSION}-stable_mono_macos.universal/Godot_mono.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
+
+          curl -fsSL -o templates.tpz \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz"
+          mkdir -p ~/Library/"Application Support"/Godot/export_templates/${GODOT_VERSION}.stable.mono
+          unzip -q templates.tpz -d ~/Library/"Application Support"/Godot/export_templates/
+          mv ~/Library/"Application Support"/Godot/export_templates/templates/* \
+             ~/Library/"Application Support"/Godot/export_templates/${GODOT_VERSION}.stable.mono/
+          rmdir ~/Library/"Application Support"/Godot/export_templates/templates
+
+      - name: Restore Godot binary from cache (templates cache hit)
+        if: steps.templates.outputs.cache-hit == 'true'
+        run: |
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_macos.universal.zip"
+          unzip -q godot.zip -d godot-bin
+          chmod +x godot-bin/*/Godot_mono.app/Contents/MacOS/Godot
+          echo "GODOT=$PWD/godot-bin/Godot_v${GODOT_VERSION}-stable_mono_macos.universal/Godot_mono.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
+
+      - name: Build assemblies
+        run: dotnet build Noobietoria.sln -c Release --nologo
+
+      - name: Export macOS builds (.dmg, universal)
+        run: |
+          set -e
+          mkdir -p build/net.noobietoria.client/macos build/net.noobietoria.studio/macos build/net.noobietoria.server/macos
+          "$GODOT" --headless --path Client          --export-release "macOS" "$GITHUB_WORKSPACE/build/net.noobietoria.client/macos/NoobietoriaClient.dmg"
+          "$GODOT" --headless --path Studio          --export-release "macOS" "$GITHUB_WORKSPACE/build/net.noobietoria.studio/macos/NoobietoriaStudio.dmg"
+          "$GODOT" --headless --path DedicatedServer --export-release "macOS" "$GITHUB_WORKSPACE/build/net.noobietoria.server/macos/NoobietoriaServer.dmg"
+
+      - name: Package
+        run: |
+          cd build
+          zip -r -q net.noobietoria.client-macos.zip net.noobietoria.client/macos
+          zip -r -q net.noobietoria.studio-macos.zip net.noobietoria.studio/macos
+          zip -r -q net.noobietoria.server-macos.zip net.noobietoria.server/macos
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: builds-macos
+          path: build/*.zip
+          if-no-files-found: error
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-logs-macos
+          path: "*.log"
+          if-no-files-found: ignore

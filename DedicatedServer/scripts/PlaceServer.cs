@@ -6,44 +6,44 @@ using Noobietoria.Shared;
 namespace Noobietoria.DedicatedServer;
 
 /// <summary>
-/// Headless transport node: validates the handshake, relays chat and hands
-/// the roster to newcomers. The root node must stay named "Main" — clients
-/// reach it via the node path /root/Main.
+/// One running place (game world) inside the server cluster. Each
+/// PlaceServer owns its own SceneMultiplayer + ENetMultiplayerPeer
+/// (attached by <see cref="ServerCluster"/> via SceneTree.SetMultiplayer),
+/// so a single process hosts many places at once. The node layout mirrors
+/// the client's /root/Main: PlaceServer("Main") + Players/Player-N stubs —
+/// so avatar RPC paths resolve on every peer.
 ///
 /// Roster state (capacity, duplicate names, join order) lives in the
 /// <see cref="ServerDedicatedServer"/> domain layer, which also owns the
-/// authoritative Instance tree.
+/// authoritative Instance tree — one per place.
 /// </summary>
-public partial class ServerMain : Node
+public partial class PlaceServer : Node
 {
     private readonly Dictionary<int, string> _players = new();
     private ServerDedicatedServer _server = null!;
-    private int _port = Net.DefaultPort;
     private Node3D _playersRoot = null!;
+
+    /// <summary>Logical name of the place (used for logging).</summary>
+    public string PlaceName { get; set; } = "default";
 
     public override void _Ready()
     {
-        ParseArgs();
         _playersRoot = GetNode<Node3D>("Players");
 
         _server = new ServerDedicatedServer(Net.MaxPlayers);
         _server.Start();
 
-        var peer = new ENetMultiplayerPeer();
-        Error error = peer.CreateServer(_port, Net.MaxPlayers);
-        if (error != Error.Ok)
+        var peer = Multiplayer.MultiplayerPeer;
+        if (!Multiplayer.IsServer())
         {
-            GD.PrintErr($"[server] Could not listen on port {_port}: {error}");
-            GetTree().Quit((int)error);
+            GD.PrintErr($"[cluster:{PlaceName}] No server peer attached — place is not listening.");
             return;
         }
 
-        Multiplayer.MultiplayerPeer = peer;
         Multiplayer.PeerConnected += OnPeerConnected;
         Multiplayer.PeerDisconnected += OnPeerDisconnected;
 
-        GD.Print($"[server] Noobietoria dedicated server listening on 0.0.0.0:{_port} (max {_server.MaxPlayers} players).");
-        GD.Print("[server] Stop with Ctrl+C. Pass a different port with: -- --port 3000");
+        GD.Print($"[cluster:{PlaceName}] hosting place (max {_server.MaxPlayers} players).");
     }
 
     public override void _ExitTree()
@@ -52,19 +52,9 @@ public partial class ServerMain : Node
             _server.Stop();
     }
 
-    private void ParseArgs()
-    {
-        string[] args = OS.GetCmdlineUserArgs();
-        for (int i = 0; i + 1 < args.Length; i++)
-        {
-            if (args[i] == "--port" && int.TryParse(args[i + 1], out int port) && port is >= 1 and <= 65535)
-                _port = port;
-        }
-    }
-
     private void OnPeerConnected(long peerId)
     {
-        GD.Print($"[server] Peer {peerId} connected, waiting for handshake.");
+        GD.Print($"[cluster:{PlaceName}] Peer {peerId} connected, waiting for handshake.");
     }
 
     private void OnPeerDisconnected(long peerId)
@@ -73,14 +63,14 @@ public partial class ServerMain : Node
         {
             _players.Remove((int)peerId);
             _server.Leave(name);
-            GD.Print($"[server] {name} (#{peerId}) left. Players online: {_server.PlayerCount}");
+            GD.Print($"[cluster:{PlaceName}] {name} (#{peerId}) left. Players online: {_server.PlayerCount}");
             _playersRoot.GetNodeOrNull($"Player-{peerId}")?.QueueFree();
             Rpc(RpcMethod.PlayerLeft, (int)peerId, name);
             Rpc(RpcMethod.ReceiveChat, 0, "server", $"{name} left the game.");
         }
         else
         {
-            GD.Print($"[server] Peer {peerId} dropped before handshake.");
+            GD.Print($"[cluster:{PlaceName}] Peer {peerId} dropped before handshake.");
         }
     }
 
@@ -93,6 +83,12 @@ public partial class ServerMain : Node
         {
             Reject(sender, $"Rejected #{sender}: protocol mismatch ('{protocolTag}' != '{Net.ProtocolTag}').",
                 "Your client version does not match this server.");
+            return;
+        }
+
+        if (_players.Count >= Net.MaxPlayers)
+        {
+            Reject(sender, $"Rejected #{sender}: server full.", "The server is full, try again later.");
             return;
         }
 
@@ -116,20 +112,20 @@ public partial class ServerMain : Node
         }
 
         _players[sender] = name;
-        GD.Print($"[server] {name} (#{sender}) joined. Players online: {_server.PlayerCount}");
+        GD.Print($"[cluster:{PlaceName}] {name} (#{sender}) joined. Players online: {_server.PlayerCount}");
 
         // Mirror the client's node layout so avatar state RPCs
-        // (/root/Main/Players/Player-N) have a matching path here.
+        // (Players/Player-N relative to the place root) have a matching path.
         _playersRoot.AddChild(new PlayerRelay { Name = $"Player-{sender}" });
 
-        RpcId(sender, RpcMethod.HandshakeAccepted, "Welcome to Noobietoria!",
+        RpcId(sender, RpcMethod.HandshakeAccepted, $"Welcome to {PlaceName}!",
             _players.Keys.ToArray(), _players.Values.ToArray());
         Rpc(RpcMethod.PlayerJoined, sender, name);
     }
 
     private void Reject(int peerId, string log, string reason)
     {
-        GD.Print($"[server] {log}");
+        GD.Print($"[cluster:{PlaceName}] {log}");
         RpcId(peerId, RpcMethod.HandshakeRejected, reason);
         Multiplayer.MultiplayerPeer.DisconnectPeer(peerId);
     }
@@ -147,12 +143,12 @@ public partial class ServerMain : Node
         if (text.Length > 256)
             text = text[..256];
 
-        GD.Print($"[chat] {name}: {text}");
+        GD.Print($"[cluster:{PlaceName}][chat] {name}: {text}");
         Rpc(RpcMethod.ReceiveChat, sender, name, text);
     }
 
     // ---- Stubs of the server-to-client RPCs. Their bodies only ever run on
-    // clients, but Godot requires an [Rpc] config on the sending side too. ----
+    // clients, but Godot requires an [Rpc] config on the sender too. ----
 
     [Rpc(CallLocal = false)]
     private void HandshakeAccepted(string motd, int[] ids, string[] names) { }

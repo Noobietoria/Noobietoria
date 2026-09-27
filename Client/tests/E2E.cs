@@ -71,6 +71,8 @@ public partial class E2E : Node
 
         if (_role == "b")
             RpcId(1, RpcMethod.SendChat, "hello from Beta");
+        else if (_role == "solo")
+            Finish(_roster.Count == 1 && _roster[0] == Multiplayer.GetUniqueId() ? 0 : 5);
     }
 
     [Rpc(CallLocal = false)]
