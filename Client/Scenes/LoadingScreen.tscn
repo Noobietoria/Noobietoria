@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://kdgxbvbqcx8g"]
 
-[ext_resource type="FontFile" uid="uid://t2gll43225dg" path="res://Fonts/Nunito-ExtraBold.ttf" id="1_dhqi2"]
-[ext_resource type="FontFile" uid="uid://cfrrfevlbttws" path="res://Fonts/VarelaRound-Regular.ttf" id="2_2ij24"]
+[ext_resource type="FontFile" uid="uid://2cfcurpnp7lx" path="res://Fonts/Nunito-ExtraBold.ttf" id="1_dhqi2"]
+[ext_resource type="FontFile" uid="uid://dwlk662t4p6gy" path="res://Fonts/VarelaRound-Regular.ttf" id="2_2ij24"]
 
 [node name="Control" type="Control" unique_id=1117396637]
 layout_mode = 3
