@@ -68,8 +68,8 @@ jobs:
           chmod +x "$RUNNER_TEMP"/godot/*/Godot_v*_mono_linux.x86_64
           echo "GODOT=$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64/Godot_v${GODOT_VERSION}-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
 
-      - name: Build assemblies
-        run: dotnet build Noobietoria.sln -c Release --nologo
+      - name: Build assemblies (Debug — the config Godot runs scenes with)
+        run: dotnet build Noobietoria.sln -c Debug --nologo
 
       - name: Import resources (fails on import errors)
         run: |
@@ -87,7 +87,16 @@ jobs:
         run: |
           set -e
           for p in Client DedicatedServer Studio; do
-            "$GODOT" --headless --path "$p" --script res://tools/validate_scenes.gd
+            "$GODOT" --headless --path "$p" --script res://tools/validate_scenes.gd > "validate-$p.log" 2>&1 || true
+            cat "validate-$p.log"
+            if grep -qE "ERROR|SCRIPT ERROR|VALIDATION FAILED" "validate-$p.log"; then
+              echo "::error::$p: scene validation failed"
+              exit 1
+            fi
+            if ! grep -q "VALIDATION OK" "validate-$p.log"; then
+              echo "::error::$p: scene validator produced no result"
+              exit 1
+            fi
           done
 
       - name: Smoke-run scenes headless
