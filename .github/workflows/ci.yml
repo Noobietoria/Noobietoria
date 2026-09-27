@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.7.1
+
+jobs:
+  build:
+    name: Build & unit tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build (warnings are errors)
+        run: dotnet build Noobietoria.sln -c Release --nologo
+
+      - name: Unit tests (Studio.Core)
+        if: runner.os == 'Linux'
+        run: dotnet test Studio.Tests/Studio.Tests.csproj -c Release --no-build --nologo
+
+      - name: Vulnerable NuGet package audit
+        if: runner.os == 'Linux'
+        run: |
+          out=$(dotnet list Noobietoria.sln package --vulnerable --include-transitive)
+          echo "$out"
+          if echo "$out" | grep -q "has the following vulnerable"; then
+            echo "::error::Vulnerable NuGet packages detected — see log above"
+            exit 1
+          fi
+
+  godot:
+    name: Godot headless checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Godot (${{ env.GODOT_VERSION }} .NET, checksum pinned)
+        run: |
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64.zip"
+          echo "6ca7ff0459f1b806900be683c1b0837c607a9c16834c530dc68c81b9fc3ae1f6  godot.zip" | sha256sum -c -
+          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
+          chmod +x "$RUNNER_TEMP"/godot/*/Godot_v*_mono_linux.x86_64
+          echo "GODOT=$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64/Godot_v${GODOT_VERSION}-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
+
+      - name: Build assemblies
+        run: dotnet build Noobietoria.sln -c Release --nologo
+
+      - name: Import resources (fails on import errors)
+        run: |
+          set -e
+          for p in Client DedicatedServer Studio; do
+            "$GODOT" --headless --path "$p" --import > "import-$p.log" 2>&1 || true
+            cat "import-$p.log"
+            if grep -qE "ERROR|SCRIPT ERROR" "import-$p.log"; then
+              echo "::error::$p: errors during resource import"
+              exit 1
+            fi
+          done
+
+      - name: Validate every scene (missing resources, broken refs)
+        run: |
+          set -e
+          for p in Client DedicatedServer Studio; do
+            "$GODOT" --headless --path "$p" --script res://tools/validate_scenes.gd
+          done
+
+      - name: Smoke-run scenes headless
+        run: |
+          set -e
+          "$GODOT" --headless --path Client --quit-after 30 > smoke-client-menu.log 2>&1
+          "$GODOT" --headless --path Studio --quit-after 30 > smoke-studio.log 2>&1
+          "$GODOT" --headless --path Client res://scenes/Main.tscn --quit-after 30 > smoke-client-game.log 2>&1
+          set +e
+          for f in smoke-client-menu.log smoke-studio.log smoke-client-game.log; do
+            cat "$f"
+            if grep -qE "ERROR|SCRIPT ERROR" "$f"; then
+              echo "::error::Runtime errors in $f"
+              exit 1
+            fi
+          done
+          exit 0
+
+      - name: End-to-end networking test (server + 2 clients)
+        run: |
+          "$GODOT" --headless --path DedicatedServer -- --port 24599 > e2e-server.log 2>&1 &
+          SERVER_PID=$!
+          sleep 10
+          E2E_ROLE=a E2E_PORT=24599 timeout 60 "$GODOT" --headless --path Client res://tests/E2E.tscn > e2e-client-a.log 2>&1 &
+          CLIENT_A_PID=$!
+          sleep 4
+          E2E_ROLE=b E2E_PORT=24599 timeout 60 "$GODOT" --headless --path Client res://tests/E2E.tscn > e2e-client-b.log 2>&1
+          CLIENT_B_EXIT=$?
+          wait "$CLIENT_A_PID"
+          CLIENT_A_EXIT=$?
+          kill "$SERVER_PID" 2>/dev/null || true
+          for f in e2e-server.log e2e-client-a.log e2e-client-b.log; do
+            cat "$f"
+          done
+          if [ "$CLIENT_B_EXIT" -ne 0 ]; then echo "::error::E2E client Beta exited $CLIENT_B_EXIT"; fi
+          if [ "$CLIENT_A_EXIT" -ne 0 ]; then echo "::error::E2E client Alpha exited $CLIENT_A_EXIT"; fi
+          [ "$CLIENT_B_EXIT" -eq 0 ] && [ "$CLIENT_A_EXIT" -eq 0 ]
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-logs
+          path: "*.log"
+          if-no-files-found: ignore

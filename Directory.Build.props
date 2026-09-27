@@ -1,0 +1,10 @@
+<Project>
+
+  <!-- Shared strictness for every project in the solution: the CI pipeline
+       fails on any compiler warning, so keep the build clean locally too. -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

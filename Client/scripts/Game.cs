@@ -46,8 +46,16 @@ public partial class Game : Node3D
         _roster[Multiplayer.GetUniqueId()] = ClientState.UserName;
 
         // Announce ourselves; the server answers with the full roster.
-        RpcId(1, RpcMethod.SubmitHandshake, ClientState.UserName, Net.ProtocolTag);
-        AppendSystemMessage($"Connecting as {ClientState.UserName}…");
+        if (HasLivePeer)
+        {
+            RpcId(1, RpcMethod.SubmitHandshake, ClientState.UserName, Net.ProtocolTag);
+            AppendSystemMessage($"Connecting as {ClientState.UserName}…");
+        }
+        else
+        {
+            // Scene opened standalone (no menu connection) — stay in offline mode.
+            AppendSystemMessage("Offline — start the game from the main menu to connect.");
+        }
     }
 
     public override void _ExitTree()
@@ -88,11 +96,19 @@ public partial class Game : Node3D
     private void AppendSystemMessage(string message)
         => _chatLog.AppendText($"[color=#8a8f98]{message}[/color]\n");
 
+    /// <summary>True when a real (non-offline) multiplayer peer is set.</summary>
+    private bool HasLivePeer => Multiplayer.MultiplayerPeer is not (null or OfflineMultiplayerPeer);
+
     private void OnChatSubmitted(string text)
     {
         text = text.Trim();
         if (text.Length == 0)
             return;
+        if (!HasLivePeer)
+        {
+            AppendSystemMessage("Not connected to a server.");
+            return;
+        }
 
         _chatInput.Clear();
         RpcId(1, RpcMethod.SendChat, text);
