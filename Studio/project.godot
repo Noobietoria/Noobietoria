@@ -12,7 +12,13 @@ config_version=5
 
 config/name="Noobietoria Studio"
 config/features=PackedStringArray("4.7", "C#")
-run/main_scene=""
+run/main_scene="res://scenes/StudioMain.tscn"
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
 
 [dotnet]
 

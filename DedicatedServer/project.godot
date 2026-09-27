@@ -12,7 +12,8 @@ config_version=5
 
 config/name="Noobietoria Dedicated Server"
 config/features=PackedStringArray("4.7", "C#")
-run/main_scene=""
+run/main_scene="res://scenes/Main.tscn"
+config/icon="res://icon.svg"
 
 [dotnet]
 

@@ -30,3 +30,51 @@ Full documentation, Instance hierarchy, and API details are available at the **[
 * **World & Physics:** `InstanceService`, `PhysicsService`, `LightingService`, `CollisionService`, `TweenService`
 * **Gameplay & AI:** `QuestService`, `LeaderboardService`, `PathfindingService`, `DialogueService`
 * **Data & Networking:** `DataStoreService`, `NetworkService`, `HttpService`, `AnalyticsService`
+
+## Project Layout
+
+| Folder | What it is |
+| --- | --- |
+| `Client/` | The playable Godot client: main menu, connection flow, avatar movement with name tags, and chat. |
+| `DedicatedServer/` | Headless authoritative relay (ENet transport + handshake + roster + chat relay), hosting the `ServerDedicatedServer` domain layer. |
+| `Studio/` | UGC tooling: `Studio/Core` holds the `Instance`/`InstanceService` engine tree; `Studio/scenes` is a snap-to-grid block map editor with JSON save/load under `Studio/maps/`. |
+| `Studio.Tests/` | xUnit tests for the Core sources (run in any standard .NET environment, no Godot needed). |
+| `Shared/` | Networking protocol constants (ports, RPC method names) compiled into the Client and DedicatedServer. |
+| `Client/tests/` | Headless end-to-end networking test (`E2E.tscn`). |
+
+## Building & Running
+
+Requirements: [.NET SDK 8+](https://dotnet.microsoft.com/download) and [Godot 4.7 (.NET edition)](https://godotengine.org/download).
+
+```bash
+# Build every module (no Godot install needed for this step)
+dotnet build Noobietoria.sln
+
+# Run the Core unit tests
+dotnet test Studio.Tests/Studio.Tests.csproj
+```
+
+* **Dedicated server**
+  ```bash
+  godot --path DedicatedServer --headless -- --port 24565
+  ```
+* **Client** — open `Client/` in Godot 4.7 (or run `godot --path Client`), pick a name, and connect to `127.0.0.1`. WASD to move, Space to jump, Enter to chat.
+* **Studio** — open `Studio/` (or run `godot --path Studio`). Left-click places a block, right-click removes one, right-drag rotates the camera. Save/load maps as JSON in `Studio/maps/` — try the bundled `sample-map`.
+
+### End-to-end networking test
+
+```bash
+godot --path DedicatedServer --headless -- --port 24599 &
+sleep 3
+E2E_ROLE=a E2E_PORT=24599 godot --path Client --headless res://tests/E2E.tscn &   # Alpha
+sleep 2
+E2E_ROLE=b E2E_PORT=24599 godot --path Client --headless res://tests/E2E.tscn     # Beta, exits 0 on pass
+```
+
+## Architecture Notes
+
+* `Studio/Core` is the engine-agnostic Instance tree; the dedicated server hosts an authoritative `InstanceService` through `ServerDedicatedServer` (domain layer, covered by `Studio.Tests`), while `DedicatedServer/scripts/ServerMain.cs` is the Godot ENet transport that feeds joins/leaves into it.
+* RPC method names live in `Shared/Protocol.cs` as strings, so the separate Godot assemblies stay in sync.
+* Godot requires an `[Rpc]` configuration on **both** the sending and receiving nodes; protocol methods therefore exist on both sides (stub bodies where a side never executes them).
+* The server mirrors the client node layout (`/root/Main/Players/Player-N`) so avatar state RPCs resolve on every peer.
+* Movement sync is client-authoritative (v0): the server owns roster and chat; server-side movement validation can later hook into `DedicatedServer/scripts/PlayerRelay.cs`.
