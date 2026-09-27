@@ -23,6 +23,7 @@
     <Compile Include="../Studio/Core/DataStoreService.cs" />
     <Compile Include="../Studio/Core/HttpService.cs" />
     <Compile Include="../Studio/Core/Instances/**.cs" />
+    <Compile Include="../Studio/Core/Services/**.cs" />
     <Compile Include="../DedicatedServer/ServerDedicatedServer.cs" />
   </ItemGroup>
 </Project>
