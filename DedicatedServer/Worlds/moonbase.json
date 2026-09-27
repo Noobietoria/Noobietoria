@@ -1,0 +1,7 @@
+{
+  "id": "moonbase",
+  "name": "Moonbase Social",
+  "description": "Low-gravity hangout inside the lunar dome.",
+  "spawn": { "x": 0, "y": 1, "z": 0 },
+  "spawnRadius": 4
+}

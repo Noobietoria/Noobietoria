@@ -43,7 +43,7 @@ public partial class E2E : Node
         }
 
         Multiplayer.MultiplayerPeer = peer;
-        Multiplayer.ConnectedToServer += () => RpcId(1, RpcMethod.SubmitHandshake, _name, Net.ProtocolTag);
+        Multiplayer.ConnectedToServer += () => RpcId(1, RpcMethod.SubmitHandshake, _name, Net.ProtocolTag, "");
 
         GetTree().CreateTimer(10.0).Timeout += () =>
         {
@@ -57,7 +57,7 @@ public partial class E2E : Node
 
     // Stubs of client-to-server RPCs — required on the sending side, no-op here.
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
-    private void SubmitHandshake(string playerName, string protocolTag) { }
+    private void SubmitHandshake(string playerName, string protocolTag, string ticket) { }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
     private void SendChat(string text) { }

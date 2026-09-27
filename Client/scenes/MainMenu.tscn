@@ -68,7 +68,51 @@ custom_minimum_size = Vector2(0, 6)
 
 [node name="ConnectButton" type="Button" parent="Center/Panel/Margin/Box"]
 unique_name_in_owner = true
-text = "Connect to server"
+text = "Direct connect (dev)"
+
+[node name="PlatformSeparator" type="HSeparator" parent="Center/Panel/Margin/Box"]
+
+[node name="PlatformTitle" type="Label" parent="Center/Panel/Margin/Box"]
+theme_override_font_sizes/font_size = 16
+text = "NOOBIETORIA PLATFORM"
+horizontal_alignment = 1
+
+[node name="PlatformUserLabel" type="Label" parent="Center/Panel/Margin/Box"]
+text = "Account"
+
+[node name="PlatformUserInput" type="LineEdit" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+max_length = 24
+text = "Newbie"
+placeholder_text = "Platform username"
+
+[node name="PlatformPasswordInput" type="LineEdit" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+max_length = 64
+secret = true
+placeholder_text = "Platform password"
+
+[node name="PlatformUrlInput" type="LineEdit" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+placeholder_text = "Platform URL (empty = offline dev platform)"
+
+[node name="LoginButton" type="Button" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+text = "Log in"
+
+[node name="GamesList" type="ItemList" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 110)
+
+[node name="PlayButton" type="Button" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+text = "Play selected"
+disabled = true
+
+[node name="PlatformStatusLabel" type="Label" parent="Center/Panel/Margin/Box"]
+unique_name_in_owner = true
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+horizontal_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="Center/Panel/Margin/Box"]
 unique_name_in_owner = true
