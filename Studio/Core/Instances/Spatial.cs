@@ -102,4 +102,19 @@ namespace Noobietoria.Studio.Core
             set => SetProperty("Orientation", value);
         }
     }
+
+    /// <summary>
+    /// Spawn point for players/NPCs. A spatial Part, so it has the usual
+    /// Position/Size/Color properties; its Name is what SpawnService refers
+    /// to when assigning spawn locations.
+    ///
+    /// See: https://noobietoria.github.io/Docs/en/api/#instanceservice
+    /// </summary>
+    public class SpawnLocation : Part
+    {
+        public SpawnLocation(string name, string rootContainer)
+            : base(name, "SpawnLocation", rootContainer)
+        {
+        }
+    }
 }
