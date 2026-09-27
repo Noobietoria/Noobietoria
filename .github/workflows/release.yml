@@ -15,6 +15,8 @@ concurrency:
 
 env:
   GODOT_VERSION: 4.7.1
+  GODOT_SHA256: 6ca7ff0459f1b806900be683c1b0837c607a9c16834c530dc68c81b9fc3ae1f6
+  GODOT_MACOS_SHA256: 92cac516baa8ddc7756eeaa38a6d007778a968bfbf188db7c5d6e6ec21c5d52c
   TEMPLATES_SHA256: ef9a708be51ecd974cd7dccdcafd7a1870da3d3e1c24c072bdbb9818c7a7db63
 
 jobs:
@@ -27,7 +29,9 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: |
+            10.0.x
+            8.0.x
 
       - name: Cache export templates
         id: templates
@@ -41,7 +45,7 @@ jobs:
         run: |
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64.zip"
-          echo "${{ env.TEMPLATES_SHA256 }}  godot.zip" | sha256sum -c -
+          echo "${{ env.GODOT_SHA256 }}  godot.zip" | sha256sum -c -
           unzip -q godot.zip -d godot-bin
           chmod +x godot-bin/*/Godot_v*_mono_linux.x86_64
           echo "GODOT=$PWD/godot-bin/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64/Godot_v${GODOT_VERSION}-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
@@ -58,7 +62,7 @@ jobs:
         run: |
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64.zip"
-          echo "${{ env.TEMPLATES_SHA256 }}  godot.zip" | sha256sum -c -
+          echo "${{ env.GODOT_SHA256 }}  godot.zip" | sha256sum -c -
           unzip -q godot.zip -d godot-bin
           chmod +x godot-bin/*/Godot_v*_mono_linux.x86_64
           echo "GODOT=$PWD/godot-bin/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64/Godot_v${GODOT_VERSION}-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
@@ -153,7 +157,9 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: |
+            10.0.x
+            8.0.x
 
       - name: Cache export templates
         id: templates
@@ -167,9 +173,10 @@ jobs:
         run: |
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_macos.universal.zip"
+          echo "${{ env.GODOT_MACOS_SHA256 }}  godot.zip" | sha256sum -c -
           unzip -q godot.zip -d godot-bin
-          chmod +x godot-bin/*/Godot_mono.app/Contents/MacOS/Godot
-          echo "GODOT=$PWD/godot-bin/Godot_v${GODOT_VERSION}-stable_mono_macos.universal/Godot_mono.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
+          chmod +x godot-bin/Godot_mono.app/Contents/MacOS/Godot
+          echo "GODOT=$PWD/godot-bin/Godot_mono.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
 
           curl -fsSL -o templates.tpz \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz"
@@ -184,9 +191,10 @@ jobs:
         run: |
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_macos.universal.zip"
+          echo "${{ env.GODOT_MACOS_SHA256 }}  godot.zip" | sha256sum -c -
           unzip -q godot.zip -d godot-bin
-          chmod +x godot-bin/*/Godot_mono.app/Contents/MacOS/Godot
-          echo "GODOT=$PWD/godot-bin/Godot_v${GODOT_VERSION}-stable_mono_macos.universal/Godot_mono.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
+          chmod +x godot-bin/Godot_mono.app/Contents/MacOS/Godot
+          echo "GODOT=$PWD/godot-bin/Godot_mono.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
 
       - name: Build assemblies
         run: dotnet build Noobietoria.sln -c Release --nologo
