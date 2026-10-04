@@ -40,28 +40,67 @@ public partial class Game : Node3D
         _chatInput.FocusExited += () => ChatFocused = false;
         GetNode<Button>("%SendButton").Pressed += () => OnChatSubmitted(_chatInput.Text);
 
+        Multiplayer.ConnectedToServer += OnConnectedToServer;
+        Multiplayer.ConnectionFailed += OnConnectionFailed;
         Multiplayer.ServerDisconnected += OnServerDisconnected;
 
         SpawnPlayer(Multiplayer.GetUniqueId(), ClientState.UserName);
         _roster[Multiplayer.GetUniqueId()] = ClientState.UserName;
 
-        // Announce ourselves; the server answers with the full roster.
-        if (HasLivePeer)
-        {
-            RpcId(1, RpcMethod.SubmitHandshake, ClientState.UserName, Net.ProtocolTag, ClientState.Ticket);
-            AppendSystemMessage($"Connecting as {ClientState.UserName}…");
-        }
+        if (string.IsNullOrEmpty(ClientState.GameTitle))
+            GetWindow().Title = "Noobietoria";
         else
+            GetWindow().Title = $"Noobietoria — {ClientState.GameTitle}";
+
+        // The portal assigned a place (ClientState.Address/Port); open the
+        // ENet connection here and shake hands once it is established.
+        var peer = new ENetMultiplayerPeer();
+        Error error = peer.CreateClient(ClientState.Address, ClientState.Port);
+        if (error != Error.Ok)
         {
-            // Scene opened standalone (no menu connection) — stay in offline mode.
-            AppendSystemMessage("Offline — start the game from the main menu to connect.");
+            Multiplayer.MultiplayerPeer = new OfflineMultiplayerPeer();
+            ClientState.LastError = $"Could not start the connection: {error}";
+            LeaveToPortal();
+            return;
         }
+        Multiplayer.MultiplayerPeer = peer;
+
+        if (!HasLivePeer)
+        {
+            // Scene opened standalone (no portal assignment) — stay offline.
+            AppendSystemMessage("Offline — play a game from the portal to connect.");
+        }
+    }
+
+    private void OnConnectedToServer()
+    {
+        // Announce ourselves; the server answers with the full roster.
+        RpcId(1, RpcMethod.SubmitHandshake, ClientState.UserName, Net.ProtocolTag, ClientState.Ticket);
+        AppendSystemMessage($"Connecting as {ClientState.UserName}…");
+    }
+
+    private void OnConnectionFailed()
+    {
+        Multiplayer.MultiplayerPeer = new OfflineMultiplayerPeer();
+        ClientState.LastError = "Could not connect to the place — try again from the portal.";
+        LeaveToPortal();
     }
 
     public override void _ExitTree()
     {
+        Multiplayer.ConnectedToServer -= OnConnectedToServer;
+        Multiplayer.ConnectionFailed -= OnConnectionFailed;
         Multiplayer.ServerDisconnected -= OnServerDisconnected;
         ChatFocused = false;
+        GetWindow().Title = "Noobietoria";
+    }
+
+    /// <summary>Back to the portal (or the login screen in dev mode).</summary>
+    private void LeaveToPortal()
+    {
+        GetTree().ChangeSceneToFile(ClientState.HasPlatformSession
+            ? "res://scenes/Home.tscn"
+            : "res://scenes/LoginScreen.tscn");
     }
 
     public override void _Process(double delta)
@@ -117,8 +156,8 @@ public partial class Game : Node3D
     private void OnServerDisconnected()
     {
         Multiplayer.MultiplayerPeer = new OfflineMultiplayerPeer();
-        ClientState.LastError = "Disconnected from the server.";
-        GetTree().ChangeSceneToFile("res://scenes/MainMenu.tscn");
+        ClientState.LastError = "You were disconnected from the server.";
+        LeaveToPortal();
     }
 
     // ---- Stubs of the client-to-server RPCs. Their bodies only ever run on
@@ -155,7 +194,7 @@ public partial class Game : Node3D
     {
         Multiplayer.MultiplayerPeer = new OfflineMultiplayerPeer();
         ClientState.LastError = reason;
-        GetTree().ChangeSceneToFile("res://scenes/MainMenu.tscn");
+        GetTree().ChangeSceneToFile(ClientState.HasPlatformSession ? "res://scenes/Home.tscn" : "res://scenes/LoginScreen.tscn");
     }
 
     [Rpc(CallLocal = false)]
