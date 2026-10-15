@@ -53,7 +53,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let static_dir = find_static_dir();
-    println!("[Noobietoria Web] Serving static assets from: {}", static_dir.display());
+    println!(
+        "[Noobietoria Web] Serving static assets from: {}",
+        static_dir.display()
+    );
 
     let state = AppState::new();
     let serve_dir = ServeDir::new(&static_dir).append_index_html_on_directories(true);
@@ -166,31 +169,56 @@ async fn run_selftest() -> Result<(), Box<dyn std::error::Error>> {
         variables: serde_json::Value::Null,
     };
     let headers = axum::http::HeaderMap::new();
-    let resp = graphql::graphql_handler(axum::extract::State(state.clone()), headers, axum::Json(req)).await;
+    let resp = graphql::graphql_handler(
+        axum::extract::State(state.clone()),
+        headers,
+        axum::Json(req),
+    )
+    .await;
     let json_bytes = serde_json::to_vec(&resp.0)?;
     let val: serde_json::Value = serde_json::from_slice(&json_bytes)?;
-    assert!(val.get("data").is_some(), "GraphQL response must contain data");
+    assert!(
+        val.get("data").is_some(),
+        "GraphQL response must contain data"
+    );
     println!("  [✓] GraphQL me query verified compatible");
 
     // Test GraphQL Login
     let login_req = graphql::GraphQLRequest {
-        query: "mutation($u:String!,$p:String!){ login(usernameOrEmail:$u,password:$p){ token } }".to_owned(),
+        query: "mutation($u:String!,$p:String!){ login(usernameOrEmail:$u,password:$p){ token } }"
+            .to_owned(),
         variables: serde_json::json!({ "u": "PlayerOne", "p": "password123" }),
     };
     let headers2 = axum::http::HeaderMap::new();
-    let login_resp = graphql::graphql_handler(axum::extract::State(state.clone()), headers2, axum::Json(login_req)).await;
+    let login_resp = graphql::graphql_handler(
+        axum::extract::State(state.clone()),
+        headers2,
+        axum::Json(login_req),
+    )
+    .await;
     let login_bytes = serde_json::to_vec(&login_resp.0)?;
     let login_val: serde_json::Value = serde_json::from_slice(&login_bytes)?;
-    let token = login_val["data"]["login"]["token"].as_str().expect("Token should be returned");
+    let token = login_val["data"]["login"]["token"]
+        .as_str()
+        .expect("Token should be returned");
     assert!(token.starts_with("nb_tok_"), "Valid token returned");
     println!("  [✓] GraphQL login mutation verified compatible (issued token)");
 
     // Test Static assets directory
     let static_dir = find_static_dir();
     assert!(static_dir.exists(), "Static directory must exist");
-    assert!(static_dir.join("landing.html").exists(), "landing.html must exist");
-    assert!(static_dir.join("js/api.js").exists(), "js/api.js must exist");
-    println!("  [✓] Static website files located at: {}", static_dir.display());
+    assert!(
+        static_dir.join("landing.html").exists(),
+        "landing.html must exist"
+    );
+    assert!(
+        static_dir.join("js/api.js").exists(),
+        "js/api.js must exist"
+    );
+    println!(
+        "  [✓] Static website files located at: {}",
+        static_dir.display()
+    );
 
     println!("[Noobietoria Web] All closed-source web backend & GraphQL compatibility tests passed successfully!");
     Ok(())

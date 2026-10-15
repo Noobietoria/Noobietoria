@@ -131,7 +131,11 @@ async fn net_actor(cmd_rx: mpsc::Receiver<NetCmd>, msg_tx: Sender<NetMsg>) {
         // Wait for a Connect.
         let (host, port, username) = loop {
             match cmd_rx.try_recv() {
-                Ok(NetCmd::Connect { host, port, username }) => break (host, port, username),
+                Ok(NetCmd::Connect {
+                    host,
+                    port,
+                    username,
+                }) => break (host, port, username),
                 Ok(_) => continue, // stale commands before connect
                 Err(mpsc::TryRecvError::Disconnected) => return,
                 Err(mpsc::TryRecvError::Empty) => {
@@ -220,31 +224,30 @@ async fn net_actor(cmd_rx: mpsc::Receiver<NetCmd>, msg_tx: Sender<NetMsg>) {
 
             // Receive one line from the server (with 50 ms timeout so we can
             // poll commands again).
-            let result = tokio::time::timeout(
-                Duration::from_millis(50),
-                lines.next_line(),
-            )
-            .await;
+            let result = tokio::time::timeout(Duration::from_millis(50), lines.next_line()).await;
 
             match result {
-                Ok(Ok(Some(line))) => {
-                    match serde_json::from_str::<ServerMsg>(&line) {
-                        Ok(ServerMsg::Welcome { server_name, max_players }) => {
-                            let _ = msg_tx.send(NetMsg::Connected {
-                                server_name,
-                                max_players,
-                            });
-                        }
-                        Ok(ServerMsg::Kicked { reason }) => {
-                            let _ = msg_tx.send(NetMsg::Disconnected { reason: reason.clone() });
-                            disconnected = true;
-                        }
-                        Ok(msg) => {
-                            let _ = msg_tx.send(NetMsg::Server(msg));
-                        }
-                        Err(e) => warn!("Parse error: {e} — {line}"),
+                Ok(Ok(Some(line))) => match serde_json::from_str::<ServerMsg>(&line) {
+                    Ok(ServerMsg::Welcome {
+                        server_name,
+                        max_players,
+                    }) => {
+                        let _ = msg_tx.send(NetMsg::Connected {
+                            server_name,
+                            max_players,
+                        });
                     }
-                }
+                    Ok(ServerMsg::Kicked { reason }) => {
+                        let _ = msg_tx.send(NetMsg::Disconnected {
+                            reason: reason.clone(),
+                        });
+                        disconnected = true;
+                    }
+                    Ok(msg) => {
+                        let _ = msg_tx.send(NetMsg::Server(msg));
+                    }
+                    Err(e) => warn!("Parse error: {e} — {line}"),
+                },
                 Ok(Ok(None)) => {
                     // Server closed connection.
                     let _ = msg_tx.send(NetMsg::Disconnected {

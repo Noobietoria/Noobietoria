@@ -303,8 +303,7 @@ async fn main() -> Result<()> {
                             .values()
                             .filter(|c| {
                                 let c = c.read();
-                                target == "*"
-                                    || c.username.as_deref() == Some(target.as_str())
+                                target == "*" || c.username.as_deref() == Some(target.as_str())
                             })
                             .map(|c| c.read().tx.clone())
                             .collect()

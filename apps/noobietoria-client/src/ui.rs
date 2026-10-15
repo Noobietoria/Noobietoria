@@ -79,7 +79,9 @@ fn draw_connect(app: &mut ClientApp, ctx: &egui::Context) {
                         ui.add_space(16.0);
 
                         let btn = egui::Button::new(
-                            RichText::new("  Connect  ").size(15.0).color(Color32::WHITE),
+                            RichText::new("  Connect  ")
+                                .size(15.0)
+                                .color(Color32::WHITE),
                         )
                         .fill(ACCENT)
                         .min_size(Vec2::new(ui.available_width(), 38.0));
@@ -117,13 +119,9 @@ fn draw_connecting(app: &mut ClientApp, ctx: &egui::Context) {
                 ui.label(RichText::new("🔄 Connecting…").size(22.0).color(ACCENT));
                 ui.add_space(8.0);
                 ui.label(
-                    RichText::new(format!(
-                        "{}:{}",
-                        app.host,
-                        app.port_str
-                    ))
-                    .size(13.0)
-                    .color(DIM),
+                    RichText::new(format!("{}:{}", app.host, app.port_str))
+                        .size(13.0)
+                        .color(DIM),
                 );
 
                 // Animated spinner built from a rotating ellipse.
@@ -153,7 +151,11 @@ fn draw_connecting(app: &mut ClientApp, ctx: &egui::Context) {
 fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
     // ── Top bar ───────────────────────────────────────────────────────────────
     egui::TopBottomPanel::top("topbar")
-        .frame(egui::Frame::default().fill(Color32::from_rgb(18, 18, 26)).inner_margin(egui::Margin::symmetric(12, 6)))
+        .frame(
+            egui::Frame::default()
+                .fill(Color32::from_rgb(18, 18, 26))
+                .inner_margin(egui::Margin::symmetric(12, 6)),
+        )
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.label(RichText::new("🟦 NOOBIETORIA").color(ACCENT).strong());
@@ -169,7 +171,13 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
 
                 if let Some(ms) = app.ping_ms {
                     ui.separator();
-                    let color = if ms < 100 { GREEN } else if ms < 300 { YELLOW } else { RED };
+                    let color = if ms < 100 {
+                        GREEN
+                    } else if ms < 300 {
+                        YELLOW
+                    } else {
+                        RED
+                    };
                     ui.label(RichText::new(format!("🏓 {ms} ms")).color(color));
                 }
 
@@ -188,7 +196,11 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
     egui::SidePanel::left("explorer")
         .default_width(260.0)
         .min_width(180.0)
-        .frame(egui::Frame::default().fill(PANEL).inner_margin(egui::Margin::same(8)))
+        .frame(
+            egui::Frame::default()
+                .fill(PANEL)
+                .inner_margin(egui::Margin::same(8)),
+        )
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.label(RichText::new("🌍 World Explorer").color(ACCENT).strong());
@@ -204,21 +216,17 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
 
             egui::ScrollArea::vertical().show(ui, |ui| {
                 if app.snapshot.instances.is_empty() {
-                    ui.label(RichText::new("(waiting for snapshot…)").color(DIM).italics());
+                    ui.label(
+                        RichText::new("(waiting for snapshot…)")
+                            .color(DIM)
+                            .italics(),
+                    );
                 } else {
                     for inst in &app.snapshot.instances.clone() {
-                        let name = inst
-                            .get("name")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("?");
-                        let kind = inst
-                            .get("kind")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("");
-                        let container = inst
-                            .get("container")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("");
+                        let name = inst.get("name").and_then(|v| v.as_str()).unwrap_or("?");
+                        let kind = inst.get("kind").and_then(|v| v.as_str()).unwrap_or("");
+                        let container =
+                            inst.get("container").and_then(|v| v.as_str()).unwrap_or("");
 
                         ui.horizontal(|ui| {
                             ui.label(RichText::new(instance_icon(kind)).size(13.0));
@@ -226,9 +234,7 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                             ui.with_layout(
                                 egui::Layout::right_to_left(egui::Align::Center),
                                 |ui| {
-                                    ui.label(
-                                        RichText::new(container).size(10.0).color(DIM),
-                                    );
+                                    ui.label(RichText::new(container).size(10.0).color(DIM));
                                 },
                             );
                         });
@@ -241,7 +247,11 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
     egui::SidePanel::right("events")
         .default_width(280.0)
         .min_width(200.0)
-        .frame(egui::Frame::default().fill(PANEL).inner_margin(egui::Margin::same(8)))
+        .frame(
+            egui::Frame::default()
+                .fill(PANEL)
+                .inner_margin(egui::Margin::same(8)),
+        )
         .show(ctx, |ui| {
             ui.label(RichText::new("📡 Event Console").color(ACCENT).strong());
             ui.separator();
@@ -253,7 +263,11 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                     .min_size(Vec2::new(ui.available_width(), 26.0)),
             );
             ui.add_space(4.0);
-            ui.label(RichText::new("Args (JSON, comma-separated):").size(11.0).color(DIM));
+            ui.label(
+                RichText::new("Args (JSON, comma-separated):")
+                    .size(11.0)
+                    .color(DIM),
+            );
             ui.add(
                 egui::TextEdit::singleline(&mut app.event_args)
                     .hint_text(r#""Alice", 42"#)
@@ -261,11 +275,9 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
             );
             ui.add_space(6.0);
 
-            let fire_btn = egui::Button::new(
-                RichText::new("🔥 Fire Event").color(Color32::WHITE),
-            )
-            .fill(Color32::from_rgb(180, 90, 30))
-            .min_size(Vec2::new(ui.available_width(), 32.0));
+            let fire_btn = egui::Button::new(RichText::new("🔥 Fire Event").color(Color32::WHITE))
+                .fill(Color32::from_rgb(180, 90, 30))
+                .min_size(Vec2::new(ui.available_width(), 32.0));
 
             if ui.add(fire_btn).clicked() {
                 app.do_fire();
@@ -274,7 +286,11 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
 
     // ── Central panel: Log ────────────────────────────────────────────────────
     egui::CentralPanel::default()
-        .frame(egui::Frame::default().fill(BG).inner_margin(egui::Margin::same(8)))
+        .frame(
+            egui::Frame::default()
+                .fill(BG)
+                .inner_margin(egui::Margin::same(8)),
+        )
         .show(ctx, |ui| {
             ui.label(RichText::new("📋 Log").color(ACCENT).strong());
             ui.separator();

@@ -47,7 +47,10 @@ pub async fn graphql_handler(
     let auth_token = headers
         .get("Authorization")
         .and_then(|h| h.to_str().ok())
-        .and_then(|s| s.strip_prefix("Bearer ").or_else(|| s.strip_prefix("bearer ")))
+        .and_then(|s| {
+            s.strip_prefix("Bearer ")
+                .or_else(|| s.strip_prefix("bearer "))
+        })
         .map(|s| s.trim().to_owned());
 
     let current_user: Option<UserAccount> = if let Some(tok) = &auth_token {
@@ -99,7 +102,10 @@ async fn dispatch(
             .ok_or_else(|| "Missing password".to_owned())?;
 
         let users = state.users.read();
-        let matched = users.values().find(|acc| acc.username == u || acc.email == u).cloned();
+        let matched = users
+            .values()
+            .find(|acc| acc.username == u || acc.email == u)
+            .cloned();
         drop(users);
 
         if let Some(user) = matched {
@@ -118,22 +124,31 @@ async fn dispatch(
     if query.contains("register(") || query.contains("register ") {
         let u = get_str_var(vars, query, &["u", "username"])
             .ok_or_else(|| "Missing username".to_owned())?;
-        let e = get_str_var(vars, query, &["e", "email"]).unwrap_or_else(|| format!("{}@noobietoria.com", u));
+        let e = get_str_var(vars, query, &["e", "email"])
+            .unwrap_or_else(|| format!("{}@noobietoria.com", u));
         let p = get_str_var(vars, query, &["p", "password"])
             .ok_or_else(|| "Missing password".to_owned())?;
 
         // 1. Check content moderation on username
-        let mod_check = state.moderation.check(&u).await.unwrap_or_else(|_| nb_http::ModerationResult {
-            is_safe: true,
-            score: 0.0,
-            flagged: false,
-            label: None,
-            cached: false,
-            raw: Value::Null,
-        });
+        let mod_check =
+            state
+                .moderation
+                .check(&u)
+                .await
+                .unwrap_or_else(|_| nb_http::ModerationResult {
+                    is_safe: true,
+                    score: 0.0,
+                    flagged: false,
+                    label: None,
+                    cached: false,
+                    raw: Value::Null,
+                });
 
         if !mod_check.is_safe {
-            return Err("Username contains inappropriate language or violates community guidelines.".to_owned());
+            return Err(
+                "Username contains inappropriate language or violates community guidelines."
+                    .to_owned(),
+            );
         }
 
         let mut users = state.users.write();
@@ -186,26 +201,36 @@ async fn dispatch(
 
     // ── Mutation: createWorld ─────────────────────────────────────────────────
     if query.contains("createWorld") {
-        let name = get_str_var(vars, query, &["n", "name"]).unwrap_or_else(|| "My Place".to_owned());
+        let name =
+            get_str_var(vars, query, &["n", "name"]).unwrap_or_else(|| "My Place".to_owned());
         let desc = get_str_var(vars, query, &["d", "description"]).unwrap_or_default();
-        let _genre = get_str_var(vars, query, &["g", "genre"]).unwrap_or_else(|| "Adventure".to_owned());
-        let _vis = get_str_var(vars, query, &["v", "visibility"]).unwrap_or_else(|| "public".to_owned());
+        let _genre =
+            get_str_var(vars, query, &["g", "genre"]).unwrap_or_else(|| "Adventure".to_owned());
+        let _vis =
+            get_str_var(vars, query, &["v", "visibility"]).unwrap_or_else(|| "public".to_owned());
 
-        let mod_check = state.moderation.check(&name).await.unwrap_or_else(|_| nb_http::ModerationResult {
-            is_safe: true,
-            score: 0.0,
-            flagged: false,
-            label: None,
-            cached: false,
-            raw: Value::Null,
-        });
+        let mod_check =
+            state
+                .moderation
+                .check(&name)
+                .await
+                .unwrap_or_else(|_| nb_http::ModerationResult {
+                    is_safe: true,
+                    score: 0.0,
+                    flagged: false,
+                    label: None,
+                    cached: false,
+                    raw: Value::Null,
+                });
 
         if !mod_check.is_safe {
             return Err("World title violates safety guidelines.".to_owned());
         }
 
         let place_id = format!("place_{}", uuid::Uuid::new_v4().simple());
-        let creator_name = current_user.map(|u| u.username.clone()).unwrap_or_else(|| "Player".to_owned());
+        let creator_name = current_user
+            .map(|u| u.username.clone())
+            .unwrap_or_else(|| "Player".to_owned());
 
         let new_game = PublishedGame {
             place_id: place_id.clone(),
@@ -265,7 +290,11 @@ async fn dispatch(
     }
 
     // ── Query: me ─────────────────────────────────────────────────────────────
-    if query.contains(" me ") || query.contains(" me{") || query.starts_with("query { me") || query.starts_with("query{me") {
+    if query.contains(" me ")
+        || query.contains(" me{")
+        || query.starts_with("query { me")
+        || query.starts_with("query{me")
+    {
         if let Some(u) = current_user {
             data.insert("me".to_owned(), user_to_gql(u));
         } else {
@@ -303,41 +332,44 @@ async fn dispatch(
     // ── Query: worlds / featuredWorlds / myWorlds ─────────────────────────────
     if query.contains("worlds") || query.contains("featuredWorlds") || query.contains("myWorlds") {
         let games = state.games.read();
-        let list: Vec<Value> = games.values().map(|g| {
-            let playing = (g.visits % 350) + 12;
-            let likes_pct = if g.upvotes + g.downvotes > 0 {
-                (g.upvotes as f64 / (g.upvotes + g.downvotes) as f64 * 100.0).round() as i64
-            } else {
-                95
-            };
-            let emoji = match g.place_id.as_str() {
-                "starter_baseplate" => "🟩",
-                "obby_challenge"    => "🏃",
-                "natural_survival"  => "🌋",
-                _ => "🎮",
-            };
-            let thumb_color = match g.place_id.as_str() {
-                "starter_baseplate" => "#1e3a1e",
-                "obby_challenge"    => "#3b1e3b",
-                "natural_survival"  => "#3b2a1e",
-                _ => "#1e293b",
-            };
+        let list: Vec<Value> = games
+            .values()
+            .map(|g| {
+                let playing = (g.visits % 350) + 12;
+                let likes_pct = if g.upvotes + g.downvotes > 0 {
+                    (g.upvotes as f64 / (g.upvotes + g.downvotes) as f64 * 100.0).round() as i64
+                } else {
+                    95
+                };
+                let emoji = match g.place_id.as_str() {
+                    "starter_baseplate" => "🟩",
+                    "obby_challenge" => "🏃",
+                    "natural_survival" => "🌋",
+                    _ => "🎮",
+                };
+                let thumb_color = match g.place_id.as_str() {
+                    "starter_baseplate" => "#1e3a1e",
+                    "obby_challenge" => "#3b1e3b",
+                    "natural_survival" => "#3b2a1e",
+                    _ => "#1e293b",
+                };
 
-            json!({
-                "id": g.place_id,
-                "name": g.name,
-                "description": g.description,
-                "creator": {
-                    "username": g.creator_name,
-                },
-                "genre": "Adventure",
-                "visibility": "public",
-                "playing": playing,
-                "likesPct": likes_pct,
-                "thumbColor": thumb_color,
-                "emoji": emoji,
+                json!({
+                    "id": g.place_id,
+                    "name": g.name,
+                    "description": g.description,
+                    "creator": {
+                        "username": g.creator_name,
+                    },
+                    "genre": "Adventure",
+                    "visibility": "public",
+                    "playing": playing,
+                    "likesPct": likes_pct,
+                    "thumbColor": thumb_color,
+                    "emoji": emoji,
+                })
             })
-        }).collect();
+            .collect();
 
         if query.contains("featuredWorlds") {
             data.insert("featuredWorlds".to_owned(), json!(list));

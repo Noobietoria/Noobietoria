@@ -22,7 +22,11 @@ pub fn render_explorer(app: &mut StudioApp, ui: &mut Ui) {
         ui.heading("Explorer");
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             let n = app.world.len();
-            ui.label(RichText::new(format!("{n}")).size(10.0).color(Color32::DARK_GRAY));
+            ui.label(
+                RichText::new(format!("{n}"))
+                    .size(10.0)
+                    .color(Color32::DARK_GRAY),
+            );
         });
     });
     ui.separator();
@@ -48,7 +52,10 @@ enum ExplorerAction {
     Duplicate(String),
     Focus(String),
     OpenScript(String),
-    QuickAdd { kind: InstanceType, container: Container },
+    QuickAdd {
+        kind: InstanceType,
+        container: Container,
+    },
 }
 
 fn apply_action(app: &mut StudioApp, act: ExplorerAction) {
@@ -70,7 +77,9 @@ fn apply_action(app: &mut StudioApp, act: ExplorerAction) {
         }
 
         ExplorerAction::Duplicate(guid) => {
-            let Ok(orig) = app.world.by_guid(&guid) else { return; };
+            let Ok(orig) = app.world.by_guid(&guid) else {
+                return;
+            };
             let name = format!("{}_copy", orig.name);
             let kind = orig.kind;
             let container = orig.parent;
@@ -104,7 +113,10 @@ fn apply_action(app: &mut StudioApp, act: ExplorerAction) {
                 app.script_buffer = inst.properties.source.clone();
                 app.script_editor_open = true;
                 app.status_text = format!("Editing script: {}", inst.name);
-                app.log(LogLevel::Info, format!("Opened script in Editor: {}", inst.name));
+                app.log(
+                    LogLevel::Info,
+                    format!("Opened script in Editor: {}", inst.name),
+                );
             }
         }
 
@@ -121,7 +133,10 @@ fn apply_action(app: &mut StudioApp, act: ExplorerAction) {
                 Ok(id) => {
                     app.selected_guid = Some(id.as_str().to_owned());
                     app.status_text = format!("Added {} to {container}", kind.as_str());
-                    app.log(LogLevel::Info, format!("Quick-added {} to {container}", kind.as_str()));
+                    app.log(
+                        LogLevel::Info,
+                        format!("Quick-added {} to {container}", kind.as_str()),
+                    );
                 }
                 Err(e) => app.log(LogLevel::Error, format!("Add failed: {e}")),
             }
@@ -162,7 +177,11 @@ fn render_container(
                 .collect();
 
             if items.is_empty() {
-                ui.label(RichText::new("  (empty)").italics().color(Color32::DARK_GRAY));
+                ui.label(
+                    RichText::new("  (empty)")
+                        .italics()
+                        .color(Color32::DARK_GRAY),
+                );
             } else {
                 for (guid, name, kind) in items {
                     instance_row(app, ui, guid, name, kind, action);
@@ -183,11 +202,11 @@ fn quick_add_strip(ui: &mut Ui, container: Container, action: &mut Option<Explor
         ui.label(RichText::new("➕").color(Color32::DARK_GRAY).small());
         for kind in allowed {
             let resp = ui
-                .add(egui::Button::new(
-                    RichText::new(instance_type_icon(kind)).size(14.0),
+                .add(
+                    egui::Button::new(RichText::new(instance_type_icon(kind)).size(14.0))
+                        .frame(false)
+                        .min_size(egui::Vec2::new(20.0, 16.0)),
                 )
-                .frame(false)
-                .min_size(egui::Vec2::new(20.0, 16.0)))
                 .on_hover_text(format!("Add {}", kind.as_str()));
             if resp.clicked() {
                 *action = Some(ExplorerAction::QuickAdd { kind, container });
@@ -213,7 +232,11 @@ fn instance_row(
         let sel = ui.selectable_label(
             is_sel,
             RichText::new(format!("{icon} {name}"))
-                .color(if is_sel { Color32::WHITE } else { Color32::LIGHT_GRAY })
+                .color(if is_sel {
+                    Color32::WHITE
+                } else {
+                    Color32::LIGHT_GRAY
+                })
                 .size(13.0),
         );
 
@@ -259,7 +282,11 @@ fn instance_row(
         // Inline action buttons when selected.
         if is_sel {
             if kind.is_script() {
-                if ui.small_button("📜").on_hover_text("Open in Editor").clicked() {
+                if ui
+                    .small_button("📜")
+                    .on_hover_text("Open in Editor")
+                    .clicked()
+                {
                     *action = Some(ExplorerAction::OpenScript(guid.clone()));
                 }
             }
@@ -280,35 +307,34 @@ fn instance_row(
 
 fn container_style(c: Container) -> (&'static str, Color32) {
     match c {
-        Container::Workspace            => ("🌐", Color32::from_rgb(130, 190, 255)),
-        Container::ReplicatedStorage    => ("📦", Color32::from_rgb(140, 230, 140)),
-        Container::ServerStorage        => ("🔒", Color32::from_rgb(255, 180, 80)),
+        Container::Workspace => ("🌐", Color32::from_rgb(130, 190, 255)),
+        Container::ReplicatedStorage => ("📦", Color32::from_rgb(140, 230, 140)),
+        Container::ServerStorage => ("🔒", Color32::from_rgb(255, 180, 80)),
         Container::StarterPlayerScripts => ("💻", Color32::from_rgb(190, 160, 255)),
-        Container::ScreenGui            => ("🖥",  Color32::from_rgb(255, 220, 100)),
+        Container::ScreenGui => ("🖥", Color32::from_rgb(255, 220, 100)),
     }
 }
 
 pub fn instance_type_icon(kind: InstanceType) -> &'static str {
     match kind {
-        InstanceType::Part           => "🧊",
-        InstanceType::TrussPart      => "🪜",
-        InstanceType::Attachment     => "📍",
-        InstanceType::Model          => "📁",
-        InstanceType::SpawnLocation  => "🚩",
-        InstanceType::Trigger        => "⚡",
-        InstanceType::ScreenGui      => "🖥",
-        InstanceType::Frame          => "🔲",
-        InstanceType::TextLabel      => "🔤",
-        InstanceType::TextButton     => "🔘",
-        InstanceType::ImageLabel     => "🖼",
-        InstanceType::ImageButton    => "🖻",
-        InstanceType::TextBox        => "📝",
+        InstanceType::Part => "🧊",
+        InstanceType::TrussPart => "🪜",
+        InstanceType::Attachment => "📍",
+        InstanceType::Model => "📁",
+        InstanceType::SpawnLocation => "🚩",
+        InstanceType::Trigger => "⚡",
+        InstanceType::ScreenGui => "🖥",
+        InstanceType::Frame => "🔲",
+        InstanceType::TextLabel => "🔤",
+        InstanceType::TextButton => "🔘",
+        InstanceType::ImageLabel => "🖼",
+        InstanceType::ImageButton => "🖻",
+        InstanceType::TextBox => "📝",
         InstanceType::ScrollingFrame => "📜",
-        InstanceType::ServerScript   => "📜",
-        InstanceType::ClientScript   => "💻",
-        InstanceType::ModuleScript   => "🧩",
-        InstanceType::NetworkEvent   => "📡",
-        InstanceType::Audio          => "🔊",
+        InstanceType::ServerScript => "📜",
+        InstanceType::ClientScript => "💻",
+        InstanceType::ModuleScript => "🧩",
+        InstanceType::NetworkEvent => "📡",
+        InstanceType::Audio => "🔊",
     }
 }
-

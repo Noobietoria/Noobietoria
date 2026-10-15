@@ -36,7 +36,11 @@ pub fn render_ribbon(app: &mut StudioApp, ui: &mut Ui) {
         if ui
             .button(
                 RichText::new("📜 Script Editor")
-                    .color(if app.script_editor_open { Color32::WHITE } else { Color32::from_rgb(100, 215, 255) })
+                    .color(if app.script_editor_open {
+                        Color32::WHITE
+                    } else {
+                        Color32::from_rgb(100, 215, 255)
+                    })
                     .strong(),
             )
             .clicked()
@@ -129,11 +133,7 @@ fn render_edit_menu(app: &mut StudioApp, ui: &mut Ui) {
         // Select All
         if ui.button("Select All (Ctrl+A)").clicked() {
             // Set selection to first instance if any
-            let first = app
-                .world
-                .iter()
-                .next()
-                .map(|i| i.id.as_str().to_owned());
+            let first = app.world.iter().next().map(|i| i.id.as_str().to_owned());
             app.selected_guid = first;
             ui.close();
         }
@@ -143,11 +143,9 @@ fn render_edit_menu(app: &mut StudioApp, ui: &mut Ui) {
             if let Some(guid) = &app.selected_guid.clone() {
                 if let Ok(inst) = app.world.by_guid(guid) {
                     let p = inst.properties.position;
-                    app.camera.target =
-                        nb_types::Vector3::new(p.x, p.y, p.z);
+                    app.camera.target = nb_types::Vector3::new(p.x, p.y, p.z);
                     app.camera.distance = 15.0;
-                    app.status_text =
-                        format!("Focused on {}", inst.name);
+                    app.status_text = format!("Focused on {}", inst.name);
                 }
             }
             ui.close();
@@ -299,7 +297,10 @@ fn add_item(
                 );
             }
             Err(e) => {
-                app.log(LogLevel::Error, format!("Cannot create {}: {e}", kind.as_str()));
+                app.log(
+                    LogLevel::Error,
+                    format!("Cannot create {}: {e}", kind.as_str()),
+                );
             }
         }
         ui.close();
@@ -310,11 +311,18 @@ fn add_item(
 
 fn render_tools(app: &mut StudioApp, ui: &mut Ui) {
     ui.label(RichText::new("Tools:").strong());
-    for mode in [ToolMode::Select, ToolMode::Move, ToolMode::Scale, ToolMode::Rotate] {
+    for mode in [
+        ToolMode::Select,
+        ToolMode::Move,
+        ToolMode::Scale,
+        ToolMode::Rotate,
+    ] {
         let active = app.tool_mode == mode;
-        let text = RichText::new(format!("{} {}", mode.icon(), mode.name())).color(
-            if active { Color32::WHITE } else { Color32::LIGHT_GRAY },
-        );
+        let text = RichText::new(format!("{} {}", mode.icon(), mode.name())).color(if active {
+            Color32::WHITE
+        } else {
+            Color32::LIGHT_GRAY
+        });
         if ui.selectable_label(active, text).clicked() {
             app.tool_mode = mode;
             app.status_text = format!("Tool: {}", mode.name());
@@ -329,13 +337,23 @@ fn render_playtest(app: &mut StudioApp, ui: &mut Ui) {
     match app.playtest {
         PlaytestState::Stopped => {
             if ui
-                .button(RichText::new("▶ Play").color(Color32::from_rgb(100, 255, 120)).strong())
+                .button(
+                    RichText::new("▶ Play")
+                        .color(Color32::from_rgb(100, 255, 120))
+                        .strong(),
+                )
                 .clicked()
             {
                 app.playtest = PlaytestState::PlayingSolo;
                 app.status_text = "Playtest Solo Started".to_owned();
-                app.log(LogLevel::Info, "--- Starting Playtest (Solo Client + Server) ---");
-                app.log(LogLevel::Info, "Client connected to local session. Character spawned.");
+                app.log(
+                    LogLevel::Info,
+                    "--- Starting Playtest (Solo Client + Server) ---",
+                );
+                app.log(
+                    LogLevel::Info,
+                    "Client connected to local session. Character spawned.",
+                );
             }
             if ui.button("▶ Run").clicked() {
                 app.playtest = PlaytestState::RunningServer;
@@ -345,12 +363,19 @@ fn render_playtest(app: &mut StudioApp, ui: &mut Ui) {
         }
         PlaytestState::PlayingSolo | PlaytestState::RunningServer => {
             if ui
-                .button(RichText::new("⏹ Stop").color(Color32::from_rgb(255, 100, 100)).strong())
+                .button(
+                    RichText::new("⏹ Stop")
+                        .color(Color32::from_rgb(255, 100, 100))
+                        .strong(),
+                )
                 .clicked()
             {
                 app.playtest = PlaytestState::Stopped;
                 app.status_text = "Simulation Stopped".to_owned();
-                app.log(LogLevel::Info, "--- Simulation Stopped. World reset to edit state. ---");
+                app.log(
+                    LogLevel::Info,
+                    "--- Simulation Stopped. World reset to edit state. ---",
+                );
             }
         }
     }
@@ -372,7 +397,9 @@ fn render_grid_controls(app: &mut StudioApp, ui: &mut Ui) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-fn light_grey() -> Rgba { Rgba::new(163.0, 162.0, 165.0, 255.0) }
+fn light_grey() -> Rgba {
+    Rgba::new(163.0, 162.0, 165.0, 255.0)
+}
 
 fn save_place_action(app: &mut StudioApp) {
     let path = app.current_path.clone().unwrap_or_else(|| {

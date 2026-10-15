@@ -124,7 +124,11 @@ impl App for StudioApp {
                             close_requested = true;
                         }
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            ui.label(RichText::new("Luau 5.1 Intellisense Active").color(Color32::from_rgb(0, 162, 255)).small());
+                            ui.label(
+                                RichText::new("Luau 5.1 Intellisense Active")
+                                    .color(Color32::from_rgb(0, 162, 255))
+                                    .small(),
+                            );
                         });
                     });
                     ui.separator();
@@ -152,7 +156,10 @@ impl App for StudioApp {
                         inst.properties.source = self.script_buffer.clone();
                         let name = inst.name.clone();
                         self.status_text = format!("Saved script: {name}");
-                        self.log(crate::state::LogLevel::Info, format!("Saved changes to {name}"));
+                        self.log(
+                            crate::state::LogLevel::Info,
+                            format!("Saved changes to {name}"),
+                        );
                     }
                 }
             }

@@ -53,13 +53,25 @@ pub enum LogKind {
 
 impl LogEntry {
     pub fn system(text: impl Into<String>) -> Self {
-        Self { kind: LogKind::System, text: text.into(), at: Instant::now() }
+        Self {
+            kind: LogKind::System,
+            text: text.into(),
+            at: Instant::now(),
+        }
     }
     pub fn event(text: impl Into<String>) -> Self {
-        Self { kind: LogKind::Event, text: text.into(), at: Instant::now() }
+        Self {
+            kind: LogKind::Event,
+            text: text.into(),
+            at: Instant::now(),
+        }
     }
     pub fn error(text: impl Into<String>) -> Self {
-        Self { kind: LogKind::Error, text: text.into(), at: Instant::now() }
+        Self {
+            kind: LogKind::Error,
+            text: text.into(),
+            at: Instant::now(),
+        }
     }
 }
 
@@ -133,7 +145,10 @@ impl ClientApp {
     pub fn poll_net(&mut self) {
         while let Ok(msg) = self.net.msg_rx.try_recv() {
             match msg {
-                NetMsg::Connected { server_name, max_players } => {
+                NetMsg::Connected {
+                    server_name,
+                    max_players,
+                } => {
                     self.server_name = server_name.clone();
                     self.max_players = max_players;
                     self.screen = Screen::Lobby;
@@ -143,7 +158,8 @@ impl ClientApp {
                 NetMsg::Disconnected { reason } => {
                     self.screen = Screen::Connect;
                     self.connect_error = Some(reason.clone());
-                    self.log.push(LogEntry::error(format!("Disconnected: {reason}")));
+                    self.log
+                        .push(LogEntry::error(format!("Disconnected: {reason}")));
                 }
                 NetMsg::Error(e) => {
                     if self.screen == Screen::Connecting {
@@ -201,8 +217,8 @@ impl ClientApp {
         if event.is_empty() {
             return;
         }
-        let args: Vec<serde_json::Value> = serde_json::from_str(&format!("[{}]", self.event_args))
-            .unwrap_or_default();
+        let args: Vec<serde_json::Value> =
+            serde_json::from_str(&format!("[{}]", self.event_args)).unwrap_or_default();
         self.log.push(LogEntry::event(format!("→ {event}(…)")));
         let _ = self.net.cmd_tx.send(NetCmd::Fire { event, args });
     }

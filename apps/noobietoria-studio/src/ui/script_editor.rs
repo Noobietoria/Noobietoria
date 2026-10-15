@@ -9,15 +9,15 @@ use egui::text::LayoutJob;
 use egui::{Color32, FontId, Key, RichText, TextFormat, Ui};
 
 // ── Color Theme (VSCode Dark+ style) ───────────────────────────────────────────
-const COLOR_KEYWORD: Color32   = Color32::from_rgb(197, 134, 192); // #C586C0 purple
-const COLOR_GLOBAL: Color32    = Color32::from_rgb(78, 201, 176);  // #4EC9B0 cyan/teal
-const COLOR_FUNCTION: Color32  = Color32::from_rgb(220, 220, 170); // #DCDCAA light yellow
-const COLOR_PROPERTY: Color32  = Color32::from_rgb(156, 220, 254); // #9CDCFE sky blue
-const COLOR_STRING: Color32    = Color32::from_rgb(206, 145, 120); // #CE9178 warm orange
-const COLOR_NUMBER: Color32    = Color32::from_rgb(181, 206, 168); // #B5CEA8 sage green
-const COLOR_COMMENT: Color32   = Color32::from_rgb(106, 153, 85);  // #6A9955 green
-const COLOR_OPERATOR: Color32  = Color32::from_rgb(212, 212, 212); // #D4D4D4 light gray
-const COLOR_DEFAULT: Color32   = Color32::from_rgb(220, 220, 220); // #DCDCDC off-white
+const COLOR_KEYWORD: Color32 = Color32::from_rgb(197, 134, 192); // #C586C0 purple
+const COLOR_GLOBAL: Color32 = Color32::from_rgb(78, 201, 176); // #4EC9B0 cyan/teal
+const COLOR_FUNCTION: Color32 = Color32::from_rgb(220, 220, 170); // #DCDCAA light yellow
+const COLOR_PROPERTY: Color32 = Color32::from_rgb(156, 220, 254); // #9CDCFE sky blue
+const COLOR_STRING: Color32 = Color32::from_rgb(206, 145, 120); // #CE9178 warm orange
+const COLOR_NUMBER: Color32 = Color32::from_rgb(181, 206, 168); // #B5CEA8 sage green
+const COLOR_COMMENT: Color32 = Color32::from_rgb(106, 153, 85); // #6A9955 green
+const COLOR_OPERATOR: Color32 = Color32::from_rgb(212, 212, 212); // #D4D4D4 light gray
+const COLOR_DEFAULT: Color32 = Color32::from_rgb(220, 220, 220); // #DCDCDC off-white
 
 // ── Tokenizer / Highlighter ───────────────────────────────────────────────────
 
@@ -91,7 +91,9 @@ pub fn highlight_lua(code: &str) -> LayoutJob {
         }
 
         // Numbers: digits, 0x hex, decimal point
-        if bytes[i].is_ascii_digit() || (bytes[i] == b'.' && i + 1 < len && bytes[i + 1].is_ascii_digit()) {
+        if bytes[i].is_ascii_digit()
+            || (bytes[i] == b'.' && i + 1 < len && bytes[i + 1].is_ascii_digit())
+        {
             let start = i;
             if bytes[i] == b'0' && i + 1 < len && (bytes[i + 1] == b'x' || bytes[i + 1] == b'X') {
                 i += 2;
@@ -99,7 +101,13 @@ pub fn highlight_lua(code: &str) -> LayoutJob {
                     i += 1;
                 }
             } else {
-                while i < len && (bytes[i].is_ascii_digit() || bytes[i] == b'.' || bytes[i] == b'e' || bytes[i] == b'E' || bytes[i] == b'_') {
+                while i < len
+                    && (bytes[i].is_ascii_digit()
+                        || bytes[i] == b'.'
+                        || bytes[i] == b'e'
+                        || bytes[i] == b'E'
+                        || bytes[i] == b'_')
+                {
                     i += 1;
                 }
             }
@@ -127,26 +135,37 @@ pub fn highlight_lua(code: &str) -> LayoutJob {
             }
 
             let color = match word {
-                "local" | "function" | "end" | "if" | "then" | "else" | "elseif"
-                | "return" | "for" | "in" | "do" | "while" | "repeat" | "until"
-                | "break" | "continue" | "not" | "and" | "or" | "true" | "false"
-                | "nil" | "export" | "type" => COLOR_KEYWORD,
-
-                "game" | "workspace" | "script" | "Instance" | "Vector3" | "Color3"
-                | "CFrame" | "TweenInfo" | "RaycastParams" | "UDim2" | "UDim" | "math"
-                | "string" | "table" | "task" | "coroutine" | "os" | "debug" | "utf8" => {
-                    COLOR_GLOBAL
+                "local" | "function" | "end" | "if" | "then" | "else" | "elseif" | "return"
+                | "for" | "in" | "do" | "while" | "repeat" | "until" | "break" | "continue"
+                | "not" | "and" | "or" | "true" | "false" | "nil" | "export" | "type" => {
+                    COLOR_KEYWORD
                 }
 
-                "print" | "warn" | "error" | "require" | "assert" | "pcall" | "ypcall"
-                | "typeof" | "pairs" | "ipairs" | "next" | "tonumber"
-                | "tostring" | "select" | "rawget" | "rawset" | "rawequal" | "setmetatable"
-                | "getmetatable" => COLOR_FUNCTION,
+                "game" | "workspace" | "script" | "Instance" | "Vector3" | "Color3" | "CFrame"
+                | "TweenInfo" | "RaycastParams" | "UDim2" | "UDim" | "math" | "string"
+                | "table" | "task" | "coroutine" | "os" | "debug" | "utf8" => COLOR_GLOBAL,
 
-                "Players" | "Lighting" | "ReplicatedStorage" | "ServerStorage"
-                | "ServerScriptService" | "StarterGui" | "StarterPack" | "StarterPlayer"
-                | "SoundService" | "TweenService" | "RunService" | "UserInputService"
-                | "HttpService" | "Debris" | "TeleportService" => COLOR_GLOBAL,
+                "print" | "warn" | "error" | "require" | "assert" | "pcall" | "ypcall"
+                | "typeof" | "pairs" | "ipairs" | "next" | "tonumber" | "tostring" | "select"
+                | "rawget" | "rawset" | "rawequal" | "setmetatable" | "getmetatable" => {
+                    COLOR_FUNCTION
+                }
+
+                "Players"
+                | "Lighting"
+                | "ReplicatedStorage"
+                | "ServerStorage"
+                | "ServerScriptService"
+                | "StarterGui"
+                | "StarterPack"
+                | "StarterPlayer"
+                | "SoundService"
+                | "TweenService"
+                | "RunService"
+                | "UserInputService"
+                | "HttpService"
+                | "Debris"
+                | "TeleportService" => COLOR_GLOBAL,
 
                 _ if prev_char == Some(b':') => COLOR_FUNCTION,
                 _ if prev_char == Some(b'.') => COLOR_PROPERTY,
@@ -182,25 +201,25 @@ pub enum IntellisenseKind {
 impl IntellisenseKind {
     pub fn icon(&self) -> &'static str {
         match self {
-            Self::Keyword  => "🔑",
+            Self::Keyword => "🔑",
             Self::Function => "ƒ ",
-            Self::Method   => "⚡",
+            Self::Method => "⚡",
             Self::Property => "🏷 ",
-            Self::Global   => "🌐",
-            Self::Service  => "📦",
-            Self::Snippet  => "✂ ",
+            Self::Global => "🌐",
+            Self::Service => "📦",
+            Self::Snippet => "✂ ",
         }
     }
 
     pub fn color(&self) -> Color32 {
         match self {
-            Self::Keyword  => COLOR_KEYWORD,
+            Self::Keyword => COLOR_KEYWORD,
             Self::Function => COLOR_FUNCTION,
-            Self::Method   => Color32::from_rgb(255, 215, 0),
+            Self::Method => Color32::from_rgb(255, 215, 0),
             Self::Property => COLOR_PROPERTY,
-            Self::Global   => COLOR_GLOBAL,
-            Self::Service  => Color32::from_rgb(100, 200, 255),
-            Self::Snippet  => Color32::from_rgb(255, 160, 100),
+            Self::Global => COLOR_GLOBAL,
+            Self::Service => Color32::from_rgb(100, 200, 255),
+            Self::Snippet => Color32::from_rgb(255, 160, 100),
         }
     }
 }
@@ -687,7 +706,12 @@ pub fn render_code_editor(
         .show(ui, |ui| {
             // Header bar
             ui.horizontal(|ui| {
-                ui.label(RichText::new("📜 Luau Source").strong().size(12.0).color(Color32::LIGHT_GRAY));
+                ui.label(
+                    RichText::new("📜 Luau Source")
+                        .strong()
+                        .size(12.0)
+                        .color(Color32::LIGHT_GRAY),
+                );
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     let lines = source.lines().count().max(1);
                     ui.label(
@@ -737,10 +761,11 @@ pub fn render_code_editor(
             }
 
             // Editor multiline with syntax-highlighting layouter
-            let mut layouter = |ui: &Ui, text: &dyn egui::text_edit::TextBuffer, _wrap_width: f32| {
-                let job = highlight_lua(text.as_str());
-                ui.fonts_mut(|f| f.layout_job(job))
-            };
+            let mut layouter =
+                |ui: &Ui, text: &dyn egui::text_edit::TextBuffer, _wrap_width: f32| {
+                    let job = highlight_lua(text.as_str());
+                    ui.fonts_mut(|f| f.layout_job(job))
+                };
 
             let output = egui::TextEdit::multiline(source)
                 .code_editor()
@@ -806,7 +831,11 @@ pub fn render_code_editor(
                                                 is_selected,
                                                 RichText::new(item.label)
                                                     .strong()
-                                                    .color(if is_selected { Color32::WHITE } else { Color32::LIGHT_GRAY })
+                                                    .color(if is_selected {
+                                                        Color32::WHITE
+                                                    } else {
+                                                        Color32::LIGHT_GRAY
+                                                    })
                                                     .size(12.0),
                                             );
                                             ui.label(
@@ -818,7 +847,8 @@ pub fn render_code_editor(
 
                                             if label_btn.clicked() {
                                                 let start = state.word_start.min(source.len());
-                                                let end = (start + state.filter_word.len()).min(source.len());
+                                                let end = (start + state.filter_word.len())
+                                                    .min(source.len());
                                                 source.replace_range(start..end, item.insert_text);
                                                 state.filter_word.clear();
                                                 state.is_active = false;

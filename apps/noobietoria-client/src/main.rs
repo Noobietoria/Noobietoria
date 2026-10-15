@@ -134,8 +134,6 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Noobietoria Client",
         native_options,
-        Box::new(move |cc| {
-            Ok(Box::new(ClientApp::new(cc, host, port, username)))
-        }),
+        Box::new(move |cc| Ok(Box::new(ClientApp::new(cc, host, port, username)))),
     )
 }

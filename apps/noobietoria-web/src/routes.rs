@@ -108,7 +108,10 @@ pub async fn register_handler(
 
     users.insert(payload.username.clone(), user);
     drop(users);
-    state.tokens.write().insert(token.clone(), payload.username.clone());
+    state
+        .tokens
+        .write()
+        .insert(token.clone(), payload.username.clone());
 
     (
         StatusCode::CREATED,
@@ -133,7 +136,10 @@ pub async fn login_handler(
             let user_id = user.user_id;
             let token = format!("nb_jwt_{}", user_id);
             drop(users);
-            state.tokens.write().insert(token.clone(), payload.username.clone());
+            state
+                .tokens
+                .write()
+                .insert(token.clone(), payload.username.clone());
 
             return (
                 StatusCode::OK,

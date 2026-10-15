@@ -81,7 +81,12 @@ fn render_instance_properties(
         });
         ui.horizontal(|ui| {
             ui.label("GUID:");
-            ui.label(RichText::new(instance.id.as_str()).monospace().weak().small());
+            ui.label(
+                RichText::new(instance.id.as_str())
+                    .monospace()
+                    .weak()
+                    .small(),
+            );
         });
     });
 
@@ -93,32 +98,75 @@ fn render_instance_properties(
             // Position
             ui.label(RichText::new("Position (X Y Z):").weak().small());
             ui.horizontal(|ui| {
-                ui.add(DragValue::new(&mut instance.properties.position.x).prefix("X ").speed(0.5));
-                ui.add(DragValue::new(&mut instance.properties.position.y).prefix("Y ").speed(0.5));
-                ui.add(DragValue::new(&mut instance.properties.position.z).prefix("Z ").speed(0.5));
+                ui.add(
+                    DragValue::new(&mut instance.properties.position.x)
+                        .prefix("X ")
+                        .speed(0.5),
+                );
+                ui.add(
+                    DragValue::new(&mut instance.properties.position.y)
+                        .prefix("Y ")
+                        .speed(0.5),
+                );
+                ui.add(
+                    DragValue::new(&mut instance.properties.position.z)
+                        .prefix("Z ")
+                        .speed(0.5),
+                );
             });
 
             // Orientation
             ui.label(RichText::new("Orientation deg (X Y Z):").weak().small());
             ui.horizontal(|ui| {
-                ui.add(DragValue::new(&mut instance.properties.orientation.x).prefix("X ").speed(1.0));
-                ui.add(DragValue::new(&mut instance.properties.orientation.y).prefix("Y ").speed(1.0));
-                ui.add(DragValue::new(&mut instance.properties.orientation.z).prefix("Z ").speed(1.0));
+                ui.add(
+                    DragValue::new(&mut instance.properties.orientation.x)
+                        .prefix("X ")
+                        .speed(1.0),
+                );
+                ui.add(
+                    DragValue::new(&mut instance.properties.orientation.y)
+                        .prefix("Y ")
+                        .speed(1.0),
+                );
+                ui.add(
+                    DragValue::new(&mut instance.properties.orientation.z)
+                        .prefix("Z ")
+                        .speed(1.0),
+                );
             });
 
             // Size
             ui.label(RichText::new("Size (X Y Z):").weak().small());
             ui.horizontal(|ui| {
-                ui.add(DragValue::new(&mut instance.properties.size.x).prefix("X ").speed(0.25).range(0.05..=f64::MAX));
-                ui.add(DragValue::new(&mut instance.properties.size.y).prefix("Y ").speed(0.25).range(0.05..=f64::MAX));
-                ui.add(DragValue::new(&mut instance.properties.size.z).prefix("Z ").speed(0.25).range(0.05..=f64::MAX));
+                ui.add(
+                    DragValue::new(&mut instance.properties.size.x)
+                        .prefix("X ")
+                        .speed(0.25)
+                        .range(0.05..=f64::MAX),
+                );
+                ui.add(
+                    DragValue::new(&mut instance.properties.size.y)
+                        .prefix("Y ")
+                        .speed(0.25)
+                        .range(0.05..=f64::MAX),
+                );
+                ui.add(
+                    DragValue::new(&mut instance.properties.size.z)
+                        .prefix("Z ")
+                        .speed(0.25)
+                        .range(0.05..=f64::MAX),
+                );
             });
 
             // TrussPart extras
             if instance.kind == InstanceType::TrussPart {
                 ui.horizontal(|ui| {
                     ui.label("ClimbSpeed (studs/s):");
-                    ui.add(DragValue::new(&mut instance.properties.climb_speed).speed(0.5).range(0.0..=200.0));
+                    ui.add(
+                        DragValue::new(&mut instance.properties.climb_speed)
+                            .speed(0.5)
+                            .range(0.0..=200.0),
+                    );
                 });
             }
         });
@@ -155,8 +203,18 @@ fn render_instance_properties(
             // Size (XY for GUI)
             ui.label(RichText::new("Size (W H):").weak().small());
             ui.horizontal(|ui| {
-                ui.add(DragValue::new(&mut instance.properties.size.x).prefix("W ").speed(1.0).range(0.0..=f64::MAX));
-                ui.add(DragValue::new(&mut instance.properties.size.y).prefix("H ").speed(1.0).range(0.0..=f64::MAX));
+                ui.add(
+                    DragValue::new(&mut instance.properties.size.x)
+                        .prefix("W ")
+                        .speed(1.0)
+                        .range(0.0..=f64::MAX),
+                );
+                ui.add(
+                    DragValue::new(&mut instance.properties.size.y)
+                        .prefix("H ")
+                        .speed(1.0)
+                        .range(0.0..=f64::MAX),
+                );
             });
 
             // Text fields
@@ -173,7 +231,10 @@ fn render_instance_properties(
                         ui.label("Placeholder:");
                         ui.text_edit_singleline(&mut instance.properties.placeholder);
                     });
-                    ui.checkbox(&mut instance.properties.clear_text_on_focus, "ClearTextOnFocus");
+                    ui.checkbox(
+                        &mut instance.properties.clear_text_on_focus,
+                        "ClearTextOnFocus",
+                    );
                     ui.checkbox(&mut instance.properties.multi_line, "MultiLine");
                 }
                 ui.horizontal(|ui| {
@@ -182,19 +243,30 @@ fn render_instance_properties(
                 });
                 ui.horizontal(|ui| {
                     ui.label("TextSize:");
-                    ui.add(DragValue::new(&mut instance.properties.text_size).speed(0.5).range(6.0..=200.0));
+                    ui.add(
+                        DragValue::new(&mut instance.properties.text_size)
+                            .speed(0.5)
+                            .range(6.0..=200.0),
+                    );
                 });
             }
 
             // Image fields
-            if matches!(instance.kind, InstanceType::ImageLabel | InstanceType::ImageButton) {
+            if matches!(
+                instance.kind,
+                InstanceType::ImageLabel | InstanceType::ImageButton
+            ) {
                 ui.horizontal(|ui| {
                     ui.label("Image (asset ID):");
                     ui.text_edit_singleline(&mut instance.properties.image);
                 });
                 ui.horizontal(|ui| {
                     ui.label("ImageTransparency:");
-                    ui.add(DragValue::new(&mut instance.properties.image_transparency).speed(0.01).range(0.0..=1.0));
+                    ui.add(
+                        DragValue::new(&mut instance.properties.image_transparency)
+                            .speed(0.01)
+                            .range(0.0..=1.0),
+                    );
                 });
                 ui.horizontal(|ui| {
                     ui.label("ScaleType:");
@@ -206,14 +278,29 @@ fn render_instance_properties(
             if instance.kind == InstanceType::ScrollingFrame {
                 ui.label(RichText::new("CanvasSize (W H):").weak().small());
                 ui.horizontal(|ui| {
-                    ui.add(DragValue::new(&mut instance.properties.canvas_size.x).prefix("W ").speed(1.0));
-                    ui.add(DragValue::new(&mut instance.properties.canvas_size.y).prefix("H ").speed(1.0));
+                    ui.add(
+                        DragValue::new(&mut instance.properties.canvas_size.x)
+                            .prefix("W ")
+                            .speed(1.0),
+                    );
+                    ui.add(
+                        DragValue::new(&mut instance.properties.canvas_size.y)
+                            .prefix("H ")
+                            .speed(1.0),
+                    );
                 });
                 ui.horizontal(|ui| {
                     ui.label("ScrollBarThickness:");
-                    ui.add(DragValue::new(&mut instance.properties.scroll_bar_thickness).speed(0.5).range(0.0..=50.0));
+                    ui.add(
+                        DragValue::new(&mut instance.properties.scroll_bar_thickness)
+                            .speed(0.5)
+                            .range(0.0..=50.0),
+                    );
                 });
-                ui.checkbox(&mut instance.properties.scrolling_enabled, "ScrollingEnabled");
+                ui.checkbox(
+                    &mut instance.properties.scrolling_enabled,
+                    "ScrollingEnabled",
+                );
                 ui.horizontal(|ui| {
                     ui.label("ElasticBehavior:");
                     ui.text_edit_singleline(&mut instance.properties.elastic_behavior);
@@ -225,24 +312,43 @@ fn render_instance_properties(
 
     // ── Script source ─────────────────────────────────────────────────────────
     if instance.kind.is_script() {
-        ui.collapsing(RichText::new("📜 Script Source & Intellisense").strong(), |ui| {
-            let kind_label = match instance.kind {
-                InstanceType::ServerScript  => "ServerScript  – runs on Dedicated server only",
-                InstanceType::ClientScript  => "ClientScript  – runs on each player's machine",
-                InstanceType::ModuleScript  => "ModuleScript  – cached module, must return a value",
-                _ => "",
-            };
-            ui.horizontal(|ui| {
-                ui.label(RichText::new(kind_label).small().color(Color32::DARK_GRAY).italics());
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui.button("↗ Full Editor").on_hover_text("Open dedicated floating script editor window").clicked() {
-                        *open_editor_req = Some(instance.id.as_str().to_owned());
+        ui.collapsing(
+            RichText::new("📜 Script Source & Intellisense").strong(),
+            |ui| {
+                let kind_label = match instance.kind {
+                    InstanceType::ServerScript => "ServerScript  – runs on Dedicated server only",
+                    InstanceType::ClientScript => "ClientScript  – runs on each player's machine",
+                    InstanceType::ModuleScript => {
+                        "ModuleScript  – cached module, must return a value"
                     }
+                    _ => "",
+                };
+                ui.horizontal(|ui| {
+                    ui.label(
+                        RichText::new(kind_label)
+                            .small()
+                            .color(Color32::DARK_GRAY)
+                            .italics(),
+                    );
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui
+                            .button("↗ Full Editor")
+                            .on_hover_text("Open dedicated floating script editor window")
+                            .clicked()
+                        {
+                            *open_editor_req = Some(instance.id.as_str().to_owned());
+                        }
+                    });
                 });
-            });
-            ui.add_space(2.0);
-            crate::ui::render_code_editor(ui, &mut instance.properties.source, editor_state, 220.0);
-        });
+                ui.add_space(2.0);
+                crate::ui::render_code_editor(
+                    ui,
+                    &mut instance.properties.source,
+                    editor_state,
+                    220.0,
+                );
+            },
+        );
         ui.separator();
     }
 
@@ -255,7 +361,11 @@ fn render_instance_properties(
             });
             ui.horizontal(|ui| {
                 ui.label("Volume:");
-                ui.add(DragValue::new(&mut instance.properties.volume).speed(0.02).range(0.0..=1.0));
+                ui.add(
+                    DragValue::new(&mut instance.properties.volume)
+                        .speed(0.02)
+                        .range(0.0..=1.0),
+                );
             });
             ui.checkbox(&mut instance.properties.looping, "Looped");
         });
@@ -296,9 +406,18 @@ fn render_place_settings(app: &mut StudioApp, ui: &mut Ui) {
     ui.separator();
 
     ui.collapsing(RichText::new("📄 Metadata").strong(), |ui| {
-        ui.horizontal(|ui| { ui.label("Name:");        ui.text_edit_singleline(&mut app.metadata.name); });
-        ui.horizontal(|ui| { ui.label("Creator:");     ui.text_edit_singleline(&mut app.metadata.creator); });
-        ui.horizontal(|ui| { ui.label("Description:"); ui.text_edit_singleline(&mut app.metadata.description); });
+        ui.horizontal(|ui| {
+            ui.label("Name:");
+            ui.text_edit_singleline(&mut app.metadata.name);
+        });
+        ui.horizontal(|ui| {
+            ui.label("Creator:");
+            ui.text_edit_singleline(&mut app.metadata.creator);
+        });
+        ui.horizontal(|ui| {
+            ui.label("Description:");
+            ui.text_edit_singleline(&mut app.metadata.description);
+        });
     });
 
     ui.separator();
@@ -306,19 +425,35 @@ fn render_place_settings(app: &mut StudioApp, ui: &mut Ui) {
     ui.collapsing(RichText::new("⚙ Physics & Gameplay").strong(), |ui| {
         ui.horizontal(|ui| {
             ui.label("Gravity (studs/s²):");
-            ui.add(DragValue::new(&mut app.settings.gravity).speed(1.0).range(0.0..=1000.0));
+            ui.add(
+                DragValue::new(&mut app.settings.gravity)
+                    .speed(1.0)
+                    .range(0.0..=1000.0),
+            );
         });
         ui.horizontal(|ui| {
             ui.label("Max Players:");
-            ui.add(DragValue::new(&mut app.settings.max_players).speed(1).range(1..=100));
+            ui.add(
+                DragValue::new(&mut app.settings.max_players)
+                    .speed(1)
+                    .range(1..=100),
+            );
         });
         ui.horizontal(|ui| {
             ui.label("Walk Speed:");
-            ui.add(DragValue::new(&mut app.settings.walk_speed).speed(0.5).range(0.0..=200.0));
+            ui.add(
+                DragValue::new(&mut app.settings.walk_speed)
+                    .speed(0.5)
+                    .range(0.0..=200.0),
+            );
         });
         ui.horizontal(|ui| {
             ui.label("Jump Power:");
-            ui.add(DragValue::new(&mut app.settings.jump_power).speed(1.0).range(0.0..=500.0));
+            ui.add(
+                DragValue::new(&mut app.settings.jump_power)
+                    .speed(1.0)
+                    .range(0.0..=500.0),
+            );
         });
     });
 
@@ -335,7 +470,11 @@ fn render_place_settings(app: &mut StudioApp, ui: &mut Ui) {
         });
         ui.horizontal(|ui| {
             ui.label("Brightness:");
-            ui.add(DragValue::new(&mut app.settings.brightness).speed(0.1).range(0.0..=10.0));
+            ui.add(
+                DragValue::new(&mut app.settings.brightness)
+                    .speed(0.1)
+                    .range(0.0..=10.0),
+            );
         });
     });
 }
