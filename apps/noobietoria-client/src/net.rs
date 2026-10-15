@@ -192,7 +192,7 @@ async fn net_actor(cmd_rx: mpsc::Receiver<NetCmd>, msg_tx: Sender<NetMsg>) {
         let _ = out_tx.send(join_msg).await;
 
         // Reader / command pump loop.
-        let mut disconnected = false;
+        let mut disconnected_by_user = false;
         loop {
             // Non-blocking command poll.
             loop {
@@ -208,17 +208,17 @@ async fn net_actor(cmd_rx: mpsc::Receiver<NetCmd>, msg_tx: Sender<NetMsg>) {
                         }
                     }
                     Ok(NetCmd::Disconnect) | Ok(NetCmd::Connect { .. }) => {
-                        disconnected = true;
+                        disconnected_by_user = true;
                         break;
                     }
                     Err(mpsc::TryRecvError::Empty) => break,
                     Err(mpsc::TryRecvError::Disconnected) => {
-                        disconnected = true;
+                        disconnected_by_user = true;
                         break;
                     }
                 }
             }
-            if disconnected {
+            if disconnected_by_user {
                 break;
             }
 
@@ -241,7 +241,7 @@ async fn net_actor(cmd_rx: mpsc::Receiver<NetCmd>, msg_tx: Sender<NetMsg>) {
                         let _ = msg_tx.send(NetMsg::Disconnected {
                             reason: reason.clone(),
                         });
-                        disconnected = true;
+                        break;
                     }
                     Ok(msg) => {
                         let _ = msg_tx.send(NetMsg::Server(msg));
@@ -261,17 +261,13 @@ async fn net_actor(cmd_rx: mpsc::Receiver<NetCmd>, msg_tx: Sender<NetMsg>) {
                 }
                 Err(_timeout) => {} // normal, loop back
             }
-
-            if disconnected {
-                break;
-            }
         }
 
         // Signal writer to stop.
         let _ = stop_tx.send(());
         writer_task.abort();
 
-        if disconnected {
+        if disconnected_by_user {
             let _ = msg_tx.send(NetMsg::Disconnected {
                 reason: "Disconnected by user.".to_owned(),
             });

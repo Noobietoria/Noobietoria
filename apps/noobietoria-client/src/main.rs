@@ -92,15 +92,17 @@ fn main() -> eframe::Result<()> {
     // ── Self-test: headless ping ───────────────────────────────────────────────
     if selftest {
         use std::io::{BufRead, Write};
-        use std::net::TcpStream;
+        use std::net::{TcpStream, ToSocketAddrs};
         use std::time::Duration;
 
         tracing::info!("[selftest] Connecting to {host}:{port}…");
-        let stream = TcpStream::connect_timeout(
-            &format!("{host}:{port}").parse().expect("valid addr"),
-            Duration::from_secs(5),
-        )
-        .expect("selftest: could not connect to server");
+        let addrs: Vec<_> = format!("{host}:{port}")
+            .to_socket_addrs()
+            .expect("resolve server host:port")
+            .collect();
+        let addr = addrs.first().expect("no address resolved for host:port");
+        let stream = TcpStream::connect_timeout(addr, Duration::from_secs(5))
+            .expect("selftest: could not connect to server");
         stream.set_read_timeout(Some(Duration::from_secs(5))).ok();
 
         let mut reader = std::io::BufReader::new(stream.try_clone().expect("clone"));
@@ -125,15 +127,73 @@ fn main() -> eframe::Result<()> {
     }
 
     // ── Launch GUI ────────────────────────────────────────────────────────────
-    let mut native_options = eframe::NativeOptions::default();
-    native_options.viewport = egui::ViewportBuilder::default()
-        .with_title("Noobietoria Client")
-        .with_inner_size([1100.0, 700.0])
-        .with_min_inner_size([640.0, 400.0]);
+    let native_options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_title("Noobietoria Client")
+            .with_inner_size([1100.0, 700.0])
+            .with_min_inner_size([640.0, 400.0]),
+        ..Default::default()
+    };
 
     eframe::run_native(
         "Noobietoria Client",
         native_options,
         Box::new(move |cc| Ok(Box::new(ClientApp::new(cc, host, port, username)))),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::net::*;
+    use super::state::*;
+
+    #[test]
+    fn test_client_receives_server_messages() {
+        let welcome_raw =
+            r#"{"kind":"welcome","server_name":"Noobietoria Alpha","max_players":32}"#;
+        let welcome: ServerMsg = serde_json::from_str(welcome_raw).expect("deserialize welcome");
+        match welcome {
+            ServerMsg::Welcome {
+                server_name,
+                max_players,
+            } => {
+                assert_eq!(server_name, "Noobietoria Alpha");
+                assert_eq!(max_players, 32);
+            }
+            _ => panic!("expected welcome message"),
+        }
+
+        let snap_raw =
+            r#"{"kind":"snapshot","instances":[{"name":"Baseplate","kind":"Part"}],"tick":12}"#;
+        let snap: ServerMsg = serde_json::from_str(snap_raw).expect("deserialize snapshot");
+        match snap {
+            ServerMsg::Snapshot { instances, tick } => {
+                assert_eq!(tick, 12);
+                assert_eq!(instances.len(), 1);
+            }
+            _ => panic!("expected snapshot message"),
+        }
+
+        let kick_raw = r#"{"kind":"kicked","reason":"Server is full (20/20)"}"#;
+        let kick: ServerMsg = serde_json::from_str(kick_raw).expect("deserialize kicked");
+        match kick {
+            ServerMsg::Kicked { reason } => {
+                assert_eq!(reason, "Server is full (20/20)");
+            }
+            _ => panic!("expected kicked message"),
+        }
+    }
+
+    #[test]
+    fn test_client_log_entries() {
+        let entry = LogEntry::system("Hello");
+        assert_eq!(entry.kind, LogKind::System);
+        assert_eq!(entry.text, "Hello");
+
+        let err = LogEntry::error("Failed");
+        assert_eq!(err.kind, LogKind::Error);
+
+        let evt = LogEntry::event("Fired");
+        assert_eq!(evt.kind, LogKind::Event);
+    }
 }

@@ -317,13 +317,17 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
 
 fn instance_icon(kind: &str) -> &'static str {
     match kind {
-        "Part" | "UnionOperation" | "MeshPart" | "SpecialMesh" => "⬜",
-        "Script" | "LocalScript" | "ModuleScript" => "📜",
+        "Part" | "TrussPart" | "UnionOperation" | "MeshPart" | "SpecialMesh" => "⬜",
+        "ServerScript" | "ClientScript" | "Script" | "LocalScript" | "ModuleScript" => "📜",
         "Model" => "🧩",
         "Folder" => "📁",
         "SpawnLocation" => "🏁",
+        "Attachment" | "Trigger" => "📍",
         "Sound" | "Audio" => "🔊",
         "NetworkEvent" => "📡",
+        "ScreenGui" | "Frame" | "ScrollingFrame" => "🖼",
+        "TextLabel" | "TextButton" | "TextBox" => "🔤",
+        "ImageLabel" | "ImageButton" => "🎨",
         _ => "●",
     }
 }

@@ -123,6 +123,15 @@ impl ClientApp {
         username: String,
     ) -> Self {
         let net = NetHandle::start();
+        let username = if username.trim().is_empty() {
+            let id = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| (d.as_millis() % 9000 + 1000) as u64)
+                .unwrap_or(1234);
+            format!("Player{id}")
+        } else {
+            username
+        };
         Self {
             host,
             port_str: port.to_string(),
@@ -191,13 +200,18 @@ impl ClientApp {
     }
 
     pub fn do_connect(&mut self) {
+        let username = self.username.trim();
+        if username.is_empty() {
+            self.connect_error = Some("Username cannot be empty.".to_owned());
+            return;
+        }
         let port: u16 = self.port_str.parse().unwrap_or(7777);
         self.screen = Screen::Connecting;
         self.connect_error = None;
         let _ = self.net.cmd_tx.send(NetCmd::Connect {
             host: self.host.clone(),
             port,
-            username: self.username.clone(),
+            username: username.to_owned(),
         });
     }
 

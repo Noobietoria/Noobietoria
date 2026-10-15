@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      cache-key:
+        description: 'Cache bust prefix key'
+        required: false
+        default: 'v2'
 
 jobs:
   test:
@@ -37,6 +42,8 @@ jobs:
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: "v2-rust-cache"
 
       - name: Check formatting
         run: cargo fmt --all -- --check
@@ -78,6 +85,8 @@ jobs:
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: "v2-rust-cache"
 
       - name: Build all apps in release mode
         run: cargo build --release --workspace

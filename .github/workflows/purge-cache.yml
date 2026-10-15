@@ -1,0 +1,43 @@
+name: Purge Rust Cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for purging GitHub Actions cache'
+        required: false
+        default: 'Clean up stale build/test cache'
+
+permissions:
+  actions: write
+
+jobs:
+  purge:
+    name: Purge Actions Cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete GitHub Actions Caches via API
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log("Listing all repository action caches...");
+            try {
+              const res = await github.rest.actions.getActionsCacheList({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              const caches = res.data.actions_caches || [];
+              console.log(`Found ${caches.length} cache(s).`);
+              for (const cache of caches) {
+                console.log(`Deleting cache id: ${cache.id}, key: ${cache.key}`);
+                await github.rest.actions.deleteActionsCacheById({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  cache_id: cache.id,
+                });
+              }
+              console.log("Cache purge complete.");
+            } catch (err) {
+              console.error("Failed to purge caches:", err);
+              throw err;
+            }

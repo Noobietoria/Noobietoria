@@ -208,7 +208,8 @@ async fn main() -> Result<()> {
         *ctx.runtime.world.write() = file.to_world();
         info!("Loaded world: {}", path.display());
     } else {
-        info!("No world file – starting with an empty world.");
+        info!("No world file specified – starting with default starter place.");
+        *ctx.runtime.world.write() = WorldFile::default_starter_place().to_world();
     }
 
     ctx.runtime.record_visit();
@@ -272,12 +273,13 @@ async fn main() -> Result<()> {
                     (outbound, snap)
                 };
 
-                // Broadcast snapshot to all clients.
+                // Broadcast snapshot to all joined clients.
                 if let Some(snap) = snapshot_payload {
                     let txs: Vec<_> = state
                         .read()
                         .connections
                         .values()
+                        .filter(|c| c.read().username.is_some())
                         .map(|c| c.read().tx.clone())
                         .collect();
                     for tx in txs {
@@ -293,7 +295,7 @@ async fn main() -> Result<()> {
                         args: ev
                             .args
                             .iter()
-                            .map(|v| serde_json::Value::String(format!("{v:?}")))
+                            .map(|v| serde_json::to_value(v).unwrap_or(serde_json::Value::Null))
                             .collect(),
                     };
 
@@ -404,6 +406,61 @@ async fn handle_conn(
                 user_id,
                 country,
             } => {
+                let trimmed_username = username.trim().to_owned();
+                if trimmed_username.is_empty() {
+                    let _ = tx
+                        .send(ServerMsg::Kicked {
+                            reason: "Username cannot be empty.".to_owned(),
+                        })
+                        .await;
+                    tokio::time::sleep(Duration::from_millis(50)).await;
+                    break;
+                }
+
+                // Check ban status.
+                let is_banned = {
+                    let srv = state.read();
+                    let b = srv
+                        .ctx
+                        .runtime
+                        .moderation
+                        .read()
+                        .get(&trimmed_username)
+                        .map(|r| r.kind == "Ban")
+                        .unwrap_or(false);
+                    b
+                };
+                if is_banned {
+                    let _ = tx
+                        .send(ServerMsg::Kicked {
+                            reason: format!(
+                                "Player `{trimmed_username}` is banned from this server."
+                            ),
+                        })
+                        .await;
+                    tokio::time::sleep(Duration::from_millis(50)).await;
+                    break;
+                }
+
+                // Check duplicate connection.
+                let already_connected = {
+                    let srv = state.read();
+                    srv.connections
+                        .values()
+                        .any(|c| c.read().username.as_deref() == Some(trimmed_username.as_str()))
+                };
+                if already_connected {
+                    let _ = tx
+                        .send(ServerMsg::Kicked {
+                            reason: format!(
+                                "Player `{trimmed_username}` is already connected to this server."
+                            ),
+                        })
+                        .await;
+                    tokio::time::sleep(Duration::from_millis(50)).await;
+                    break;
+                }
+
                 // Capacity check.
                 let (ccu, max) = {
                     let srv = state.read();
@@ -415,23 +472,27 @@ async fn handle_conn(
                             reason: format!("Server is full ({ccu}/{max})"),
                         })
                         .await;
+                    tokio::time::sleep(Duration::from_millis(50)).await;
                     break;
                 }
 
-                let record = PlayerRecord::new(&username, user_id, &country);
+                let record = PlayerRecord::new(&trimmed_username, user_id, &country);
                 {
                     let srv = state.read();
                     srv.ctx.runtime.player_join(record);
                     srv.ctx.runtime.record_visit();
                 }
-                joined_username = Some(username.clone());
+                joined_username = Some(trimmed_username.clone());
 
                 // Store username in connection.
                 if let Some(conn) = state.read().connections.get(&addr).cloned() {
-                    conn.write().username = Some(username.clone());
+                    conn.write().username = Some(trimmed_username.clone());
                 }
 
-                info!("{addr}: `{username}` joined (ccu={})", state.read().ccu());
+                info!(
+                    "{addr}: `{trimmed_username}` joined (ccu={})",
+                    state.read().ccu()
+                );
 
                 // Send initial snapshot.
                 let snap = {
@@ -456,7 +517,10 @@ async fn handle_conn(
                     to: "server".to_owned(),
                     args: args
                         .into_iter()
-                        .map(|v| nb_types::Value::from(v.to_string()))
+                        .map(|v| {
+                            serde_json::from_value::<nb_types::Value>(v)
+                                .unwrap_or(nb_types::Value::Nil)
+                        })
                         .collect(),
                     invoke: false,
                 };
@@ -479,4 +543,88 @@ async fn handle_conn(
     write_task.abort();
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_client_wire_messages_serialize_and_deserialize() {
+        let json = r#"{"kind":"join","username":"Player1","user_id":100,"country":"VN"}"#;
+        let msg: ClientMsg = serde_json::from_str(json).expect("deserialize join");
+        match msg {
+            ClientMsg::Join {
+                username,
+                user_id,
+                country,
+            } => {
+                assert_eq!(username, "Player1");
+                assert_eq!(user_id, 100);
+                assert_eq!(country, "VN");
+            }
+            _ => panic!("expected join message"),
+        }
+
+        let ping_json = r#"{"kind":"ping"}"#;
+        let ping_msg: ClientMsg = serde_json::from_str(ping_json).expect("deserialize ping");
+        assert!(matches!(ping_msg, ClientMsg::Ping));
+
+        let fire_json = r#"{"kind":"fire","event":"Jump","args":[10,"high"]}"#;
+        let fire_msg: ClientMsg = serde_json::from_str(fire_json).expect("deserialize fire");
+        match fire_msg {
+            ClientMsg::Fire { event, args } => {
+                assert_eq!(event, "Jump");
+                assert_eq!(args.len(), 2);
+                assert_eq!(args[0], serde_json::json!(10));
+                assert_eq!(args[1], serde_json::json!("high"));
+            }
+            _ => panic!("expected fire message"),
+        }
+    }
+
+    #[test]
+    fn test_server_wire_messages_serialize_and_deserialize() {
+        let welcome = ServerMsg::Welcome {
+            server_name: "TestServer".to_owned(),
+            max_players: 50,
+        };
+        let welcome_str = serde_json::to_string(&welcome).expect("serialize welcome");
+        assert!(welcome_str.contains(r#""kind":"welcome""#));
+        assert!(welcome_str.contains(r#""server_name":"TestServer""#));
+        assert!(welcome_str.contains(r#""max_players":50"#));
+
+        let kicked = ServerMsg::Kicked {
+            reason: "Server full".to_owned(),
+        };
+        let kicked_str = serde_json::to_string(&kicked).expect("serialize kicked");
+        assert!(kicked_str.contains(r#""kind":"kicked""#));
+        assert!(kicked_str.contains(r#""reason":"Server full""#));
+
+        let pong = ServerMsg::Pong;
+        let pong_str = serde_json::to_string(&pong).expect("serialize pong");
+        assert_eq!(pong_str, r#"{"kind":"pong"}"#);
+    }
+
+    #[test]
+    fn test_server_state_snapshot_and_ccu() {
+        let ctx = ApiContext::new(Side::Server);
+        *ctx.runtime.world.write() = WorldFile::default_starter_place().to_world();
+        let state = ServerState::new(ctx, 20, "TestServer".to_owned());
+
+        assert_eq!(state.ccu(), 0);
+        let snap = state.snapshot();
+        assert!(
+            !snap.is_empty(),
+            "snapshot should contain default starter instances"
+        );
+
+        // Validate player join updates CCU
+        let rec = PlayerRecord::new("Alice", 1, "VN");
+        state.ctx.runtime.player_join(rec);
+        assert_eq!(state.ccu(), 1);
+
+        state.ctx.runtime.player_leave("Alice");
+        assert_eq!(state.ccu(), 0);
+    }
 }
