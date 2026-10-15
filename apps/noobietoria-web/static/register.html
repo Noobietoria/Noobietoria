@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create account - Noobietoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="./vector/logo.svg">
+<link rel="stylesheet" href="./css/app.css">
+<script src="./js/colorblind.js"></script>
+<link rel="stylesheet" href="./css/auth.css">
+<link rel="stylesheet" href="./css/start.css">
+</head>
+<body>
+
+<div class="auth">
+    <!-- Brand side -->
+    <aside class="auth__aside">
+        <a class="auth__brand" href="landing.html">
+            <img src="./vector/logo.svg" alt="Noobietoria logo">
+            Noobietoria
+        </a>
+
+        <div class="auth__pitch">
+            <h1>Join the <span>NICE</span> community. It's free!</h1>
+            <p>Create your account in under a minute — no drama, just good vibes and good games.</p>
+            <ul class="auth__perks">
+                <li><span class="dot dot--blue">🎮</span> Play hundreds of community worlds</li>
+                <li><span class="dot dot--green">🛠️</span> Build &amp; publish your own creations</li>
+                <li><span class="dot dot--purple">💛</span> A community that looks out for each other</li>
+                <li><span class="dot dot--gold">🏆</span> Level up, collect items, trade with friends</li>
+            </ul>
+        </div>
+
+        <p class="auth__hint">© 2023 - 2026 Noobietoria · web v0.1.0</p>
+    </aside>
+
+    <!-- Form side -->
+    <main class="auth__main">
+        <div class="auth__box">
+            <div class="auth__mobile-logo">
+                <img src="./vector/logo.svg" alt="Noobietoria logo">
+                Noobietoria
+            </div>
+
+            <h1 class="auth__title">Create account</h1>
+            <p class="auth__sub">Welcome! Let's set up your Noobie profile.</p>
+
+            <form class="auth__form" id="register-form" novalidate>
+                <div class="auth__field">
+                    <label class="auth__label" for="reg-username">Username <small>(this is how others see you)</small></label>
+                    <div class="auth__control">
+                        <input class="auth__input" type="text" id="reg-username" name="username"
+                               placeholder="Pick a cool username" autocomplete="username" required minlength="3" maxlength="20">
+                    </div>
+                    <span class="auth__hint-msg" data-error-for="reg-username"></span>
+                </div>
+
+                <div class="auth__field">
+                    <label class="auth__label" for="reg-email">Email</label>
+                    <div class="auth__control">
+                        <input class="auth__input" type="email" id="reg-email" name="email"
+                               placeholder="you@example.com" autocomplete="email" required>
+                    </div>
+                    <span class="auth__hint-msg" data-error-for="reg-email"></span>
+                </div>
+
+                <div class="auth__field">
+                    <label class="auth__label" for="reg-dob">Date of Birth</label>
+                    <div class="auth__control">
+                        <input class="auth__input" type="date" id="reg-dob" name="dob" required>
+                    </div>
+                    <span class="auth__hint-msg" data-error-for="reg-dob"></span>
+                </div>
+
+                <div class="auth__field">
+                    <label class="auth__label" for="reg-password">Password <small>(min. 6 characters)</small></label>
+                    <div class="auth__control">
+                        <input class="auth__input" type="password" id="reg-password" name="password"
+                               placeholder="Create a password" autocomplete="new-password" required minlength="6">
+                        <button class="auth__toggle" type="button" data-toggle-password="reg-password">SHOW</button>
+                    </div>
+                    <span class="auth__hint-msg" data-error-for="reg-password"></span>
+                </div>
+
+                <div class="auth__field">
+                    <label class="auth__label" for="reg-confirm">Confirm password</label>
+                    <div class="auth__control">
+                        <input class="auth__input" type="password" id="reg-confirm" name="confirm"
+                               placeholder="Repeat your password" autocomplete="new-password" required minlength="6">
+                        <button class="auth__toggle" type="button" data-toggle-password="reg-confirm">SHOW</button>
+                    </div>
+                    <span class="auth__hint-msg" data-error-for="reg-confirm"></span>
+                </div>
+
+                <label class="auth__check">
+                    <input type="checkbox" name="terms" id="reg-terms" required>
+                    I agree to the <a href="terms.html" class="tr-open-link" data-doc="terms" style="color:var(--blue);">Terms</a> &amp; <a href="privacy.html" class="tr-open-link" data-doc="privacy" style="color:var(--blue);">Privacy Policy</a>
+                </label>
+                <span class="auth__hint-msg" data-error-for="reg-terms"></span>
+
+                <button class="btn btn--blue auth__btn" type="submit">Create account</button>
+
+                <div class="auth__divider">or sign up with</div>
+
+                <div class="auth__social">
+                    <button class="btn btn--outline btn--discord" type="button" data-social="discord">
+                        <img src="./vector/discord.svg" alt="Discord logo">Discord
+                    </button>
+                    <button class="btn btn--outline btn--google" type="button" data-social="google">
+                        <img src="./vector/google.svg" alt="Google logo">Google
+                    </button>
+                    <button class="btn btn--outline btn--roblox" type="button" data-social="roblox">
+                        <img src="./vector/roblox.svg" alt="Roblox logo">Sign up with Roblox
+                    </button>
+                </div>
+            </form>
+
+            <p class="auth__foot">Already have an account? <a href="login.html">Log in</a></p>
+
+            <a class="auth__back" href="landing.html">← Back to landing page</a>
+        </div>
+    </main>
+</div>
+
+<div class="loader-overlay" id="page-loader" aria-hidden="true">
+    <div class="loader loader--small">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <p data-loader-text>Creating your account...</p>
+</div>
+<!-- ========== TERMS READER MODAL ========== -->
+<div id="tr-overlay" role="dialog" aria-modal="true" aria-labelledby="tr-title" style="display:none">
+  <div id="tr-modal">
+    <div id="tr-header">
+      <span id="tr-title">Please read before agreeing</span>
+      <button id="tr-close" aria-label="Close">&times;</button>
+    </div>
+
+    <!-- Tabs -->
+    <div id="tr-tabs" role="tablist">
+      <button class="tr-tab tr-tab--active" role="tab" data-doc="terms" aria-selected="true">
+        📄 Terms of Service
+        <span class="tr-badge" id="badge-terms">unread</span>
+      </button>
+      <button class="tr-tab" role="tab" data-doc="privacy" aria-selected="false">
+        🔒 Privacy Policy
+        <span class="tr-badge" id="badge-privacy">unread</span>
+      </button>
+    </div>
+
+    <!-- Reading progress bar -->
+    <div id="tr-progress-wrap" aria-label="Reading progress">
+      <div id="tr-progress-bar"></div>
+    </div>
+
+    <!-- Scroll slowdown notice -->
+    <div id="tr-notice" aria-live="polite"></div>
+
+    <!-- Content pane -->
+    <div id="tr-body" tabindex="0" role="document"></div>
+
+    <!-- Footer -->
+    <div id="tr-footer">
+      <span id="tr-footer-hint">Scroll to the end to continue</span>
+      <button id="tr-agree-btn" disabled>
+        ✓ I've read and understood this document
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ---- overlay ---- */
+#tr-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.75);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+  animation: trFadeIn .18s ease;
+}
+@keyframes trFadeIn { from { opacity:0 } to { opacity:1 } }
+
+#tr-modal {
+  background: #1a1a2e;
+  border: 1px solid #2e2e4a;
+  border-radius: 14px;
+  width: min(720px, 100%);
+  max-height: 88vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0,0,0,.6);
+  overflow: hidden;
+}
+
+/* ---- header ---- */
+#tr-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #2e2e4a;
+  flex-shrink: 0;
+}
+#tr-title {
+  font-weight: 700; font-size: 1rem; color: #fff;
+  font-family: 'Nunito', sans-serif;
+}
+#tr-close {
+  background: none; border: none; color: #888; font-size: 1.5rem;
+  cursor: pointer; line-height: 1; padding: 0 4px;
+  transition: color .15s;
+}
+#tr-close:hover { color: #fff; }
+
+/* ---- tabs ---- */
+#tr-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid #2e2e4a;
+  flex-shrink: 0; background: #111128;
+}
+.tr-tab {
+  flex: 1; padding: 12px 16px;
+  background: none; border: none;
+  color: #888; font-family: 'Nunito', sans-serif; font-weight: 600; font-size: .9rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  border-bottom: 3px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.tr-tab--active { color: #fff; border-bottom-color: #5b8dee; background: #1a1a2e; }
+.tr-tab:hover:not(.tr-tab--active) { color: #ccc; }
+
+.tr-badge {
+  font-size: .7rem; font-weight: 700; padding: 2px 7px; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: .04em;
+  background: #333; color: #888;
+  transition: background .3s, color .3s;
+}
+.tr-badge--done { background: #1e5c2e; color: #4ade80; }
+.tr-badge--reading { background: #2c3a5e; color: #93bbfd; }
+
+/* ---- progress ---- */
+#tr-progress-wrap {
+  height: 4px; background: #222240; flex-shrink: 0;
+}
+#tr-progress-bar {
+  height: 100%; width: 0%; background: #5b8dee;
+  transition: width .15s ease;
+}
+
+/* ---- slowdown notice ---- */
+#tr-notice {
+  min-height: 0; overflow: hidden;
+  padding: 0 20px; font-size: .8rem; color: #f59e0b;
+  font-family: 'Nunito', sans-serif; font-weight: 600;
+  transition: max-height .3s, padding .3s;
+  max-height: 0;
+}
+#tr-notice.tr-notice--visible {
+  max-height: 40px; padding: 8px 20px;
+  border-bottom: 1px solid #2c2400;
+  background: #1c1600;
+}
+
+/* ---- scrollable body ---- */
+#tr-body {
+  flex: 1; overflow-y: auto; padding: 24px 28px;
+  color: #d0d0e8; font-family: 'Nunito', sans-serif;
+  font-size: .93rem; line-height: 1.7;
+  scroll-behavior: auto; /* we control smooth manually */
+}
+#tr-body h1 { font-size: 1.6rem; color: #fff; margin-bottom: 6px; }
+#tr-body h2 { font-size: 1.15rem; color: #5b8dee; margin-top: 28px; margin-bottom: 10px; }
+#tr-body h3 { color: #d0d0e8; margin-top: 16px; }
+#tr-body p  { margin-bottom: 12px; }
+#tr-body ul, #tr-body ol { margin: 0 0 14px 22px; }
+#tr-body li { margin-bottom: 6px; }
+#tr-body strong { color: #fff; }
+#tr-body p.last-updated { color: #666; font-style: italic; margin-bottom: 24px; }
+
+/* ---- footer ---- */
+#tr-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-top: 1px solid #2e2e4a; flex-shrink: 0;
+  gap: 12px; flex-wrap: wrap;
+}
+#tr-footer-hint { font-size: .82rem; color: #666; font-family: 'Nunito', sans-serif; }
+
+#tr-agree-btn {
+  padding: 10px 22px; border-radius: 8px; border: none;
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .9rem;
+  cursor: not-allowed; transition: background .25s, color .25s, opacity .25s;
+  background: #2a2a4a; color: #555;
+}
+#tr-agree-btn:not(:disabled) {
+  background: #1e5c2e; color: #4ade80; cursor: pointer;
+}
+#tr-agree-btn:not(:disabled):hover { background: #27763b; }
+</style>
+
+<script>
+(function () {
+  /*
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║  SECURITY MODEL — what this file can and cannot do                  ║
+  ╠══════════════════════════════════════════════════════════════════════╣
+  ║  CLIENT-SIDE GOAL: make casual skipping genuinely inconvenient.     ║
+  ║  A determined developer with DevTools can always bypass JS.         ║
+  ║  The real enforcement is on the SERVER:                             ║
+  ║                                                                     ║
+  ║  On open:  POST /api/consent/begin  → {token, serverOpenedAt}       ║
+  ║  On agree: POST /api/consent/verify → {token, termsReadMs,          ║
+  ║                                         privacyReadMs}              ║
+  ║  Server checks: now - serverOpenedAt >= MIN_TOTAL_MS × 2            ║
+  ║  and rejects register if not.  Token is single-use + HMAC-signed.   ║
+  ║                                                                     ║
+  ║  CLIENT PROTECTIONS (defense-in-depth, not primary enforcement):    ║
+  ║  1. IntersectionObserver: each paragraph must be on-screen ≥800ms   ║
+  ║  2. Adaptive min-time: scales with content word count, not fixed     ║
+  ║  3. Page Visibility API: timer PAUSES when tab/window is hidden      ║
+  ║  4. Observer lifecycle: strict acquire/release, no leaks             ║
+  ║  5. RAF-throttled scroll handler: no DOM query spam                  ║
+  ╚══════════════════════════════════════════════════════════════════════╝
+  */
+
+  /* ── CONFIG ─────────────────────────────────────────────────────── */
+  const DOCS = {
+    terms:   { title: 'Terms of Service', src: './terms.html' },
+    privacy: { title: 'Privacy Policy',   src: './privacy.html' }
+  };
+  const MIN_SECTION_MS  = 800;   // ms each paragraph must stay visible
+  const WPM             = 160;   // reading speed for adaptive time
+  const MIN_TIME_FLOOR  = 12000; // absolute minimum ms per doc
+  const MIN_TIME_CAP    = 45000; // absolute maximum ms per doc
+
+  /* ── STATE ───────────────────────────────────────────────────────── */
+  // consentToken: in production, fetched from POST /api/consent/begin
+  // Here we generate a client-side stub that gets sent with the form.
+  const consentToken = (crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36));
+  const pageLoadTime = Date.now(); // sent to server on submit
+
+  const cur = { doc: null };  // currently active doc key
+
+  function newRS(minTime) {
+    return {
+      done:         false,
+      totalMs:      0,          // active (visible) ms accumulated
+      minTime,                  // adaptive target
+      openedAt:     null,       // performance.now() when tab became active+visible
+      totalSections: 0,
+      sectionsRead:  new Set(),
+      sectionTimers: new Map(), // id -> setTimeout handle
+    };
+  }
+
+  const RS  = {};            // readState per key, built after fetch (word count known)
+  const cache = {};          // key -> innerHTML string
+
+  /* ── DOM ─────────────────────────────────────────────────────────── */
+  const overlay    = document.getElementById('tr-overlay');
+  const pane       = document.getElementById('tr-body');
+  const progressEl = document.getElementById('tr-progress-bar');
+  const agreeBtn   = document.getElementById('tr-agree-btn');
+  const footerHint = document.getElementById('tr-footer-hint');
+  const tabs       = document.querySelectorAll('.tr-tab');
+  const checkbox   = document.getElementById('reg-terms');
+
+  // Hidden fields — write consent metadata into the form so the
+  // server can validate timing independently of client state.
+  const form = document.getElementById('register-form');
+  ['tr-consent-token','tr-page-load','tr-terms-ms','tr-privacy-ms']
+    .forEach(id => {
+      const inp = document.createElement('input');
+      inp.type = 'hidden'; inp.id = id; inp.name = id;
+      form.appendChild(inp);
+    });
+  document.getElementById('tr-consent-token').value = consentToken;
+  document.getElementById('tr-page-load').value     = pageLoadTime;
+
+  /* ── OBSERVER (single instance, swapped per tab) ─────────────────── */
+  let observer = null;
+
+  function releaseObserver() {
+    if (observer) { observer.disconnect(); observer = null; }
+  }
+
+  /* ── FETCH ───────────────────────────────────────────────────────── */
+  async function fetchDoc(key) {
+    if (cache[key]) return cache[key];
+    try {
+      const res  = await fetch(DOCS[key].src);
+      const text = await res.text();
+      const dom  = new DOMParser().parseFromString(text, 'text/html');
+      const main = dom.querySelector('.legal-content');
+      const html = main ? main.innerHTML : '<p>Could not load document.</p>';
+
+      // Adaptive minimum reading time based on word count
+      const words   = (main ? main.textContent : '').trim().split(/\s+/).length;
+      const calcMs  = Math.round((words / WPM) * 60000);
+      const minTime = Math.min(MIN_TIME_CAP, Math.max(MIN_TIME_FLOOR, calcMs));
+
+      RS[key] = newRS(minTime);
+      cache[key] = html;
+    } catch {
+      RS[key] = newRS(MIN_TIME_FLOOR);
+      cache[key] = '<p>Unable to load — please open the link in a new tab.</p>';
+    }
+    return cache[key];
+  }
+
+  /* ── VISIBILITY-AWARE TIMER ──────────────────────────────────────── */
+  // Rules:
+  //   • Time only accumulates when BOTH the modal is open AND
+  //     document.visibilityState === 'visible'.
+  //   • Switching browser tabs or minimising pauses ALL timers,
+  //     cancels all pending section timers (scroll position is
+  //     irrelevant while hidden), and disconnects the observer.
+  //   • Returning to the tab re-attaches everything from scratch.
+
+  function isVisible() {
+    return document.visibilityState === 'visible';
+  }
+
+  function startAccumulating() {
+    const rs = RS[cur.doc];
+    if (!rs || rs.done || rs.openedAt !== null) return;
+    rs.openedAt = performance.now();
+  }
+
+  function stopAccumulating() {
+    const rs = RS[cur.doc];
+    if (!rs || rs.openedAt === null) return;
+    rs.totalMs += performance.now() - rs.openedAt;
+    rs.openedAt = null;
+    // Write accumulated ms to hidden form field for server validation
+    document.getElementById('tr-' + cur.doc + '-ms').value = Math.round(rs.totalMs);
+  }
+
+  function pauseAll() {
+    stopAccumulating();
+    // Cancel pending section timers — position irrelevant while hidden
+    const rs = RS[cur.doc];
+    if (rs) {
+      rs.sectionTimers.forEach(h => clearTimeout(h));
+      rs.sectionTimers.clear();
+    }
+    releaseObserver();
+  }
+
+  function resumeAll() {
+    if (!cur.doc || !RS[cur.doc]) return;
+    startAccumulating();
+    attachObserver(cur.doc);
+    scheduleProgressUpdate();
+  }
+
+  // Page Visibility API
+  document.addEventListener('visibilitychange', () => {
+    if (overlay.style.display === 'none') return; // modal not open
+    if (isVisible()) resumeAll(); else pauseAll();
+  });
+
+  /* ── MODAL OPEN / CLOSE ──────────────────────────────────────────── */
+  async function openModal(docKey) {
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    await switchTab(docKey);
+    pane.focus();
+  }
+
+  function closeModal() {
+    pauseAll();
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  /* ── TAB SWITCH ──────────────────────────────────────────────────── */
+  async function switchTab(key) {
+    if (cur.doc === key) return;
+
+    // Tear down current tab
+    if (cur.doc) pauseAll();
+    cur.doc = key;
+
+    tabs.forEach(t => {
+      const on = t.dataset.doc === key;
+      t.classList.toggle('tr-tab--active', on);
+      t.setAttribute('aria-selected', String(on));
+    });
+
+    pane.innerHTML = '<p style="color:#888;padding:40px 0;text-align:center">Loading…</p>';
+    const html = await fetchDoc(key);  // also initialises RS[key]
+    pane.innerHTML = html;
+    pane.scrollTop = 0;
+
+    const h1 = pane.querySelector('h1');
+    if (h1) h1.style.marginTop = '0';
+
+    // Tag sections
+    const sections = Array.from(pane.querySelectorAll('p, li, h2, h3'));
+    sections.forEach((el, i) => { el.dataset.sid = i; });
+    RS[key].totalSections = sections.length;
+
+    renderProgress();
+    updateAgreeButton();
+
+    if (isVisible()) resumeAll(); // starts timer + observer
+  }
+
+  /* ── INTERSECTION OBSERVER ───────────────────────────────────────── */
+  function attachObserver(key) {
+    releaseObserver(); // always clean up first
+
+    const rs = RS[key];
+
+    observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const id = entry.target.dataset.sid;
+        if (entry.isIntersecting) {
+          if (!rs.sectionsRead.has(id) && !rs.sectionTimers.has(id)) {
+            const h = setTimeout(() => {
+              rs.sectionsRead.add(id);
+              rs.sectionTimers.delete(id);
+              scheduleProgressUpdate();
+              tryMarkDone(key);
+            }, MIN_SECTION_MS);
+            rs.sectionTimers.set(id, h);
+          }
+        } else {
+          // Left viewport before timer fired — cancel
+          const h = rs.sectionTimers.get(id);
+          if (h !== undefined) {
+            clearTimeout(h);
+            rs.sectionTimers.delete(id);
+          }
+        }
+      });
+    }, { root: pane, threshold: 0.25 });
+
+    pane.querySelectorAll('[data-sid]').forEach(el => observer.observe(el));
+  }
+
+  /* ── DONE CHECK ──────────────────────────────────────────────────── */
+  function tryMarkDone(key) {
+    const rs = RS[key];
+    if (rs.done) return;
+
+    // Live time: add elapsed since openedAt if currently accumulating
+    const liveMs = rs.totalMs + (rs.openedAt !== null
+      ? performance.now() - rs.openedAt
+      : 0);
+
+    const allSections = rs.sectionsRead.size >= rs.totalSections;
+    const enoughTime  = liveMs >= rs.minTime;
+
+    if (allSections && enoughTime) {
+      stopAccumulating(); // freeze the final value
+      rs.done = true;
+      updateBadge(key, true);
+      updateAgreeButton();
+    }
+  }
+
+  /* ── RAF-THROTTLED PROGRESS RENDER ──────────────────────────────── */
+  // updateProgress is called from scroll events — we must NOT query
+  // the DOM on every event. One RAF per scroll burst.
+  let rafPending = false;
+
+  function scheduleProgressUpdate() {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+      rafPending = false;
+      renderProgress();
+      tryMarkDone(cur.doc);
+    });
+  }
+
+  function renderProgress() {
+    const rs = RS[cur.doc];
+    if (!rs) return;
+
+    const liveMs = rs.totalMs + (rs.openedAt !== null
+      ? performance.now() - rs.openedAt
+      : 0);
+
+    const secPct  = rs.totalSections > 0
+      ? Math.min(1, rs.sectionsRead.size / rs.totalSections) : 1;
+    const timePct = Math.min(1, liveMs / rs.minTime);
+    const pct     = (secPct * 0.6 + timePct * 0.4) * 100;
+
+    progressEl.style.width = Math.min(100, pct) + '%';
+
+    if (!rs.done) {
+      const badge = document.getElementById('badge-' + cur.doc);
+      if (pct > 5 && badge.textContent === 'unread') {
+        badge.textContent = 'reading…';
+        badge.className = 'tr-badge tr-badge--reading';
+      }
+      // Countdown hint
+      if (secPct >= 1 && timePct < 1) {
+        const rem = Math.ceil((rs.minTime - liveMs) / 1000);
+        footerHint.textContent = `Almost there — ${rem}s remaining`;
+      } else if (secPct < 1) {
+        footerHint.textContent = 'Keep reading…';
+      }
+    }
+  }
+
+  function updateBadge(key, done) {
+    const badge = document.getElementById('badge-' + key);
+    badge.textContent = done ? '✓ read' : 'reading…';
+    badge.className   = 'tr-badge' + (done ? ' tr-badge--done' : ' tr-badge--reading');
+  }
+
+  // Recurring render while a tab is active (catches time-only completions)
+  setInterval(() => {
+    if (overlay.style.display === 'none') return;
+    if (!cur.doc || !RS[cur.doc] || RS[cur.doc].done) return;
+    scheduleProgressUpdate();
+  }, 500);
+
+  /* ── AGREE BUTTON ────────────────────────────────────────────────── */
+  function updateAgreeButton() {
+    const rs = RS[cur.doc];
+    if (!rs) return;
+    if (rs.done) {
+      agreeBtn.disabled = false;
+      const allDone = Object.keys(DOCS).every(k => RS[k] && RS[k].done);
+      footerHint.textContent = allDone
+        ? 'Both documents read ✓'
+        : `Now read the ${cur.doc === 'terms' ? 'Privacy Policy' : 'Terms of Service'} tab →`;
+    } else {
+      agreeBtn.disabled = true;
+    }
+  }
+
+  agreeBtn.addEventListener('click', () => {
+    const rs = RS[cur.doc];
+    if (!rs || !rs.done) return;
+
+    const allDone = Object.keys(DOCS).every(k => RS[k] && RS[k].done);
+    if (allDone) {
+      checkbox.checked = true;
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      closeModal();
+    } else {
+      const other = cur.doc === 'terms' ? 'privacy' : 'terms';
+      agreeBtn.disabled = true;
+      footerHint.textContent = `Great! Now read the ${DOCS[other].title}.`;
+      setTimeout(() => switchTab(other), 450);
+    }
+  });
+
+  /* ── SCROLL (RAF-throttled, no DOM queries) ──────────────────────── */
+  pane.addEventListener('scroll', scheduleProgressUpdate, { passive: true });
+
+  /* ── CLOSE ───────────────────────────────────────────────────────── */
+  document.getElementById('tr-close').addEventListener('click', closeModal);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.style.display !== 'none') closeModal();
+  });
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal();
+  });
+
+  /* ── CHECKBOX INTERCEPT ──────────────────────────────────────────── */
+  checkbox.addEventListener('click', function (e) {
+    if (!this.checked) return;
+    e.preventDefault();
+    this.checked = false;
+    const startDoc = !(RS.terms && RS.terms.done) ? 'terms' : 'privacy';
+    openModal(startDoc);
+  });
+
+  /* ── LINK INTERCEPT ──────────────────────────────────────────────── */
+  document.querySelectorAll('.tr-open-link').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      openModal(link.dataset.doc);
+    });
+  });
+
+  /* ── TABS ────────────────────────────────────────────────────────── */
+  tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.doc)));
+
+})();
+</script>
+<!-- ========== END TERMS READER ========== -->
+
+<script src="./js/api.js"></script>
+<script src="./js/auth.js"></script>
+</body>
+</html>

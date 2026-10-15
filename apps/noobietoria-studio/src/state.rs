@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 //! Studio state, types and data structures.
 
 use nb_types::Vector3;
@@ -143,11 +147,13 @@ pub struct StudioApp {
     /// Quick status message on bottom bar.
     pub status_text: String,
     /// Whether the script editor modal is open.
-    #[allow(dead_code)]
     pub script_editor_open: bool,
     /// Script editor buffer.
-    #[allow(dead_code)]
     pub script_buffer: String,
+    /// GUID of the script currently open in the dedicated editor.
+    pub script_editor_target: Option<String>,
+    /// State for the inline/dedicated script editor (autocomplete, filter, navigation).
+    pub script_editor_state: crate::ui::ScriptEditorState,
     /// Show properties panel.
     pub show_properties: bool,
     /// Show explorer panel.
@@ -180,6 +186,8 @@ impl StudioApp {
             status_text: "Ready - Noobietoria Studio v0.1.0".to_owned(),
             script_editor_open: false,
             script_buffer: String::new(),
+            script_editor_target: None,
+            script_editor_state: crate::ui::ScriptEditorState::default(),
             show_properties: true,
             show_explorer: true,
             show_toolbox: true,

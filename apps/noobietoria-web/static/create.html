@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create - Noobietoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="./vector/logo.svg">
+<link rel="stylesheet" href="./css/app.css">
+<script src="./js/colorblind.js"></script>
+</head>
+<body data-page="create">
+
+<main class="page">
+    <div class="wrap">
+        <!-- Top tabs -->
+        <div class="create-tabs" data-tabs="create">
+            <button class="create-tab is-active" data-tab="mine">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                My Creations
+            </button>
+            <button class="create-tab" data-tab="community">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9S9.5 5.6 12 3z"/></svg>
+                Community Creations
+            </button>
+        </div>
+
+        <div data-tab-panel="create" data-panel-id="mine">
+            <div class="create-layout">
+                <!-- Sidebar -->
+                <aside class="create-side">
+                    <h2>Worlds</h2>
+                    <div class="create-side__group">Gameplay</div>
+                    <div class="filter-list">
+                        <a class="filter-item is-active" href="#">🌍 Worlds</a>
+                        <a class="filter-item" href="#">🧱 Models</a>
+                        <a class="filter-item" href="#">🔊 Audio</a>
+                        <a class="filter-item" href="#">🖼️ Images</a>
+                        <a class="filter-item" href="#">🎫 Game Passes</a>
+                        <a class="filter-item" href="#">🧪 Consumables</a>
+                        <a class="filter-item" href="#">🧩 Addons</a>
+                        <a class="filter-item" href="#">📦 Meshes</a>
+                    </div>
+                    <div class="create-side__group">Clothing</div>
+                    <div class="filter-list">
+                        <a class="filter-item" href="#">👕 Clothing</a>
+                    </div>
+                </aside>
+
+                <!-- Main -->
+                <section>
+                    <div class="create-main__head">
+                        <h2>Your Worlds</h2>
+                        <div class="create-main__actions">
+                            <button class="btn btn--outline">📘 Documentation</button>
+                            <button class="btn btn--blue">🛠️ Launch Creator</button>
+                            <button class="btn btn--blue">🛠️ Launch Creator (2.0)</button>
+                        </div>
+                    </div>
+
+                    <div class="create-world-box card">
+                        <h3>🌍 Create World</h3>
+                        <p>Worlds are unique places on Noobietoria that serve as a home for your creations, scripts, and games.</p>
+                        <button class="btn btn--blue">🔨 Create New World</button>
+                    </div>
+
+                    <div class="world-row card">
+                        <div class="thumb thumb--3"><img src="./vector/logo.svg" alt="World thumbnail" style="width:56px;height:56px;"></div>
+                        <div class="world-row__info">
+                            <h3 class="world-row__name">abcsonpoly's World</h3>
+                            <div class="world-row__stats">
+                                <span>🔒 Private</span>
+                                <span>▶ 0</span>
+                                <span>👥 0</span>
+                                <span>👍 –</span>
+                            </div>
+                        </div>
+                        <div class="world-row__actions">
+                            <button class="btn btn--blue">🛠️ Edit</button>
+                            <button class="btn btn--outline">⚙️ Manage</button>
+                            <button class="btn btn--outline">Quick actions ▾</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div data-tab-panel="create" data-panel-id="community" style="display:none;">
+            <p class="section-eyebrow">Community creations will show up here.</p>
+        </div>
+    </div>
+</main>
+
+<script src="./js/api.js"></script>
+<script src="./js/layout.js"></script>
+<script src="./js/app.js"></script>
+<script src="./js/create.js"></script>
+</body>
+</html>

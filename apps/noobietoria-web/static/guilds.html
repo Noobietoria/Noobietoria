@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guilds - Noobietoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="./vector/logo.svg">
+<link rel="stylesheet" href="./css/app.css">
+<script src="./js/colorblind.js"></script>
+</head>
+<body data-page="guilds">
+
+<main class="page">
+    <div class="wrap guilds-layout">
+        <!-- Sidebar -->
+        <aside class="guilds-side">
+            <h1>Trending Guilds</h1>
+            <div class="filter-list">
+                <a class="filter-item is-active" href="#">⭐ Trending</a>
+                <a class="filter-item" href="#">🔥 Top</a>
+                <a class="filter-item" href="#">🕐 New</a>
+                <a class="filter-item" href="#">🏠 Your Guilds</a>
+            </div>
+            <div class="your-guilds">
+                <div class="guild-mini">
+                    <div class="guild-mini__logo" style="background:#123f22;"><img src="./vector/logo.svg" alt="PolyTrack guild logo" style="filter:hue-rotate(90deg) saturate(2);"></div>
+                    <div>
+                        <div class="guild-mini__name">PolyTrack</div>
+                        <div class="guild-mini__members">👤 326</div>
+                    </div>
+                </div>
+                <div class="guild-mini">
+                    <div class="guild-mini__logo"><img src="./vector/logo.svg" alt="Noobietoria guild logo"></div>
+                    <div>
+                        <div class="guild-mini__name">Noobietoria <span class="verified">✔</span></div>
+                        <div class="guild-mini__members">👤 7,818</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <section class="guilds-main">
+            <div class="guilds-main__head">
+                <button class="btn btn--blue">＋ Create</button>
+                <div class="guilds-main__search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <button class="icon-btn" style="background:var(--surface-2);padding:12px;border-radius:10px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                </button>
+            </div>
+
+            <div class="guilds-grid">
+                <article class="guild-card">
+                    <div class="guild-card__banner thumb--6">
+                        <div class="thumb"><img src="./vector/logo.svg" alt="Noobietoria guild logo" style="width:44px;height:44px;"></div>
+                    </div>
+                    <div class="guild-card__body">
+                        <h3 class="guild-card__name">Noobietoria <span class="verified">✔</span></h3>
+                        <p class="guild-card__desc">The official guild of Noobietoria</p>
+                        <div class="guild-card__members">👤 7,818</div>
+                    </div>
+                </article>
+                <article class="guild-card">
+                    <div class="guild-card__banner" style="background:linear-gradient(135deg,#6a8f4e,#3e5c2e);">
+                        <div class="thumb" style="background:#1e3a8a;color:#fff;">🏴</div>
+                    </div>
+                    <div class="guild-card__body">
+                        <h3 class="guild-card__name">Royal Nation of Noob...</h3>
+                        <p class="guild-card__desc">Royal Nation of Noobietoria — roleplay guild</p>
+                        <div class="guild-card__members">👤 122</div>
+                    </div>
+                </article>
+                <article class="guild-card">
+                    <div class="guild-card__banner" style="background:linear-gradient(135deg,#2b2b31,#17171b);">
+                        <div class="thumb" style="background:#000;color:#fff;font-weight:800;">1.0</div>
+                    </div>
+                    <div class="guild-card__body">
+                        <h3 class="guild-card__name">Protest against the r...</h3>
+                        <p class="guild-card__desc">Noobietoria is removing the 1.0 cli...</p>
+                        <div class="guild-card__members">👤 14</div>
+                    </div>
+                </article>
+                <article class="guild-card">
+                    <div class="guild-card__banner" style="background:linear-gradient(135deg,#c98aab,#8a5b74);">
+                        <div class="thumb" style="background:#f5d0e0;">🎀</div>
+                    </div>
+                    <div class="guild-card__body">
+                        <h3 class="guild-card__name">Aki's maid café!</h3>
+                        <p class="guild-card__desc">Welcome to the cafe, master~</p>
+                        <div class="guild-card__members">👤 87</div>
+                    </div>
+                </article>
+                <article class="guild-card">
+                    <div class="guild-card__banner" style="background:linear-gradient(135deg,#f2c437,#c79a1a);">
+                        <div class="thumb" style="background:#fff;">🐰</div>
+                    </div>
+                    <div class="guild-card__body">
+                        <h3 class="guild-card__name">Bunny Fan Club</h3>
+                        <p class="guild-card__desc">For everyone who loves bunnies</p>
+                        <div class="guild-card__members">👤 43</div>
+                    </div>
+                </article>
+                <article class="guild-card">
+                    <div class="guild-card__banner" style="background:linear-gradient(135deg,#6d28d9,#4c1d95);">
+                        <div class="thumb" style="background:#111;color:#a06bfa;font-weight:800;">DS</div>
+                    </div>
+                    <div class="guild-card__body">
+                        <h3 class="guild-card__name">Dreamscape Studio</h3>
+                        <p class="guild-card__desc">We build dreamy worlds together</p>
+                        <div class="guild-card__members">👤 256</div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script src="./js/api.js"></script>
+<script src="./js/layout.js"></script>
+<script src="./js/app.js"></script>
+<script src="./js/guilds.js"></script>
+</body>
+</html>

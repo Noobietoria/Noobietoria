@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.
 // PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING IS STRICTLY PROHIBITED.
 
@@ -72,25 +76,47 @@ pub async fn register_handler(
     }
 
     let user_id = users.len() as u64 + 1000;
+    let token = format!("nb_jwt_{user_id}");
     let user = UserAccount {
         user_id,
         username: payload.username.clone(),
+        email: format!("{}@noobietoria.com", payload.username),
         password_hash: format!("sha256:{}", payload.password),
         display_name: payload
             .display_name
             .unwrap_or_else(|| payload.username.clone()),
+        bio: "Playing Noobietoria!".to_owned(),
+        avatar_emoji: "😀".to_owned(),
+        body_color_hue: 205,
+        banner_color: "#1e293b".to_owned(),
+        level: 1,
+        plus_tier: "Free".to_owned(),
+        credits: 50,
         coins: 100, // Starter currency
+        streak: 1,
+        longest_streak: 1,
+        item_sales: 0,
+        networth: 150,
+        status: "online".to_owned(),
         created_at: "2026-10-15T00:00:00Z".to_owned(),
+        last_seen: "Just now".to_owned(),
+        friends_count: 0,
+        worlds_count: 0,
+        inventory: vec![],
+        equipped: vec![],
     };
 
     users.insert(payload.username.clone(), user);
+    drop(users);
+    state.tokens.write().insert(token.clone(), payload.username.clone());
+
     (
         StatusCode::CREATED,
         Json(AuthResponse {
             success: true,
             user_id: Some(user_id),
             username: Some(payload.username),
-            token: Some(format!("nb_jwt_{user_id}")),
+            token: Some(token),
             message: "Account created successfully".to_owned(),
         }),
     )
@@ -104,13 +130,18 @@ pub async fn login_handler(
     let users = state.users.read();
     if let Some(user) = users.get(&payload.username) {
         if user.password_hash == format!("sha256:{}", payload.password) {
+            let user_id = user.user_id;
+            let token = format!("nb_jwt_{}", user_id);
+            drop(users);
+            state.tokens.write().insert(token.clone(), payload.username.clone());
+
             return (
                 StatusCode::OK,
                 Json(AuthResponse {
                     success: true,
-                    user_id: Some(user.user_id),
-                    username: Some(user.username.clone()),
-                    token: Some(format!("nb_jwt_{}", user.user_id)),
+                    user_id: Some(user_id),
+                    username: Some(payload.username),
+                    token: Some(token),
                     message: "Login successful".to_owned(),
                 }),
             );
@@ -127,6 +158,15 @@ pub async fn login_handler(
             message: "Invalid username or password".to_owned(),
         }),
     )
+}
+
+// --- Handler: Auth Providers ---
+pub async fn providers_handler() -> impl IntoResponse {
+    Json(serde_json::json!({
+        "google": false,
+        "discord": false,
+        "roblox": false,
+    }))
 }
 
 // --- Handler: List Games ---
@@ -254,6 +294,7 @@ pub async fn moderation_check_handler(
 }
 
 // --- Handler: Front-end Homepage (Roblox Dark Theme) ---
+#[allow(dead_code)]
 pub async fn index_page_handler(State(state): State<AppState>) -> Html<String> {
     let games = state.games.read();
     let mut games_html = String::new();

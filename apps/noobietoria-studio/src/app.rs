@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 //! The eframe App lifecycle and main layout orchestration.
 
 use eframe::App;
@@ -93,5 +97,71 @@ impl App for StudioApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             render_viewport(self, ui);
         });
+
+        // --- Dedicated Script Editor Window (Luau IDE) ---
+        if self.script_editor_open {
+            let mut is_open = self.script_editor_open;
+            let script_title = self
+                .script_editor_target
+                .as_ref()
+                .and_then(|g| self.world.by_guid(g).ok())
+                .map(|i| format!("📜 Script Editor: {} ({})", i.name, i.kind.as_str()))
+                .unwrap_or_else(|| "📜 Script Editor".to_owned());
+
+            let mut close_requested = false;
+            let mut save_requested = false;
+
+            egui::Window::new(script_title)
+                .open(&mut is_open)
+                .default_size([760.0, 520.0])
+                .min_size([400.0, 300.0])
+                .show(ctx, |ui| {
+                    ui.horizontal(|ui| {
+                        if ui.button("💾 Apply to Script").clicked() {
+                            save_requested = true;
+                        }
+                        if ui.button("❌ Close").clicked() {
+                            close_requested = true;
+                        }
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.label(RichText::new("Luau 5.1 Intellisense Active").color(Color32::from_rgb(0, 162, 255)).small());
+                        });
+                    });
+                    ui.separator();
+
+                    let modified = crate::ui::render_code_editor(
+                        ui,
+                        &mut self.script_buffer,
+                        &mut self.script_editor_state,
+                        (ui.available_height() - 10.0).max(200.0),
+                    );
+
+                    // Auto-sync buffer back to target instance when changed
+                    if modified {
+                        if let Some(guid) = &self.script_editor_target {
+                            if let Ok(inst) = self.world.by_guid_mut(guid) {
+                                inst.properties.source = self.script_buffer.clone();
+                            }
+                        }
+                    }
+                });
+
+            if save_requested {
+                if let Some(guid) = &self.script_editor_target {
+                    if let Ok(inst) = self.world.by_guid_mut(guid) {
+                        inst.properties.source = self.script_buffer.clone();
+                        let name = inst.name.clone();
+                        self.status_text = format!("Saved script: {name}");
+                        self.log(crate::state::LogLevel::Info, format!("Saved changes to {name}"));
+                    }
+                }
+            }
+
+            if close_requested {
+                is_open = false;
+            }
+
+            self.script_editor_open = is_open;
+        }
     }
 }

@@ -19,6 +19,7 @@ nb-types.workspace = true
 nb-world.workspace = true
 anyhow.workspace = true
 eframe.workspace = true
+egui.workspace = true
 parking_lot.workspace = true
 serde.workspace = true
 serde_json.workspace = true

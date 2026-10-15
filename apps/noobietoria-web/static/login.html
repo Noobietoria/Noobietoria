@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in - Noobietoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="./vector/logo.svg">
+<link rel="stylesheet" href="./css/app.css">
+<script src="./js/colorblind.js"></script>
+<link rel="stylesheet" href="./css/auth.css">
+<link rel="stylesheet" href="./css/start.css">
+</head>
+<body>
+
+<div class="auth">
+    <!-- Brand side -->
+    <aside class="auth__aside">
+        <a class="auth__brand" href="landing.html">
+            <img src="./vector/logo.svg" alt="Noobietoria logo">
+            Noobietoria
+        </a>
+
+        <div class="auth__pitch">
+            <h1>Welcome back to a <span>NICE</span> community.</h1>
+            <p>Log in to jump back into your worlds, hang out with friends, and keep your streak alive.</p>
+            <ul class="auth__perks">
+                <li><span class="dot dot--blue">🎮</span> 200+ worlds &amp; games to play</li>
+                <li><span class="dot dot--green">🛠️</span> Build anything with friendly tools</li>
+                <li><span class="dot dot--purple">🤝</span> Genuinely nice people, active moderation</li>
+                <li><span class="dot dot--gold">🔥</span> Daily streaks &amp; weekly events</li>
+            </ul>
+        </div>
+
+        <p class="auth__hint">© 2023 - 2026 Noobietoria · web v0.1.0</p>
+    </aside>
+
+    <!-- Form side -->
+    <main class="auth__main">
+        <div class="auth__box">
+            <div class="auth__mobile-logo">
+                <img src="./vector/logo.svg" alt="Noobietoria logo">
+                Noobietoria
+            </div>
+
+            <h1 class="auth__title">Log in</h1>
+            <p class="auth__sub">Good to see you again, Noobie!</p>
+
+            <form class="auth__form" id="login-form" novalidate>
+                <div class="auth__field">
+                    <label class="auth__label" for="login-id">Username or email</label>
+                    <div class="auth__control">
+                        <input class="auth__input" type="text" id="login-id" name="id"
+                               placeholder="e.g. abcsonpoly" autocomplete="username" required>
+                    </div>
+                </div>
+
+                <div class="auth__field">
+                    <label class="auth__label" for="login-password">Password</label>
+                    <div class="auth__control">
+                        <input class="auth__input" type="password" id="login-password" name="password"
+                               placeholder="Your password" autocomplete="current-password" required minlength="6">
+                        <button class="auth__toggle" type="button" data-toggle-password="login-password">SHOW</button>
+                    </div>
+                    <span class="auth__hint-msg" data-error-for="login-password"></span>
+                </div>
+
+                <div class="auth__row">
+                    <label class="auth__check">
+                        <input type="checkbox" name="remember" checked>
+                        Remember me
+                    </label>
+                    <a href="#">Forgot password?</a>
+                </div>
+
+                <button class="btn btn--blue auth__btn" type="submit">Log in</button>
+
+                <div class="auth__divider">or continue with</div>
+
+                <div class="auth__social">
+                    <button class="btn btn--outline btn--discord" type="button" data-social="discord">
+                        <img src="./vector/discord.svg" alt="Discord logo">Discord
+                    </button>
+                    <button class="btn btn--outline btn--google" type="button" data-social="google">
+                        <img src="./vector/google.svg" alt="Google logo">Google
+                    </button>
+                    <button class="btn btn--outline btn--roblox" type="button" data-social="roblox">
+                        <img src="./vector/roblox.svg" alt="Roblox logo">Continue with Roblox
+                    </button>
+                </div>
+            </form>
+
+            <p class="auth__foot">New to Noobietoria? <a href="register.html">Create an account</a></p>
+
+            <a class="auth__back" href="landing.html">← Back to landing page</a>
+        </div>
+    </main>
+</div>
+
+<div class="loader-overlay" id="page-loader" aria-hidden="true">
+    <div class="loader loader--small">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <p data-loader-text>Logging you in...</p>
+</div>
+<script src="./js/api.js"></script>
+<script src="./js/auth.js"></script>
+</body>
+</html>

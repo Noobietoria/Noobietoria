@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>People - Noobietoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="./vector/logo.svg">
+<link rel="stylesheet" href="./css/app.css">
+<script src="./js/colorblind.js"></script>
+</head>
+<body data-page="people">
+
+<main class="page">
+    <div class="wrap">
+        <section class="people-panel card">
+            <h2 class="people-panel__title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Find people
+            </h2>
+
+            <div class="tabs" data-tabs="people">
+                <button class="tab is-active" data-tab="friends">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Friends
+                </button>
+                <button class="tab" data-tab="global">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9S9.5 5.6 12 3z"/></svg>
+                    Global
+                </button>
+            </div>
+
+            <div class="people-search">
+                <input type="text" placeholder="Search friends...">
+                <button class="btn btn--outline" style="padding:12px 18px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px;"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                </button>
+            </div>
+
+            <div class="people-legend">
+                <span><span class="legend-dot" style="background:var(--green);"></span>0</span>
+                <span><span class="legend-dot" style="background:var(--blue);"></span>1</span>
+                <span><span class="legend-dot" style="border:2px solid var(--muted);width:9px;height:9px;"></span>12 friends</span>
+            </div>
+
+            <div data-tab-panel="people" data-panel-id="friends">
+                <div class="person-row">
+                    <span class="av av--1">T</span>
+                    <div class="person-row__info">
+                        <div class="person-row__name"><span class="status-dot" style="background:var(--blue);"></span>Triton</div>
+                        <p class="person-row__status">ton ton ton sahur</p>
+                        <div class="person-row__meta"><span>⭐ Level 19</span></div>
+                    </div>
+                    <button class="btn btn--green btn--sm">✔ Friends</button>
+                    <button class="btn btn--ghost btn--sm">⋮</button>
+                </div>
+                <div class="person-row">
+                    <span class="av av--2">C</span>
+                    <div class="person-row__info">
+                        <div class="person-row__name"><span class="status-dot" style="border:2px solid var(--muted);width:7px;height:7px;"></span>Centrite</div>
+                        <p class="person-row__status">--[ Info ]--={Owner of the Limited Club guild}</p>
+                        <div class="person-row__meta"><span>⭐ Level 14</span><span class="plus">✦ Plus Deluxe</span></div>
+                    </div>
+                    <button class="btn btn--green btn--sm">✔ Friends</button>
+                    <button class="btn btn--ghost btn--sm">⋮</button>
+                </div>
+                <div class="person-row">
+                    <span class="av av--7">X</span>
+                    <div class="person-row__info">
+                        <div class="person-row__name"><span class="status-dot" style="border:2px solid var(--muted);width:7px;height:7px;"></span>xBoopx</div>
+                        <p class="person-row__status">Join the Alienz! ~(^,,^)~</p>
+                        <div class="person-row__meta"><span>⭐ Level 13</span><span class="plus">✦ Plus Deluxe</span></div>
+                    </div>
+                    <button class="btn btn--green btn--sm">✔ Friends</button>
+                    <button class="btn btn--ghost btn--sm">⋮</button>
+                </div>
+                <div class="person-row">
+                    <span class="av av--3">R</span>
+                    <div class="person-row__info">
+                        <div class="person-row__name"><span class="status-dot" style="border:2px solid var(--muted);width:7px;height:7px;"></span>rompork</div>
+                        <p class="person-row__status">sillyness is my passion, trying to get to 1k friends</p>
+                        <div class="person-row__meta"><span>⭐ Level 28</span></div>
+                    </div>
+                    <button class="btn btn--green btn--sm">✔ Friends</button>
+                    <button class="btn btn--ghost btn--sm">⋮</button>
+                </div>
+                <div class="person-row">
+                    <span class="av av--4">B</span>
+                    <div class="person-row__info">
+                        <div class="person-row__name"><span class="status-dot" style="border:2px solid var(--muted);width:7px;height:7px;"></span>Bandit</div>
+                        <p class="person-row__status">just vibing</p>
+                        <div class="person-row__meta"><span>⭐ Level 22</span><span class="plus">✦ Plus Deluxe</span></div>
+                    </div>
+                    <button class="btn btn--green btn--sm">✔ Friends</button>
+                    <button class="btn btn--ghost btn--sm">⋮</button>
+                </div>
+            </div>
+
+            <div data-tab-panel="people" data-panel-id="global" style="display:none;">
+                <div class="person-row">
+                    <span class="av av--5">W</span>
+                    <div class="person-row__info">
+                        <div class="person-row__name"><span class="status-dot" style="background:var(--green);"></span>wlbd</div>
+                        <p class="person-row__status">building something cool...</p>
+                        <div class="person-row__meta"><span>⭐ Level 9</span></div>
+                    </div>
+                    <button class="btn btn--blue btn--sm">＋ Add Friend</button>
+                    <button class="btn btn--ghost btn--sm">⋮</button>
+                </div>
+                <div class="person-row">
+                    <span class="av av--6">P</span>
+                    <div class="person-row__info">
+                        <div class="person-row__name"><span class="status-dot" style="background:var(--green);"></span>prruul</div>
+                        <p class="person-row__status">hi</p>
+                        <div class="person-row__meta"><span>⭐ Level 31</span></div>
+                    </div>
+                    <button class="btn btn--blue btn--sm">＋ Add Friend</button>
+                    <button class="btn btn--ghost btn--sm">⋮</button>
+                </div>
+                <div class="person-row">
+                    <span class="av av--8">1</span>
+                    <div class="person-row__info">
+                        <div class="person-row__name"><span class="status-dot" style="border:2px solid var(--muted);width:7px;height:7px;"></span>1body2many</div>
+                        <p class="person-row__status">...</p>
+                        <div class="person-row__meta"><span>⭐ Level 5</span><span class="plus">✦ Plus Deluxe</span></div>
+                    </div>
+                    <button class="btn btn--blue btn--sm">＋ Add Friend</button>
+                    <button class="btn btn--ghost btn--sm">⋮</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script src="./js/api.js"></script>
+<script src="./js/layout.js"></script>
+<script src="./js/app.js"></script>
+<script src="./js/people.js"></script>
+</body>
+</html>

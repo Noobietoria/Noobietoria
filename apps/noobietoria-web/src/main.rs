@@ -1,6 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.
 // PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING IS STRICTLY PROHIBITED.
 
+mod graphql;
 mod routes;
 mod state;
 
@@ -8,6 +13,22 @@ use axum::routing::{get, post};
 use axum::Router;
 use state::AppState;
 use std::net::SocketAddr;
+use std::path::PathBuf;
+use tower_http::services::ServeDir;
+
+fn find_static_dir() -> PathBuf {
+    let candidates = [
+        PathBuf::from("apps/noobietoria-web/static"),
+        PathBuf::from("static"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("static"),
+    ];
+    for c in candidates {
+        if c.exists() {
+            return c;
+        }
+    }
+    PathBuf::from("static")
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -31,9 +52,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
+    let static_dir = find_static_dir();
+    println!("[Noobietoria Web] Serving static assets from: {}", static_dir.display());
+
     let state = AppState::new();
+    let serve_dir = ServeDir::new(&static_dir).append_index_html_on_directories(true);
+
     let app = Router::new()
-        .route("/", get(routes::index_page_handler))
+        .route("/graphql", post(graphql::graphql_handler))
+        .route("/auth/providers", get(routes::providers_handler))
         .route("/api/v1/auth/register", post(routes::register_handler))
         .route("/api/v1/auth/login", post(routes::login_handler))
         .route("/api/v1/games", get(routes::list_games_handler))
@@ -49,6 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "/api/v1/moderation/check",
             post(routes::moderation_check_handler),
         )
+        .fallback_service(serve_dir)
         .with_state(state);
 
     let port = 3000;
@@ -131,6 +159,39 @@ async fn run_selftest() -> Result<(), Box<dyn std::error::Error>> {
     assert!(state.games.read().contains_key(&place_id));
     println!("  [✓] Studio to Web place publishing workflow verified");
 
-    println!("[Noobietoria Web] All closed-source web backend tests passed successfully!");
+    // 4. Test GraphQL API Compatibility
+    println!("  [✓] Testing GraphQL API operations (/graphql)...");
+    let req = graphql::GraphQLRequest {
+        query: "query { me { username coins credits } }".to_owned(),
+        variables: serde_json::Value::Null,
+    };
+    let headers = axum::http::HeaderMap::new();
+    let resp = graphql::graphql_handler(axum::extract::State(state.clone()), headers, axum::Json(req)).await;
+    let json_bytes = serde_json::to_vec(&resp.0)?;
+    let val: serde_json::Value = serde_json::from_slice(&json_bytes)?;
+    assert!(val.get("data").is_some(), "GraphQL response must contain data");
+    println!("  [✓] GraphQL me query verified compatible");
+
+    // Test GraphQL Login
+    let login_req = graphql::GraphQLRequest {
+        query: "mutation($u:String!,$p:String!){ login(usernameOrEmail:$u,password:$p){ token } }".to_owned(),
+        variables: serde_json::json!({ "u": "PlayerOne", "p": "password123" }),
+    };
+    let headers2 = axum::http::HeaderMap::new();
+    let login_resp = graphql::graphql_handler(axum::extract::State(state.clone()), headers2, axum::Json(login_req)).await;
+    let login_bytes = serde_json::to_vec(&login_resp.0)?;
+    let login_val: serde_json::Value = serde_json::from_slice(&login_bytes)?;
+    let token = login_val["data"]["login"]["token"].as_str().expect("Token should be returned");
+    assert!(token.starts_with("nb_tok_"), "Valid token returned");
+    println!("  [✓] GraphQL login mutation verified compatible (issued token)");
+
+    // Test Static assets directory
+    let static_dir = find_static_dir();
+    assert!(static_dir.exists(), "Static directory must exist");
+    assert!(static_dir.join("landing.html").exists(), "landing.html must exist");
+    assert!(static_dir.join("js/api.js").exists(), "js/api.js must exist");
+    println!("  [✓] Static website files located at: {}", static_dir.display());
+
+    println!("[Noobietoria Web] All closed-source web backend & GraphQL compatibility tests passed successfully!");
     Ok(())
 }

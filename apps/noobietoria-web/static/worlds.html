@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Worlds - Noobietoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="./vector/logo.svg">
+<link rel="stylesheet" href="./css/app.css">
+<script src="./js/colorblind.js"></script>
+</head>
+<body data-page="worlds">
+
+<!-- Featured hero carousel -->
+<section class="hero-carousel">
+    <div class="hero-slide is-active">
+        <div class="hero-slide__bg"></div>
+        <div class="hero-slide__content">
+            <h1>Prop Hunt</h1>
+            <p class="byline">By cya</p>
+            <p class="desc">Play as a prop blending into the environment or a hunter seeking them out. Put a ; in front of your message to team chat!</p>
+        </div>
+    </div>
+    <div class="hero-slide">
+        <div class="hero-slide__bg"></div>
+        <div class="hero-slide__content">
+            <h1>Siege</h1>
+            <p class="byline">By bagger</p>
+            <p class="desc">Defend the castle with your friends or storm the walls in this medieval team battler. Updated to v0.11!</p>
+        </div>
+    </div>
+    <div class="hero-slide">
+        <div class="hero-slide__bg"></div>
+        <div class="hero-slide__content">
+            <h1>Rainy Day Café</h1>
+            <p class="byline">By rompork</p>
+            <p class="desc">Cozy up with a warm drink while the rain pours outside. A chill hangout for rainy days and quiet nights.</p>
+        </div>
+    </div>
+    <button class="hero-arrow hero-arrow--prev" aria-label="Previous">‹</button>
+    <button class="hero-arrow hero-arrow--next" aria-label="Next">›</button>
+    <div class="hero-dots">
+        <button class="is-active" aria-label="Slide 1"></button>
+        <button aria-label="Slide 2"></button>
+        <button aria-label="Slide 3"></button>
+    </div>
+</section>
+
+<main class="page">
+    <div class="wrap">
+        <!-- Toolbar -->
+        <div class="worlds-toolbar">
+            <div class="toolbar-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" placeholder="Search Worlds...">
+            </div>
+            <select class="select">
+                <option>All Genres</option>
+                <option>Adventure</option>
+                <option>Hangout</option>
+                <option>Obby</option>
+                <option>PvP</option>
+            </select>
+            <select class="select">
+                <option>All Versions</option>
+                <option>2.0</option>
+                <option>1.0</option>
+            </select>
+            <select class="select">
+                <option>Trending</option>
+                <option>Top Rated</option>
+                <option>Most Players</option>
+                <option>Newest</option>
+            </select>
+            <button class="btn btn--blue">Download ▾</button>
+        </div>
+
+        <!-- Worlds grid -->
+        <div class="worlds-grid">
+            <article class="world-card">
+                <div class="thumb thumb--1">🏰</div>
+                <h3 class="world-card__title">🏰 Siege [v0.11 ALPHA]</h3>
+                <div class="world-card__stats"><span>👤 7</span><span class="like">👍 88%</span></div>
+            </article>
+            <article class="world-card">
+                <div class="thumb thumb--3">🌴</div>
+                <h3 class="world-card__title">🌴 Guboigle</h3>
+                <div class="world-card__stats"><span>👤 4</span><span class="like">👍 77%</span></div>
+            </article>
+            <article class="world-card">
+                <div class="thumb thumb--2">🔫</div>
+                <h3 class="world-card__title">🔒 [β v2.0.3] No Poly</h3>
+                <div class="world-card__stats"><span>👤 5</span><span class="like">👍 95%</span></div>
+            </article>
+            <article class="world-card">
+                <div class="thumb thumb--4">☕</div>
+                <h3 class="world-card__title">☕ Rainy Day Café</h3>
+                <div class="world-card__stats"><span>👤 5</span><span class="like">👍 97%</span></div>
+            </article>
+            <article class="world-card">
+                <div class="thumb thumb--5">🧟</div>
+                <h3 class="world-card__title">🧟 Call of Noobietoria 1.0 [ZOMBIES]</h3>
+                <div class="world-card__stats"><span>👤 2</span><span class="like">👍 83%</span></div>
+            </article>
+            <article class="world-card">
+                <div class="thumb thumb--6">🎃</div>
+                <h3 class="world-card__title">🎃 Trick or Retreat! [NEW TREATS]</h3>
+                <div class="world-card__stats"><span>👤 3</span><span class="like">👍 85%</span></div>
+            </article>
+            <article class="world-card">
+                <div class="thumb thumb--1">✨</div>
+                <h3 class="world-card__title">✨ My Dreamscape [2.0]</h3>
+                <div class="world-card__stats"><span>👤 3</span><span class="like">👍 96%</span></div>
+            </article>
+            <article class="world-card">
+                <div class="thumb thumb--3">🏙️</div>
+                <h3 class="world-card__title">🏙️ Prop Hunt</h3>
+                <div class="world-card__stats"><span>👤 8</span><span class="like">👍 92%</span></div>
+            </article>
+        </div>
+    </div>
+</main>
+
+<script src="./js/api.js"></script>
+<script src="./js/layout.js"></script>
+<script src="./js/app.js"></script>
+<script src="./js/worlds.js"></script>
+</body>
+</html>

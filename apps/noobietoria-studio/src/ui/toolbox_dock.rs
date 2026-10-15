@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 //! Toolbox window: Roblox-style asset catalog with search and 1-click insertion.
 
 use egui::{Color32, RichText, ScrollArea, Ui};

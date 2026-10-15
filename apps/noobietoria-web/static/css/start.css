@@ -1,0 +1,81 @@
+/* Scoped to the boot/loader page only (index.html) so other pages
+   that link this file for the spinner are not affected. */
+body.boot {
+  background: #181818;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.loader {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.loader span {
+  position: absolute;
+  top: 0;
+  left: 11px;             /* Căn giữa chính xác cho vạch rộng 2px */
+  width: 2px;              /* Giảm bề dày vạch */
+  height: 6px;             /* Độ dài vạch */
+  background: #ffffff;
+  border-radius: 10px;      /* Bo tròn nhẹ đầu vạch */
+  opacity: 0.15;
+  transform-origin: 50% 12px; /* Tâm quay chuẩn 12px */
+  animation: apple-fade 0.8s linear infinite;
+}
+
+/* Xoay từng vạch theo góc 30deg và delay hiệu ứng mờ dần */
+.loader span:nth-child(1)  { transform: rotate(0deg);    animation-delay: -0.733s; }
+.loader span:nth-child(2)  { transform: rotate(30deg);   animation-delay: -0.666s; }
+.loader span:nth-child(3)  { transform: rotate(60deg);   animation-delay: -0.6s;   }
+.loader span:nth-child(4)  { transform: rotate(90deg);   animation-delay: -0.533s; }
+.loader span:nth-child(5)  { transform: rotate(120deg);  animation-delay: -0.466s; }
+.loader span:nth-child(6)  { transform: rotate(150deg);  animation-delay: -0.4s;   }
+.loader span:nth-child(7)  { transform: rotate(180deg);  animation-delay: -0.333s; }
+.loader span:nth-child(8)  { transform: rotate(210deg);  animation-delay: -0.266s; }
+.loader span:nth-child(9)  { transform: rotate(240deg);  animation-delay: -0.2s;   }
+.loader span:nth-child(10) { transform: rotate(270deg);  animation-delay: -0.133s; }
+.loader span:nth-child(11) { transform: rotate(300deg);  animation-delay: -0.066s; }
+.loader span:nth-child(12) { transform: rotate(330deg);  animation-delay: 0s;      }
+
+@keyframes apple-fade {
+  0% { opacity: 1; }
+  100% { opacity: 0.15; }
+}
+
+/* ============================================
+   Reusable spinner overlay (login / register)
+   Overlay is self-contained so pages that link
+   this file are not affected by the body rule.
+   ============================================ */
+
+.loader--small { transform: scale(0.75); }
+
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+  background: rgba(23, 23, 27, 0.88);
+  backdrop-filter: blur(4px);
+}
+
+.loader-overlay.is-visible {
+  display: flex;
+}
+
+.loader-overlay p {
+  margin: 0;
+  color: #9a9aa3;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+}

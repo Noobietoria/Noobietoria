@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello, we're Noobietoria. A NICE community</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="./vector/logo.svg">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <link rel="stylesheet" href="./css/landing.css">
+    <script src="./js/colorblind.js" defer></script>
+</head>
+<body>
+
+    <!-- Colorblind filter defs + switcher button are injected by js/colorblind.js -->
+
+    <!-- NAV -->
+    <header class="navbar">
+        <div class="wrap navbar__inner">
+            <a href="#top" class="logo">
+                <img src="./vector/logo.svg" width="40px" alt="logo">
+                Noobietoria
+            </a>
+            <nav class="navbar__links">
+                <a href="#features">Features</a>
+                <a href="#press-kit">Press Kit</a>
+                <a href="login.html">Log in</a>
+                <a href="register.html" class="btn btn--small">Join now</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" id="top">
+        <div class="hero__blob hero__blob--one"></div>
+        <div class="hero__blob hero__blob--two"></div>
+
+        <div class="wrap hero__inner">
+            <p class="eyebrow">A NICE community</p>
+            <h1 class="hero__title">
+                <span class="word">Hi,</span> <span class="word">we're</span> <span class="word highlight">Noobietoria</span>.
+            </h1>
+            <p class="hero__subtitle">
+                Build, play, and hang out in a friendly virtual world made by
+                players, for players. No drama, just good vibes and good games.
+            </p>
+            <div class="hero__actions">
+                <a href="register.html" class="btn btn--primary">Join the community</a>
+                <a href="#features" class="btn btn--ghost">See what's inside</a>
+            </div>
+
+            <div class="hero__stats">
+                <div class="stat">
+                    <span class="stat__num" data-count="10000" data-suffix="+">0</span>
+                    <span class="stat__label">Noobies</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__num" data-count="200" data-suffix="+">0</span>
+                    <span class="stat__label">Worlds &amp; games</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__num">24/7</span>
+                    <span class="stat__label">Someone online</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="marquee" aria-hidden="true">
+        <div class="marquee__track">
+            <span>🎮 Play together</span><span>🛠️ Build anything</span><span>💛 Be nice</span><span>🌱 Grow together</span><span>🌍 Explore worlds</span><span>🎉 Weekly events</span>
+            <span>🎮 Play together</span><span>🛠️ Build anything</span><span>💛 Be nice</span><span>🌱 Grow together</span><span>🌍 Explore worlds</span><span>🎉 Weekly events</span>
+        </div>
+    </div>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+        <div class="wrap">
+            <p class="eyebrow eyebrow--center">Why people stay</p>
+            <h2 class="section-title">Everything a friendly world needs</h2>
+
+            <div class="features__grid">
+                <article class="card">
+                    <div class="card__icon card__icon--a">🎮</div>
+                    <h3>Play together</h3>
+                    <p>Jump into hundreds of community-made games and worlds, from cozy hangouts to full-on adventures.</p>
+                </article>
+
+                <article class="card">
+                    <div class="card__icon card__icon--b">🛠️</div>
+                    <h3>Build anything</h3>
+                    <p>Simple, friendly creation tools that let anyone — beginner or pro — bring their ideas to life.</p>
+                </article>
+
+                <article class="card">
+                    <div class="card__icon card__icon--c">🤝</div>
+                    <h3>Genuinely nice people</h3>
+                    <p>We keep it kind here. Active moderation and a community that actually looks out for each other.</p>
+                </article>
+
+                <article class="card">
+                    <div class="card__icon card__icon--d">🌱</div>
+                    <h3>Always growing</h3>
+                    <p>New worlds, events, and features every week — there's always something fresh to discover.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRESS KIT -->
+    <section class="presskit" id="press-kit">
+        <div class="wrap">
+            <p class="eyebrow eyebrow--center">Press Kit</p>
+            <h2 class="section-title">Everything you need to write about us</h2>
+            <p class="presskit__intro">
+                Making a video, article, or fan page about Noobietoria? Grab our logos,
+                colors, and quick facts below — free to use for press and community content.
+            </p>
+
+            <!-- Logo assets -->
+            <div class="presskit__grid">
+                <article class="presskit__asset">
+                    <div class="presskit__preview presskit__preview--light">
+                        <img src="./vector/logo.svg" alt="Noobietoria logo icon">
+                    </div>
+                    <h3>Logo icon</h3>
+                    <p>SVG · transparent background</p>
+                    <a class="btn btn--outline btn--sm" href="./vector/logo.svg" download>Download SVG</a>
+                </article>
+
+                <article class="presskit__asset">
+                    <div class="presskit__preview presskit__preview--light">
+                        <img src="./vector/logofull.svg" alt="Noobietoria full logo">
+                    </div>
+                    <h3>Full logo</h3>
+                    <p>SVG · icon + wordmark (dark text)</p>
+                    <a class="btn btn--outline btn--sm" href="./vector/logofull.svg" download>Download SVG</a>
+                </article>
+
+                <article class="presskit__asset">
+                    <div class="presskit__preview presskit__preview--dark">
+                        <img src="./vector/logofullwhite.svg" alt="Noobietoria full white logo">
+                    </div>
+                    <h3>Full logo (white)</h3>
+                    <p>SVG · for dark backgrounds</p>
+                    <a class="btn btn--outline btn--sm" href="./vector/logofullwhite.svg" download>Download SVG</a>
+                </article>
+            </div>
+
+            <!-- Brand colors + facts -->
+            <div class="presskit__row">
+                <div class="presskit__colors card">
+                    <h3>Brand colors</h3>
+                    <div class="presskit__swatches">
+                        <div class="swatch"><span style="background:#CD7A7B;"></span>#CD7A7B<br><small>Brand red</small></div>
+                        <div class="swatch"><span style="background:#FFC93C;"></span>#FFC93C<br><small>Sunny yellow</small></div>
+                        <div class="swatch"><span style="background:#6FD6A0;"></span>#6FD6A0<br><small>Friendly mint</small></div>
+                        <div class="swatch"><span style="background:#2B2438;"></span>#2B2438<br><small>Ink</small></div>
+                    </div>
+                </div>
+
+                <div class="presskit__facts card">
+                    <h3>Quick facts</h3>
+                    <ul>
+                        <li><strong>Name:</strong> Noobietoria (never using "Noob")</li>
+                        <li><strong>Tagline:</strong> A NICE community</li>
+                        <li><strong>Founded:</strong> 2023</li>
+                        <li><strong>Platform:</strong> Web + game client</li>
+                        <li><strong>Press contact:</strong> press@noobietoria.net</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p class="presskit__note">
+                Please don't recolor, stretch, or add effects to the logo. Keep clear space
+                around it equal to the height of the icon. Questions? Ping us on Discord.
+            </p>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta" id="join">
+        <div class="wrap cta__inner">
+            <h2>Ready to say hi?</h2>
+            <p>Come see why we call ourselves a NICE community. It only takes a minute to join.</p>
+            <a href="register.html" class="btn btn--primary btn--lg">Join Noobietoria — it's free</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="wrap footer__inner">
+            <div class="footer__copy">
+                <span>© 2026 Noobietoria. Made with 💛 by the community.</span>
+                <span style="display:flex;gap:12px;font-size:0.85rem;font-weight:600;"><a href="terms.html">Terms</a><a href="privacy.html">Privacy Policy</a></span>
+                <a class="footer__badge" href="#" aria-label="Đã thông báo Bộ Công Thương">
+                    <img src="./img/DaThongBao.png" alt="Đã thông báo Bộ Công Thương">
+                </a>
+            </div>
+
+            <div class="footer__links">
+                <a href="https://discord.gg/noobietoria" aria-label="Discord" title="Discord">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 5.4A18 18 0 0 0 15.9 4c-.2.4-.5.9-.6 1.3a16.7 16.7 0 0 0-5 0A9 9 0 0 0 9.6 4a18 18 0 0 0-4.4 1.4C2.4 9.4 1.7 13.3 2 17.1a18 18 0 0 0 5.5 2.8c.4-.6.8-1.2 1.1-1.9-.6-.2-1.2-.5-1.8-.9l.4-.3c3.5 1.6 7.3 1.6 10.8 0l.4.3c-.6.4-1.2.7-1.8.9.3.7.7 1.3 1.1 1.9a18 18 0 0 0 5.5-2.8c.4-4.4-.7-8.3-2.9-11.7ZM9.7 14.7c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2Zm6.6 0c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2Z"/></svg>
+                </a>
+                <a href="https://x.com/noobietoria" aria-label="X (Twitter)" title="X">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23.3 22H16.6l-5.2-6.8L5.4 22H2.3l8.1-9.3L1.6 2h6.9l4.7 6.2L18.9 2Zm-1.2 18h1.7L7.4 3.9H5.6L17.7 20Z"/></svg>
+                </a>
+                <a href="#" aria-label="Zalo OA" title="Zalo OA (sắp có)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6 2 11c0 2.9 1.5 5.5 3.9 7.2-.1.9-.5 2.3-1.4 3.6a.4.4 0 0 0 .4.6c1.9-.5 3.4-1.4 4.3-2.1 1 .3 2 .4 2.8.4 5.5 0 10-4 10-9S17.5 2 12 2Z"/></svg>
+                </a>
+                <a href="https://www.threads.com/@abcsnoobcute" aria-label="Threads" title="Threads">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.2 2C7 2 3.3 5 3 9.7c-.1 2 .4 3.8 1.4 5.2 1.4 2 3.7 3.1 6.5 3.3.1-.6.3-1.1.5-1.6-2.1-.3-3.7-1.1-4.7-2.5-.7-1-1-2.2-.9-3.7.2-3.4 2.7-5.6 6.3-5.6 3.5 0 5.7 1.9 6.1 4.9.3 2.1-.3 3.9-1.6 5-.9.8-2 1.1-3 .9-.1-.7-.1-1.4-.1-2.2 0-1.7-.2-3-1-3.9-.7-.8-1.7-1.2-3-1.2-2 0-3.6 1.4-3.6 3.4 0 1.7 1.2 3.1 3.4 3.3 1.5.2 2.8-.3 3.7-1.1.4.8 1 1.4 1.9 1.7 1.6.6 3.5.2 4.9-1 1.8-1.5 2.6-3.9 2.2-6.6-.6-4.1-3.9-6.7-8.8-6.7Z"/></svg>
+                </a>
+            </div>
+
+            <a class="footer__totop" href="#top">
+                Back to top
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </a>
+        </div>
+    </footer>
+
+    <script src="./js/landing.js"></script>
+</body>
+</html>

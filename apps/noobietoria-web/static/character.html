@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character - Noobietoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="./vector/logo.svg">
+<link rel="stylesheet" href="./css/app.css">
+<script src="./js/colorblind.js"></script>
+</head>
+<body data-page="character">
+
+<main class="page">
+    <div class="wrap">
+        <div class="character-layout">
+            <!-- Left: avatar preview -->
+            <aside>
+                <h1>My Character</h1>
+                <div class="avatar-preview card">🧑‍🎤</div>
+                <div class="avatar-preview-actions">
+                    <button class="btn btn--outline">🖼️ 2D</button>
+                    <button class="btn btn--outline">📄 Create Outfit</button>
+                </div>
+                <div class="body-colors card">
+                    <h3>🎨 Body Colors</h3>
+                    <div class="color-row">
+                        <span class="color-swatch is-active" data-hue="0" style="background:#e8e8ec;"></span>
+                        <span class="color-swatch" data-hue="30" style="background:#f2d5b8;"></span>
+                        <span class="color-swatch" data-hue="60" style="background:#c9a36b;"></span>
+                        <span class="color-swatch" data-hue="120" style="background:#8c6b4f;"></span>
+                        <span class="color-swatch" data-hue="180" style="background:#f2a3b3;"></span>
+                        <span class="color-swatch" data-hue="240" style="background:#a3c4f2;"></span>
+                        <span class="color-swatch" data-hue="300" style="background:#c4a3f2;"></span>
+                        <span class="color-swatch" data-hue="330" style="background:#f2a3c8;"></span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right: catalog -->
+            <section>
+                <div class="item-tabs" data-tabs="catalog">
+                    <button class="item-tab is-active" data-tab="all">📦 All Items</button>
+                    <button class="item-tab" data-tab="accessories">🧢 Accessories</button>
+                    <button class="item-tab" data-tab="clothing">👕 Clothing</button>
+                    <button class="item-tab" data-tab="tools">🔨 Tools</button>
+                    <button class="item-tab" data-tab="faces">😀 Faces</button>
+                    <button class="item-tab" data-tab="bodies">🧍 Bodies</button>
+                    <button class="item-tab" data-tab="outfits">🧑‍🎤 Outfits</button>
+                </div>
+
+                <input class="item-search" type="text" placeholder="Search for an item...">
+
+                <div data-tab-panel="catalog" data-panel-id="all">
+                    <div class="catalog-grid">
+                        <figure class="catalog-item">
+                            <div class="thumb thumb--3">📿</div>
+                            <figcaption>
+                                <div class="catalog-item__name">Shelly Necklace</div>
+                                <div class="catalog-item__by">Neck Accessory</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb thumb--1">🧑</div>
+                            <figcaption>
+                                <div class="catalog-item__name">flowery</div>
+                                <div class="catalog-item__by">by rezako</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb thumb--5">👕</div>
+                            <figcaption>
+                                <div class="catalog-item__name">kitty shirt :3</div>
+                                <div class="catalog-item__by">by imsotuffbruh</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb thumb--4">🧢</div>
+                            <figcaption>
+                                <div class="catalog-item__name">Visor of the Tropics</div>
+                                <div class="catalog-item__by">Hat</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb thumb--6">🧍</div>
+                            <figcaption>
+                                <div class="catalog-item__name">Template.</div>
+                                <div class="catalog-item__by">by Bobthe2nd</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb" style="background:linear-gradient(135deg,#ececf0,#c9c9d2);">😑</div>
+                            <figcaption>
+                                <div class="catalog-item__name">Cozy</div>
+                                <div class="catalog-item__by">Face</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb" style="background:linear-gradient(135deg,#3a3a42,#222228);">🩹</div>
+                            <figcaption>
+                                <div class="catalog-item__name">just my clothes :)</div>
+                                <div class="catalog-item__by">by abcsonpoly</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb" style="background:linear-gradient(135deg,#ececf0,#c9c9d2);">💤</div>
+                            <figcaption>
+                                <div class="catalog-item__name">Zzz...</div>
+                                <div class="catalog-item__by">Head Attachment</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb thumb--2">🤖</div>
+                            <figcaption>
+                                <div class="catalog-item__name">Action Figure</div>
+                                <div class="catalog-item__by">Body</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb thumb--6">🧍</div>
+                            <figcaption>
+                                <div class="catalog-item__name">Tubby</div>
+                                <div class="catalog-item__by">Body</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb" style="background:linear-gradient(135deg,#ececf0,#c9c9d2);">👔</div>
+                            <figcaption>
+                                <div class="catalog-item__name">Tie of Experience</div>
+                                <div class="catalog-item__by">Neck Accessory</div>
+                            </figcaption>
+                        </figure>
+                        <figure class="catalog-item">
+                            <div class="thumb" style="background:linear-gradient(135deg,#ececf0,#c9c9d2);">—_—</div>
+                            <figcaption>
+                                <div class="catalog-item__name">Face</div>
+                                <div class="catalog-item__by">Face</div>
+                            </figcaption>
+                        </figure>
+                    </div>
+                    <div class="pagination">
+                        <button class="page-btn">«</button>
+                        <button class="page-btn is-active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">»</button>
+                    </div>
+                </div>
+                <div data-tab-panel="catalog" data-panel-id="accessories" style="display:none;"><p class="section-eyebrow">Accessories you own will show up here.</p></div>
+                <div data-tab-panel="catalog" data-panel-id="clothing" style="display:none;"><p class="section-eyebrow">Clothing you own will show up here.</p></div>
+                <div data-tab-panel="catalog" data-panel-id="tools" style="display:none;"><p class="section-eyebrow">Tools you own will show up here.</p></div>
+                <div data-tab-panel="catalog" data-panel-id="faces" style="display:none;"><p class="section-eyebrow">Faces you own will show up here.</p></div>
+                <div data-tab-panel="catalog" data-panel-id="bodies" style="display:none;"><p class="section-eyebrow">Bodies you own will show up here.</p></div>
+                <div data-tab-panel="catalog" data-panel-id="outfits" style="display:none;"><p class="section-eyebrow">Outfits you own will show up here.</p></div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="./js/api.js"></script>
+<script src="./js/layout.js"></script>
+<script src="./js/app.js"></script>
+<script src="./js/character.js"></script>
+</body>
+</html>
