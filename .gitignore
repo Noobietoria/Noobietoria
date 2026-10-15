@@ -1,0 +1,18 @@
+# Rust
+/target
+**/*.rs.bk
+
+# Local runtime state: workspaces, published places, accounts, saved data
+/.noobietoria
+/data
+*.nbplace
+*.nbsession
+
+# Local scratch used while reading upstream docs
+/_docs_src
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

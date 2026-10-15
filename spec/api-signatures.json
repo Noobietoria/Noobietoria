@@ -1,0 +1,4399 @@
+{
+  "source": "spec/source/api.md",
+  "upstream": "https://noobietoria.github.io/Docs/",
+  "signature_count": 366,
+  "service_count": 45,
+  "services": [
+    "AccessoryService",
+    "AchievementService",
+    "AnalyticsService",
+    "AudioService",
+    "BadgeService",
+    "BanService",
+    "CameraService",
+    "ChatService",
+    "CollisionService",
+    "CooldownService",
+    "CraftingService",
+    "CurrencyService",
+    "DataStore",
+    "DataStoreService",
+    "DialogueService",
+    "EffectService",
+    "HttpService",
+    "InputService",
+    "InstanceService",
+    "InventoryService",
+    "LeaderboardService",
+    "LightingService",
+    "LocalizationService",
+    "MailService",
+    "MarketplaceService",
+    "MatchmakingService",
+    "NetworkEventService",
+    "NetworkService",
+    "NotificationService",
+    "PartyService",
+    "PassService",
+    "PathfindingService",
+    "PhysicsService",
+    "PlayerService",
+    "ProximityService",
+    "PurchaseService",
+    "QuestService",
+    "RewardService",
+    "SoundEffectService",
+    "SpawnService",
+    "TeleportService",
+    "TextService",
+    "TradingService",
+    "TweenService",
+    "UIService"
+  ],
+  "signatures": [
+    {
+      "service": "AccessoryService",
+      "method": "",
+      "params": [
+        "arg1",
+        "arg2",
+        "arg3"
+      ],
+      "varargs": false,
+      "source_section": "AccessoryService",
+      "raw": "AccessoryService(\"Player1\", \"Player\", \"1082345, 1082350, 1082360\")",
+      "arity": 3
+    },
+    {
+      "service": "AchievementService",
+      "method": "AddProgress",
+      "params": [
+        "Username",
+        "AchievementId",
+        "Delta"
+      ],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.AddProgress(Username, AchievementId, Delta)",
+      "arity": 3
+    },
+    {
+      "service": "AchievementService",
+      "method": "GetAll",
+      "params": [],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.GetAll()",
+      "arity": 0
+    },
+    {
+      "service": "AchievementService",
+      "method": "GetProgress",
+      "params": [
+        "Username",
+        "AchievementId"
+      ],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.GetProgress(Username, AchievementId)",
+      "arity": 2
+    },
+    {
+      "service": "AchievementService",
+      "method": "GetUnlocked",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.GetUnlocked(Username)",
+      "arity": 1
+    },
+    {
+      "service": "AchievementService",
+      "method": "IsUnlocked",
+      "params": [
+        "Username",
+        "AchievementId"
+      ],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.IsUnlocked(Username, AchievementId)",
+      "arity": 2
+    },
+    {
+      "service": "AchievementService",
+      "method": "OnUnlock",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.OnUnlock(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "AchievementService",
+      "method": "Register",
+      "params": [
+        "AchievementId",
+        "Name",
+        "Description",
+        "MaxProgress"
+      ],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.Register(AchievementId, Name, Description, MaxProgress)",
+      "arity": 4
+    },
+    {
+      "service": "AchievementService",
+      "method": "SetProgress",
+      "params": [
+        "Username",
+        "AchievementId",
+        "Progress"
+      ],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.SetProgress(Username, AchievementId, Progress)",
+      "arity": 3
+    },
+    {
+      "service": "AchievementService",
+      "method": "Unlock",
+      "params": [
+        "Username",
+        "AchievementId"
+      ],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.Unlock(Username, AchievementId)",
+      "arity": 2
+    },
+    {
+      "service": "AchievementService",
+      "method": "Unregister",
+      "params": [
+        "AchievementId"
+      ],
+      "varargs": false,
+      "source_section": "AchievementService",
+      "raw": "AchievementService.Unregister(AchievementId)",
+      "arity": 1
+    },
+    {
+      "service": "AnalyticsService",
+      "method": "ClearEvents",
+      "params": [
+        "EventName"
+      ],
+      "varargs": false,
+      "source_section": "AnalyticsService",
+      "raw": "AnalyticsService.ClearEvents(EventName)",
+      "arity": 1
+    },
+    {
+      "service": "AnalyticsService",
+      "method": "GetCounter",
+      "params": [
+        "MetricName"
+      ],
+      "varargs": false,
+      "source_section": "AnalyticsService",
+      "raw": "AnalyticsService.GetCounter(MetricName)",
+      "arity": 1
+    },
+    {
+      "service": "AnalyticsService",
+      "method": "GetEvents",
+      "params": [
+        "EventName",
+        "Limit"
+      ],
+      "varargs": false,
+      "source_section": "AnalyticsService",
+      "raw": "AnalyticsService.GetEvents(EventName, Limit)",
+      "arity": 2
+    },
+    {
+      "service": "AnalyticsService",
+      "method": "IncrementCounter",
+      "params": [
+        "MetricName",
+        "Delta"
+      ],
+      "varargs": false,
+      "source_section": "AnalyticsService",
+      "raw": "AnalyticsService.IncrementCounter(MetricName, Delta)",
+      "arity": 2
+    },
+    {
+      "service": "AnalyticsService",
+      "method": "SetCounter",
+      "params": [
+        "MetricName",
+        "Value"
+      ],
+      "varargs": false,
+      "source_section": "AnalyticsService",
+      "raw": "AnalyticsService.SetCounter(MetricName, Value)",
+      "arity": 2
+    },
+    {
+      "service": "AnalyticsService",
+      "method": "TrackError",
+      "params": [
+        "ErrorMessage",
+        "Username",
+        "Properties"
+      ],
+      "varargs": false,
+      "source_section": "AnalyticsService",
+      "raw": "AnalyticsService.TrackError(ErrorMessage, Username, Properties)",
+      "arity": 3
+    },
+    {
+      "service": "AnalyticsService",
+      "method": "TrackEvent",
+      "params": [
+        "EventName",
+        "Username",
+        "Properties"
+      ],
+      "varargs": false,
+      "source_section": "AnalyticsService",
+      "raw": "AnalyticsService.TrackEvent(EventName, Username, Properties)",
+      "arity": 3
+    },
+    {
+      "service": "AudioService",
+      "method": "Change",
+      "params": [
+        "Name",
+        "ID"
+      ],
+      "varargs": false,
+      "source_section": "AudioCService",
+      "raw": "AudioService.Change(Name, ID)",
+      "arity": 2
+    },
+    {
+      "service": "AudioService",
+      "method": "Loop",
+      "params": [
+        "Name",
+        "Boolean"
+      ],
+      "varargs": false,
+      "source_section": "AudioCService",
+      "raw": "AudioService.Loop(Name, Boolean)",
+      "arity": 2
+    },
+    {
+      "service": "AudioService",
+      "method": "New",
+      "params": [
+        "Name",
+        "ID"
+      ],
+      "varargs": false,
+      "source_section": "AudioCService",
+      "raw": "AudioService.New(Name, ID)",
+      "arity": 2
+    },
+    {
+      "service": "AudioService",
+      "method": "Pause",
+      "params": [
+        "Name"
+      ],
+      "varargs": false,
+      "source_section": "AudioCService",
+      "raw": "AudioService.Pause(Name)",
+      "arity": 1
+    },
+    {
+      "service": "AudioService",
+      "method": "Resume",
+      "params": [
+        "Name"
+      ],
+      "varargs": false,
+      "source_section": "AudioCService",
+      "raw": "AudioService.Resume(Name)",
+      "arity": 1
+    },
+    {
+      "service": "AudioService",
+      "method": "SetVolume",
+      "params": [
+        "Name",
+        "Volume"
+      ],
+      "varargs": false,
+      "source_section": "AudioCService",
+      "raw": "AudioService.SetVolume(Name, Volume)",
+      "arity": 2
+    },
+    {
+      "service": "AudioService",
+      "method": "Stop",
+      "params": [
+        "Name"
+      ],
+      "varargs": false,
+      "source_section": "AudioCService",
+      "raw": "AudioService.Stop(Name)",
+      "arity": 1
+    },
+    {
+      "service": "BadgeService",
+      "method": "Award",
+      "params": [
+        "Username",
+        "BadgeId"
+      ],
+      "varargs": false,
+      "source_section": "BadgeService",
+      "raw": "BadgeService.Award(Username, BadgeId)",
+      "arity": 2
+    },
+    {
+      "service": "BadgeService",
+      "method": "GetAll",
+      "params": [],
+      "varargs": false,
+      "source_section": "BadgeService",
+      "raw": "BadgeService.GetAll()",
+      "arity": 0
+    },
+    {
+      "service": "BadgeService",
+      "method": "GetBadges",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "BadgeService",
+      "raw": "BadgeService.GetBadges(Username)",
+      "arity": 1
+    },
+    {
+      "service": "BadgeService",
+      "method": "HasBadge",
+      "params": [
+        "Username",
+        "BadgeId"
+      ],
+      "varargs": false,
+      "source_section": "BadgeService",
+      "raw": "BadgeService.HasBadge(Username, BadgeId)",
+      "arity": 2
+    },
+    {
+      "service": "BadgeService",
+      "method": "OnAward",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "BadgeService",
+      "raw": "BadgeService.OnAward(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "BadgeService",
+      "method": "Register",
+      "params": [
+        "BadgeId",
+        "Name",
+        "Description"
+      ],
+      "varargs": false,
+      "source_section": "BadgeService",
+      "raw": "BadgeService.Register(BadgeId, Name, Description)",
+      "arity": 3
+    },
+    {
+      "service": "BadgeService",
+      "method": "Revoke",
+      "params": [
+        "Username",
+        "BadgeId"
+      ],
+      "varargs": false,
+      "source_section": "BadgeService",
+      "raw": "BadgeService.Revoke(Username, BadgeId)",
+      "arity": 2
+    },
+    {
+      "service": "BadgeService",
+      "method": "Unregister",
+      "params": [
+        "BadgeId"
+      ],
+      "varargs": false,
+      "source_section": "BadgeService",
+      "raw": "BadgeService.Unregister(BadgeId)",
+      "arity": 1
+    },
+    {
+      "service": "BanService",
+      "method": "Ban",
+      "params": [
+        "Username",
+        "Reason",
+        "Duration"
+      ],
+      "varargs": false,
+      "source_section": "BanService",
+      "raw": "BanService.Ban(Username, Reason, Duration)",
+      "arity": 3
+    },
+    {
+      "service": "BanService",
+      "method": "ClearWarnings",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "BanService",
+      "raw": "BanService.ClearWarnings(Username)",
+      "arity": 1
+    },
+    {
+      "service": "BanService",
+      "method": "GetBanHistory",
+      "params": [
+        "Username",
+        "Limit"
+      ],
+      "varargs": false,
+      "source_section": "BanService",
+      "raw": "BanService.GetBanHistory(Username, Limit)",
+      "arity": 2
+    },
+    {
+      "service": "BanService",
+      "method": "GetBanInfo",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "BanService",
+      "raw": "BanService.GetBanInfo(Username)",
+      "arity": 1
+    },
+    {
+      "service": "BanService",
+      "method": "GetWarnings",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "BanService",
+      "raw": "BanService.GetWarnings(Username)",
+      "arity": 1
+    },
+    {
+      "service": "BanService",
+      "method": "IsBanned",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "BanService",
+      "raw": "BanService.IsBanned(Username)",
+      "arity": 1
+    },
+    {
+      "service": "BanService",
+      "method": "Kick",
+      "params": [
+        "Username",
+        "Reason"
+      ],
+      "varargs": false,
+      "source_section": "BanService",
+      "raw": "BanService.Kick(Username, Reason)",
+      "arity": 2
+    },
+    {
+      "service": "BanService",
+      "method": "Unban",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "BanService",
+      "raw": "BanService.Unban(Username)",
+      "arity": 1
+    },
+    {
+      "service": "BanService",
+      "method": "Warn",
+      "params": [
+        "Username",
+        "Reason"
+      ],
+      "varargs": false,
+      "source_section": "BanService",
+      "raw": "BanService.Warn(Username, Reason)",
+      "arity": 2
+    },
+    {
+      "service": "CameraService",
+      "method": "LockTo",
+      "params": [
+        "Username",
+        "Instance"
+      ],
+      "varargs": false,
+      "source_section": "CameraService",
+      "raw": "CameraService.LockTo(Username, Instance)",
+      "arity": 2
+    },
+    {
+      "service": "CameraService",
+      "method": "Reset",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "CameraService",
+      "raw": "CameraService.Reset(Username)",
+      "arity": 1
+    },
+    {
+      "service": "CameraService",
+      "method": "SetFOV",
+      "params": [
+        "Username",
+        "FieldOfView"
+      ],
+      "varargs": false,
+      "source_section": "CameraService",
+      "raw": "CameraService.SetFOV(Username, FieldOfView)",
+      "arity": 2
+    },
+    {
+      "service": "CameraService",
+      "method": "SetPosition",
+      "params": [
+        "Username",
+        "Position",
+        "LookAt"
+      ],
+      "varargs": false,
+      "source_section": "CameraService",
+      "raw": "CameraService.SetPosition(Username, Position, LookAt)",
+      "arity": 3
+    },
+    {
+      "service": "CameraService",
+      "method": "SetType",
+      "params": [
+        "Username",
+        "CameraType"
+      ],
+      "varargs": false,
+      "source_section": "CameraService",
+      "raw": "CameraService.SetType(Username, CameraType)",
+      "arity": 2
+    },
+    {
+      "service": "CameraService",
+      "method": "Shake",
+      "params": [
+        "Username",
+        "ShakeIntensity",
+        "Duration"
+      ],
+      "varargs": false,
+      "source_section": "CameraService",
+      "raw": "CameraService.Shake(Username, ShakeIntensity, Duration)",
+      "arity": 3
+    },
+    {
+      "service": "CameraService",
+      "method": "Unlock",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "CameraService",
+      "raw": "CameraService.Unlock(Username)",
+      "arity": 1
+    },
+    {
+      "service": "ChatService",
+      "method": "CreateChannel",
+      "params": [
+        "ChannelName"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.CreateChannel(ChannelName)",
+      "arity": 1
+    },
+    {
+      "service": "ChatService",
+      "method": "DeleteChannel",
+      "params": [
+        "ChannelName"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.DeleteChannel(ChannelName)",
+      "arity": 1
+    },
+    {
+      "service": "ChatService",
+      "method": "HideBubble",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.HideBubble(Username)",
+      "arity": 1
+    },
+    {
+      "service": "ChatService",
+      "method": "JoinChannel",
+      "params": [
+        "Username",
+        "ChannelName"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.JoinChannel(Username, ChannelName)",
+      "arity": 2
+    },
+    {
+      "service": "ChatService",
+      "method": "LeaveChannel",
+      "params": [
+        "Username",
+        "ChannelName"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.LeaveChannel(Username, ChannelName)",
+      "arity": 2
+    },
+    {
+      "service": "ChatService",
+      "method": "MutePlayer",
+      "params": [
+        "Username",
+        "Duration"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.MutePlayer(Username, Duration)",
+      "arity": 2
+    },
+    {
+      "service": "ChatService",
+      "method": "OnMessage",
+      "params": [
+        "ChannelName",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.OnMessage(ChannelName, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "ChatService",
+      "method": "SendMessage",
+      "params": [
+        "Username",
+        "ChannelName",
+        "Message"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.SendMessage(Username, ChannelName, Message)",
+      "arity": 3
+    },
+    {
+      "service": "ChatService",
+      "method": "SetFilter",
+      "params": [
+        "ChannelName",
+        "FilterLevel"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.SetFilter(ChannelName, FilterLevel)",
+      "arity": 2
+    },
+    {
+      "service": "ChatService",
+      "method": "ShowBubble",
+      "params": [
+        "Username",
+        "Message",
+        "Duration"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.ShowBubble(Username, Message, Duration)",
+      "arity": 3
+    },
+    {
+      "service": "ChatService",
+      "method": "UnmutePlayer",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "ChatService",
+      "raw": "ChatService.UnmutePlayer(Username)",
+      "arity": 1
+    },
+    {
+      "service": "CollisionService",
+      "method": "AssignGroup",
+      "params": [
+        "Instance",
+        "GroupName"
+      ],
+      "varargs": false,
+      "source_section": "CollisionService",
+      "raw": "CollisionService.AssignGroup(Instance, GroupName)",
+      "arity": 2
+    },
+    {
+      "service": "CollisionService",
+      "method": "CreateGroup",
+      "params": [
+        "GroupName"
+      ],
+      "varargs": false,
+      "source_section": "CollisionService",
+      "raw": "CollisionService.CreateGroup(GroupName)",
+      "arity": 1
+    },
+    {
+      "service": "CollisionService",
+      "method": "DeleteGroup",
+      "params": [
+        "GroupName"
+      ],
+      "varargs": false,
+      "source_section": "CollisionService",
+      "raw": "CollisionService.DeleteGroup(GroupName)",
+      "arity": 1
+    },
+    {
+      "service": "CollisionService",
+      "method": "GetGroup",
+      "params": [
+        "Instance"
+      ],
+      "varargs": false,
+      "source_section": "CollisionService",
+      "raw": "CollisionService.GetGroup(Instance)",
+      "arity": 1
+    },
+    {
+      "service": "CollisionService",
+      "method": "GetGroups",
+      "params": [],
+      "varargs": false,
+      "source_section": "CollisionService",
+      "raw": "CollisionService.GetGroups()",
+      "arity": 0
+    },
+    {
+      "service": "CollisionService",
+      "method": "SetCollision",
+      "params": [
+        "GroupA",
+        "GroupB",
+        "Boolean"
+      ],
+      "varargs": false,
+      "source_section": "CollisionService",
+      "raw": "CollisionService.SetCollision(GroupA, GroupB, Boolean)",
+      "arity": 3
+    },
+    {
+      "service": "CooldownService",
+      "method": "Cancel",
+      "params": [
+        "Username",
+        "CooldownId"
+      ],
+      "varargs": false,
+      "source_section": "CooldownService",
+      "raw": "CooldownService.Cancel(Username, CooldownId)",
+      "arity": 2
+    },
+    {
+      "service": "CooldownService",
+      "method": "GetAll",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "CooldownService",
+      "raw": "CooldownService.GetAll(Username)",
+      "arity": 1
+    },
+    {
+      "service": "CooldownService",
+      "method": "GetRemaining",
+      "params": [
+        "Username",
+        "CooldownId"
+      ],
+      "varargs": false,
+      "source_section": "CooldownService",
+      "raw": "CooldownService.GetRemaining(Username, CooldownId)",
+      "arity": 2
+    },
+    {
+      "service": "CooldownService",
+      "method": "IsReady",
+      "params": [
+        "Username",
+        "CooldownId"
+      ],
+      "varargs": false,
+      "source_section": "CooldownService",
+      "raw": "CooldownService.IsReady(Username, CooldownId)",
+      "arity": 2
+    },
+    {
+      "service": "CooldownService",
+      "method": "OnReady",
+      "params": [
+        "Username",
+        "CooldownId",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "CooldownService",
+      "raw": "CooldownService.OnReady(Username, CooldownId, Callback)",
+      "arity": 3
+    },
+    {
+      "service": "CooldownService",
+      "method": "Reset",
+      "params": [
+        "Username",
+        "CooldownId"
+      ],
+      "varargs": false,
+      "source_section": "CooldownService",
+      "raw": "CooldownService.Reset(Username, CooldownId)",
+      "arity": 2
+    },
+    {
+      "service": "CooldownService",
+      "method": "Start",
+      "params": [
+        "Username",
+        "CooldownId",
+        "Duration"
+      ],
+      "varargs": false,
+      "source_section": "CooldownService",
+      "raw": "CooldownService.Start(Username, CooldownId, Duration)",
+      "arity": 3
+    },
+    {
+      "service": "CraftingService",
+      "method": "CanCraft",
+      "params": [
+        "Username",
+        "RecipeId"
+      ],
+      "varargs": false,
+      "source_section": "CraftingService",
+      "raw": "CraftingService.CanCraft(Username, RecipeId)",
+      "arity": 2
+    },
+    {
+      "service": "CraftingService",
+      "method": "Craft",
+      "params": [
+        "Username",
+        "RecipeId",
+        "Quantity"
+      ],
+      "varargs": false,
+      "source_section": "CraftingService",
+      "raw": "CraftingService.Craft(Username, RecipeId, Quantity)",
+      "arity": 3
+    },
+    {
+      "service": "CraftingService",
+      "method": "GetAllRecipes",
+      "params": [],
+      "varargs": false,
+      "source_section": "CraftingService",
+      "raw": "CraftingService.GetAllRecipes()",
+      "arity": 0
+    },
+    {
+      "service": "CraftingService",
+      "method": "GetCraftHistory",
+      "params": [
+        "Username",
+        "Limit"
+      ],
+      "varargs": false,
+      "source_section": "CraftingService",
+      "raw": "CraftingService.GetCraftHistory(Username, Limit)",
+      "arity": 2
+    },
+    {
+      "service": "CraftingService",
+      "method": "GetRecipe",
+      "params": [
+        "RecipeId"
+      ],
+      "varargs": false,
+      "source_section": "CraftingService",
+      "raw": "CraftingService.GetRecipe(RecipeId)",
+      "arity": 1
+    },
+    {
+      "service": "CraftingService",
+      "method": "OnCraft",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "CraftingService",
+      "raw": "CraftingService.OnCraft(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "CraftingService",
+      "method": "RegisterRecipe",
+      "params": [
+        "RecipeId",
+        "Name",
+        "Ingredients",
+        "Output"
+      ],
+      "varargs": false,
+      "source_section": "CraftingService",
+      "raw": "CraftingService.RegisterRecipe(RecipeId, Name, Ingredients, Output)",
+      "arity": 4
+    },
+    {
+      "service": "CraftingService",
+      "method": "UnregisterRecipe",
+      "params": [
+        "RecipeId"
+      ],
+      "varargs": false,
+      "source_section": "CraftingService",
+      "raw": "CraftingService.UnregisterRecipe(RecipeId)",
+      "arity": 1
+    },
+    {
+      "service": "CurrencyService",
+      "method": "Add",
+      "params": [
+        "Username",
+        "CurrencyType",
+        "Amount"
+      ],
+      "varargs": false,
+      "source_section": "CurrencyService",
+      "raw": "CurrencyService.Add(Username, CurrencyType, Amount)",
+      "arity": 3
+    },
+    {
+      "service": "CurrencyService",
+      "method": "Deduct",
+      "params": [
+        "Username",
+        "CurrencyType",
+        "Amount"
+      ],
+      "varargs": false,
+      "source_section": "CurrencyService",
+      "raw": "CurrencyService.Deduct(Username, CurrencyType, Amount)",
+      "arity": 3
+    },
+    {
+      "service": "CurrencyService",
+      "method": "GetAllBalances",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "CurrencyService",
+      "raw": "CurrencyService.GetAllBalances(Username)",
+      "arity": 1
+    },
+    {
+      "service": "CurrencyService",
+      "method": "GetBalance",
+      "params": [
+        "Username",
+        "CurrencyType"
+      ],
+      "varargs": false,
+      "source_section": "CurrencyService",
+      "raw": "CurrencyService.GetBalance(Username, CurrencyType)",
+      "arity": 2
+    },
+    {
+      "service": "CurrencyService",
+      "method": "OnTransaction",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "CurrencyService",
+      "raw": "CurrencyService.OnTransaction(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "CurrencyService",
+      "method": "SetBalance",
+      "params": [
+        "Username",
+        "CurrencyType",
+        "Amount"
+      ],
+      "varargs": false,
+      "source_section": "CurrencyService",
+      "raw": "CurrencyService.SetBalance(Username, CurrencyType, Amount)",
+      "arity": 3
+    },
+    {
+      "service": "CurrencyService",
+      "method": "Transfer",
+      "params": [
+        "FromUsername",
+        "ToUsername",
+        "CurrencyType",
+        "Amount"
+      ],
+      "varargs": false,
+      "source_section": "CurrencyService",
+      "raw": "CurrencyService.Transfer(FromUsername, ToUsername, CurrencyType, Amount)",
+      "arity": 4
+    },
+    {
+      "service": "DataStore",
+      "method": "GetAsync",
+      "params": [
+        "key"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStore:GetAsync(key)",
+      "arity": 1
+    },
+    {
+      "service": "DataStore",
+      "method": "RemoveAsync",
+      "params": [
+        "key"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStore:RemoveAsync(key)",
+      "arity": 1
+    },
+    {
+      "service": "DataStore",
+      "method": "SetAsync",
+      "params": [
+        "key",
+        "value",
+        "userIds",
+        "options"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStore:SetAsync(key, value, userIds, options)",
+      "arity": 4
+    },
+    {
+      "service": "DataStore",
+      "method": "UpdateAsync",
+      "params": [
+        "key",
+        "transformFunction"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStore:UpdateAsync(key, transformFunction)",
+      "arity": 2
+    },
+    {
+      "service": "DataStoreService",
+      "method": "Close",
+      "params": [
+        "SessionID"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStoreService.Close(SessionID)",
+      "arity": 1
+    },
+    {
+      "service": "DataStoreService",
+      "method": "Delete",
+      "params": [
+        "SessionID",
+        "Key"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStoreService.Delete(SessionID, Key)",
+      "arity": 2
+    },
+    {
+      "service": "DataStoreService",
+      "method": "Get",
+      "params": [
+        "SessionID",
+        "Key"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStoreService.Get(SessionID, Key)",
+      "arity": 2
+    },
+    {
+      "service": "DataStoreService",
+      "method": "GetDataStore",
+      "params": [
+        "name",
+        "scope"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStoreService:GetDataStore(name, scope)",
+      "arity": 2
+    },
+    {
+      "service": "DataStoreService",
+      "method": "GetKeys",
+      "params": [
+        "SessionID"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStoreService.GetKeys(SessionID)",
+      "arity": 1
+    },
+    {
+      "service": "DataStoreService",
+      "method": "GetOrderedDataStore",
+      "params": [
+        "name",
+        "scope"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStoreService:GetOrderedDataStore(name, scope)",
+      "arity": 2
+    },
+    {
+      "service": "DataStoreService",
+      "method": "GetRequestBudgetForRequestType",
+      "params": [
+        "requestType"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStoreService:GetRequestBudgetForRequestType(requestType)",
+      "arity": 1
+    },
+    {
+      "service": "DataStoreService",
+      "method": "Init",
+      "params": [
+        "SessionID"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStoreService.Init(SessionID)",
+      "arity": 1
+    },
+    {
+      "service": "DataStoreService",
+      "method": "Insert",
+      "params": [
+        "SessionID",
+        "Key",
+        "Value"
+      ],
+      "varargs": false,
+      "source_section": "DataStoreService",
+      "raw": "DataStoreService.Insert(SessionID, Key, Value)",
+      "arity": 3
+    },
+    {
+      "service": "DialogueService",
+      "method": "Choose",
+      "params": [
+        "Username",
+        "ChoiceIndex"
+      ],
+      "varargs": false,
+      "source_section": "DialogueService",
+      "raw": "DialogueService.Choose(Username, ChoiceIndex)",
+      "arity": 2
+    },
+    {
+      "service": "DialogueService",
+      "method": "End",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "DialogueService",
+      "raw": "DialogueService.End(Username)",
+      "arity": 1
+    },
+    {
+      "service": "DialogueService",
+      "method": "GetCurrent",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "DialogueService",
+      "raw": "DialogueService.GetCurrent(Username)",
+      "arity": 1
+    },
+    {
+      "service": "DialogueService",
+      "method": "OnChoice",
+      "params": [
+        "DialogueId",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "DialogueService",
+      "raw": "DialogueService.OnChoice(DialogueId, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "DialogueService",
+      "method": "OnEnd",
+      "params": [
+        "NpcName",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "DialogueService",
+      "raw": "DialogueService.OnEnd(NpcName, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "DialogueService",
+      "method": "OnStart",
+      "params": [
+        "NpcName",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "DialogueService",
+      "raw": "DialogueService.OnStart(NpcName, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "DialogueService",
+      "method": "Register",
+      "params": [
+        "DialogueId",
+        "NpcName",
+        "Nodes"
+      ],
+      "varargs": false,
+      "source_section": "DialogueService",
+      "raw": "DialogueService.Register(DialogueId, NpcName, Nodes)",
+      "arity": 3
+    },
+    {
+      "service": "DialogueService",
+      "method": "Start",
+      "params": [
+        "Username",
+        "DialogueId"
+      ],
+      "varargs": false,
+      "source_section": "DialogueService",
+      "raw": "DialogueService.Start(Username, DialogueId)",
+      "arity": 2
+    },
+    {
+      "service": "DialogueService",
+      "method": "Unregister",
+      "params": [
+        "DialogueId"
+      ],
+      "varargs": false,
+      "source_section": "DialogueService",
+      "raw": "DialogueService.Unregister(DialogueId)",
+      "arity": 1
+    },
+    {
+      "service": "EffectService",
+      "method": "ClearScreenEffect",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "EffectService",
+      "raw": "EffectService.ClearScreenEffect(Username)",
+      "arity": 1
+    },
+    {
+      "service": "EffectService",
+      "method": "Emit",
+      "params": [
+        "EffectId",
+        "Position",
+        "Properties"
+      ],
+      "varargs": false,
+      "source_section": "EffectService",
+      "raw": "EffectService.Emit(EffectId, Position, Properties)",
+      "arity": 3
+    },
+    {
+      "service": "EffectService",
+      "method": "EmitOn",
+      "params": [
+        "EffectId",
+        "Instance",
+        "Properties"
+      ],
+      "varargs": false,
+      "source_section": "EffectService",
+      "raw": "EffectService.EmitOn(EffectId, Instance, Properties)",
+      "arity": 3
+    },
+    {
+      "service": "EffectService",
+      "method": "ScreenEffect",
+      "params": [
+        "Username",
+        "EffectType",
+        "Properties",
+        "Duration"
+      ],
+      "varargs": false,
+      "source_section": "EffectService",
+      "raw": "EffectService.ScreenEffect(Username, EffectType, Properties, Duration)",
+      "arity": 4
+    },
+    {
+      "service": "EffectService",
+      "method": "Stop",
+      "params": [
+        "EffectId"
+      ],
+      "varargs": false,
+      "source_section": "EffectService",
+      "raw": "EffectService.Stop(EffectId)",
+      "arity": 1
+    },
+    {
+      "service": "EffectService",
+      "method": "StopAll",
+      "params": [],
+      "varargs": false,
+      "source_section": "EffectService",
+      "raw": "EffectService.StopAll()",
+      "arity": 0
+    },
+    {
+      "service": "HttpService",
+      "method": "Prepare",
+      "params": [
+        "Id",
+        "Method",
+        "Url",
+        "Headers",
+        "Body",
+        "ContentType"
+      ],
+      "varargs": false,
+      "source_section": "HttpService",
+      "raw": "HttpService.Prepare( Id: int, Method: string, Url: string, Headers: table, Body: string, ContentType: string )",
+      "arity": 6
+    },
+    {
+      "service": "HttpService",
+      "method": "Release",
+      "params": [
+        "Id"
+      ],
+      "varargs": false,
+      "source_section": "HttpService",
+      "raw": "HttpService.Release(Id)",
+      "arity": 1
+    },
+    {
+      "service": "HttpService",
+      "method": "Request",
+      "params": [
+        "Id"
+      ],
+      "varargs": false,
+      "source_section": "HttpService",
+      "raw": "HttpService.Request(Id)",
+      "arity": 1
+    },
+    {
+      "service": "InputService",
+      "method": "BindAction",
+      "params": [
+        "ActionName",
+        "Keys",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "InputService",
+      "raw": "InputService.BindAction(ActionName, Keys, Callback)",
+      "arity": 3
+    },
+    {
+      "service": "InputService",
+      "method": "IsKeyDown",
+      "params": [
+        "Username",
+        "KeyCode"
+      ],
+      "varargs": false,
+      "source_section": "InputService",
+      "raw": "InputService.IsKeyDown(Username, KeyCode)",
+      "arity": 2
+    },
+    {
+      "service": "InputService",
+      "method": "OnKeyPress",
+      "params": [
+        "Username",
+        "KeyCode",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "InputService",
+      "raw": "InputService.OnKeyPress(Username, KeyCode, Callback)",
+      "arity": 3
+    },
+    {
+      "service": "InputService",
+      "method": "OnKeyRelease",
+      "params": [
+        "Username",
+        "KeyCode",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "InputService",
+      "raw": "InputService.OnKeyRelease(Username, KeyCode, Callback)",
+      "arity": 3
+    },
+    {
+      "service": "InputService",
+      "method": "OnMouseClick",
+      "params": [
+        "Username",
+        "MouseButton",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "InputService",
+      "raw": "InputService.OnMouseClick(Username, MouseButton, Callback)",
+      "arity": 3
+    },
+    {
+      "service": "InputService",
+      "method": "OnMouseMove",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "InputService",
+      "raw": "InputService.OnMouseMove(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "InputService",
+      "method": "OnTouch",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "InputService",
+      "raw": "InputService.OnTouch(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "InputService",
+      "method": "Remove",
+      "params": [
+        "Username",
+        "KeyCode"
+      ],
+      "varargs": false,
+      "source_section": "InputService",
+      "raw": "InputService.Remove(Username, KeyCode)",
+      "arity": 2
+    },
+    {
+      "service": "InputService",
+      "method": "UnbindAction",
+      "params": [
+        "ActionName"
+      ],
+      "varargs": false,
+      "source_section": "InputService",
+      "raw": "InputService.UnbindAction(ActionName)",
+      "arity": 1
+    },
+    {
+      "service": "InstanceService",
+      "method": "Create",
+      "params": [
+        "Name",
+        "Type",
+        "Parent",
+        "Properties"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.Create(Name, Type, Parent, Properties)",
+      "arity": 4
+    },
+    {
+      "service": "InstanceService",
+      "method": "Destroy",
+      "params": [
+        "Name",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.Destroy(Name, Index)",
+      "arity": 2
+    },
+    {
+      "service": "InstanceService",
+      "method": "DestroyByGUID",
+      "params": [
+        "GUID"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.DestroyByGUID(GUID)",
+      "arity": 1
+    },
+    {
+      "service": "InstanceService",
+      "method": "GetByGUID",
+      "params": [
+        "GUID"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.GetByGUID(GUID)",
+      "arity": 1
+    },
+    {
+      "service": "InstanceService",
+      "method": "GetGUID",
+      "params": [
+        "Name",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.GetGUID(Name, Index)",
+      "arity": 2
+    },
+    {
+      "service": "InstanceService",
+      "method": "GetGUIDs",
+      "params": [
+        "Name"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.GetGUIDs(Name)",
+      "arity": 1
+    },
+    {
+      "service": "InstanceService",
+      "method": "IsEnabled",
+      "params": [
+        "Name",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.IsEnabled(Name, Index)",
+      "arity": 2
+    },
+    {
+      "service": "InstanceService",
+      "method": "Move",
+      "params": [
+        "Name",
+        "Position",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.Move(Name, Position, Index)",
+      "arity": 3
+    },
+    {
+      "service": "InstanceService",
+      "method": "MoveByGUID",
+      "params": [
+        "GUID",
+        "Position"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.MoveByGUID(GUID, Position)",
+      "arity": 2
+    },
+    {
+      "service": "InstanceService",
+      "method": "SetEnabled",
+      "params": [
+        "Name",
+        "Boolean",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.SetEnabled(Name, Boolean, Index)",
+      "arity": 3
+    },
+    {
+      "service": "InstanceService",
+      "method": "require",
+      "params": [
+        "Name",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.require(Name, Index)",
+      "arity": 2
+    },
+    {
+      "service": "InstanceService",
+      "method": "requireByGUID",
+      "params": [
+        "GUID"
+      ],
+      "varargs": false,
+      "source_section": "InstanceService",
+      "raw": "InstanceService.requireByGUID(GUID)",
+      "arity": 1
+    },
+    {
+      "service": "InventoryService",
+      "method": "AddItem",
+      "params": [
+        "Username",
+        "ItemId",
+        "Quantity",
+        "Metadata"
+      ],
+      "varargs": false,
+      "source_section": "InventoryService",
+      "raw": "InventoryService.AddItem(Username, ItemId, Quantity, Metadata)",
+      "arity": 4
+    },
+    {
+      "service": "InventoryService",
+      "method": "ClearInventory",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "InventoryService",
+      "raw": "InventoryService.ClearInventory(Username)",
+      "arity": 1
+    },
+    {
+      "service": "InventoryService",
+      "method": "GetInventory",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "InventoryService",
+      "raw": "InventoryService.GetInventory(Username)",
+      "arity": 1
+    },
+    {
+      "service": "InventoryService",
+      "method": "GetItemCount",
+      "params": [
+        "Username",
+        "ItemId"
+      ],
+      "varargs": false,
+      "source_section": "InventoryService",
+      "raw": "InventoryService.GetItemCount(Username, ItemId)",
+      "arity": 2
+    },
+    {
+      "service": "InventoryService",
+      "method": "HasItem",
+      "params": [
+        "Username",
+        "ItemId"
+      ],
+      "varargs": false,
+      "source_section": "InventoryService",
+      "raw": "InventoryService.HasItem(Username, ItemId)",
+      "arity": 2
+    },
+    {
+      "service": "InventoryService",
+      "method": "RemoveItem",
+      "params": [
+        "Username",
+        "ItemId",
+        "Quantity"
+      ],
+      "varargs": false,
+      "source_section": "InventoryService",
+      "raw": "InventoryService.RemoveItem(Username, ItemId, Quantity)",
+      "arity": 3
+    },
+    {
+      "service": "InventoryService",
+      "method": "TransferItem",
+      "params": [
+        "FromUsername",
+        "ToUsername",
+        "ItemId",
+        "Quantity"
+      ],
+      "varargs": false,
+      "source_section": "InventoryService",
+      "raw": "InventoryService.TransferItem(FromUsername, ToUsername, ItemId, Quantity)",
+      "arity": 4
+    },
+    {
+      "service": "LeaderboardService",
+      "method": "AddScore",
+      "params": [
+        "BoardName",
+        "Username",
+        "Delta"
+      ],
+      "varargs": false,
+      "source_section": "LeaderboardService",
+      "raw": "LeaderboardService.AddScore(BoardName, Username, Delta)",
+      "arity": 3
+    },
+    {
+      "service": "LeaderboardService",
+      "method": "CreateBoard",
+      "params": [
+        "BoardName",
+        "Order"
+      ],
+      "varargs": false,
+      "source_section": "LeaderboardService",
+      "raw": "LeaderboardService.CreateBoard(BoardName, Order)",
+      "arity": 2
+    },
+    {
+      "service": "LeaderboardService",
+      "method": "DeleteBoard",
+      "params": [
+        "BoardName"
+      ],
+      "varargs": false,
+      "source_section": "LeaderboardService",
+      "raw": "LeaderboardService.DeleteBoard(BoardName)",
+      "arity": 1
+    },
+    {
+      "service": "LeaderboardService",
+      "method": "GetRank",
+      "params": [
+        "BoardName",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "LeaderboardService",
+      "raw": "LeaderboardService.GetRank(BoardName, Username)",
+      "arity": 2
+    },
+    {
+      "service": "LeaderboardService",
+      "method": "GetScore",
+      "params": [
+        "BoardName",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "LeaderboardService",
+      "raw": "LeaderboardService.GetScore(BoardName, Username)",
+      "arity": 2
+    },
+    {
+      "service": "LeaderboardService",
+      "method": "GetTopPlayers",
+      "params": [
+        "BoardName",
+        "Limit"
+      ],
+      "varargs": false,
+      "source_section": "LeaderboardService",
+      "raw": "LeaderboardService.GetTopPlayers(BoardName, Limit)",
+      "arity": 2
+    },
+    {
+      "service": "LeaderboardService",
+      "method": "ResetBoard",
+      "params": [
+        "BoardName"
+      ],
+      "varargs": false,
+      "source_section": "LeaderboardService",
+      "raw": "LeaderboardService.ResetBoard(BoardName)",
+      "arity": 1
+    },
+    {
+      "service": "LeaderboardService",
+      "method": "SetScore",
+      "params": [
+        "BoardName",
+        "Username",
+        "Score"
+      ],
+      "varargs": false,
+      "source_section": "LeaderboardService",
+      "raw": "LeaderboardService.SetScore(BoardName, Username, Score)",
+      "arity": 3
+    },
+    {
+      "service": "LightingService",
+      "method": "GetProperty",
+      "params": [
+        "Property"
+      ],
+      "varargs": false,
+      "source_section": "LightingService",
+      "raw": "LightingService.GetProperty(Property)",
+      "arity": 1
+    },
+    {
+      "service": "LightingService",
+      "method": "GetTime",
+      "params": [],
+      "varargs": false,
+      "source_section": "LightingService",
+      "raw": "LightingService.GetTime()",
+      "arity": 0
+    },
+    {
+      "service": "LightingService",
+      "method": "GetWeather",
+      "params": [],
+      "varargs": false,
+      "source_section": "LightingService",
+      "raw": "LightingService.GetWeather()",
+      "arity": 0
+    },
+    {
+      "service": "LightingService",
+      "method": "SetAmbient",
+      "params": [
+        "RGBA"
+      ],
+      "varargs": false,
+      "source_section": "LightingService",
+      "raw": "LightingService.SetAmbient(RGBA)",
+      "arity": 1
+    },
+    {
+      "service": "LightingService",
+      "method": "SetFog",
+      "params": [
+        "Enabled",
+        "Color",
+        "Start",
+        "End"
+      ],
+      "varargs": false,
+      "source_section": "LightingService",
+      "raw": "LightingService.SetFog(Enabled, Color, Start, End)",
+      "arity": 4
+    },
+    {
+      "service": "LightingService",
+      "method": "SetProperty",
+      "params": [
+        "Property",
+        "Value"
+      ],
+      "varargs": false,
+      "source_section": "LightingService",
+      "raw": "LightingService.SetProperty(Property, Value)",
+      "arity": 2
+    },
+    {
+      "service": "LightingService",
+      "method": "SetTime",
+      "params": [
+        "TimeOfDay"
+      ],
+      "varargs": false,
+      "source_section": "LightingService",
+      "raw": "LightingService.SetTime(TimeOfDay)",
+      "arity": 1
+    },
+    {
+      "service": "LightingService",
+      "method": "SetWeather",
+      "params": [
+        "WeatherType",
+        "Intensity"
+      ],
+      "varargs": false,
+      "source_section": "LightingService",
+      "raw": "LightingService.SetWeather(WeatherType, Intensity)",
+      "arity": 2
+    },
+    {
+      "service": "LocalizationService",
+      "method": "GetLocale",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "LocalizationService",
+      "raw": "LocalizationService.GetLocale(Username)",
+      "arity": 1
+    },
+    {
+      "service": "LocalizationService",
+      "method": "GetSupportedLocales",
+      "params": [],
+      "varargs": false,
+      "source_section": "LocalizationService",
+      "raw": "LocalizationService.GetSupportedLocales()",
+      "arity": 0
+    },
+    {
+      "service": "LocalizationService",
+      "method": "ImportTable",
+      "params": [
+        "Translations"
+      ],
+      "varargs": false,
+      "source_section": "LocalizationService",
+      "raw": "LocalizationService.ImportTable(Translations)",
+      "arity": 1
+    },
+    {
+      "service": "LocalizationService",
+      "method": "Register",
+      "params": [
+        "Key",
+        "Translations"
+      ],
+      "varargs": false,
+      "source_section": "LocalizationService",
+      "raw": "LocalizationService.Register(Key, Translations)",
+      "arity": 2
+    },
+    {
+      "service": "LocalizationService",
+      "method": "SetLocale",
+      "params": [
+        "Username",
+        "Locale"
+      ],
+      "varargs": false,
+      "source_section": "LocalizationService",
+      "raw": "LocalizationService.SetLocale(Username, Locale)",
+      "arity": 2
+    },
+    {
+      "service": "LocalizationService",
+      "method": "Translate",
+      "params": [
+        "Key",
+        "Locale"
+      ],
+      "varargs": false,
+      "source_section": "LocalizationService",
+      "raw": "LocalizationService.Translate(Key, Locale)",
+      "arity": 2
+    },
+    {
+      "service": "LocalizationService",
+      "method": "TranslateFor",
+      "params": [
+        "Key",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "LocalizationService",
+      "raw": "LocalizationService.TranslateFor(Key, Username)",
+      "arity": 2
+    },
+    {
+      "service": "LocalizationService",
+      "method": "Unregister",
+      "params": [
+        "Key"
+      ],
+      "varargs": false,
+      "source_section": "LocalizationService",
+      "raw": "LocalizationService.Unregister(Key)",
+      "arity": 1
+    },
+    {
+      "service": "MailService",
+      "method": "ClaimAttachments",
+      "params": [
+        "MailId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "MailService",
+      "raw": "MailService.ClaimAttachments(MailId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "MailService",
+      "method": "Delete",
+      "params": [
+        "MailId"
+      ],
+      "varargs": false,
+      "source_section": "MailService",
+      "raw": "MailService.Delete(MailId)",
+      "arity": 1
+    },
+    {
+      "service": "MailService",
+      "method": "GetInbox",
+      "params": [
+        "Username",
+        "Limit"
+      ],
+      "varargs": false,
+      "source_section": "MailService",
+      "raw": "MailService.GetInbox(Username, Limit)",
+      "arity": 2
+    },
+    {
+      "service": "MailService",
+      "method": "GetMail",
+      "params": [
+        "MailId"
+      ],
+      "varargs": false,
+      "source_section": "MailService",
+      "raw": "MailService.GetMail(MailId)",
+      "arity": 1
+    },
+    {
+      "service": "MailService",
+      "method": "GetOutbox",
+      "params": [
+        "Username",
+        "Limit"
+      ],
+      "varargs": false,
+      "source_section": "MailService",
+      "raw": "MailService.GetOutbox(Username, Limit)",
+      "arity": 2
+    },
+    {
+      "service": "MailService",
+      "method": "OnReceive",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "MailService",
+      "raw": "MailService.OnReceive(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "MailService",
+      "method": "Read",
+      "params": [
+        "MailId"
+      ],
+      "varargs": false,
+      "source_section": "MailService",
+      "raw": "MailService.Read(MailId)",
+      "arity": 1
+    },
+    {
+      "service": "MailService",
+      "method": "Send",
+      "params": [
+        "FromUsername",
+        "ToUsername",
+        "Subject",
+        "Body",
+        "Attachments"
+      ],
+      "varargs": false,
+      "source_section": "MailService",
+      "raw": "MailService.Send(FromUsername, ToUsername, Subject, Body, Attachments)",
+      "arity": 5
+    },
+    {
+      "service": "MarketplaceService",
+      "method": "Buy",
+      "params": [
+        "Username",
+        "ListingId",
+        "Quantity"
+      ],
+      "varargs": false,
+      "source_section": "MarketplaceService",
+      "raw": "MarketplaceService.Buy(Username, ListingId, Quantity)",
+      "arity": 3
+    },
+    {
+      "service": "MarketplaceService",
+      "method": "DelistItem",
+      "params": [
+        "ListingId"
+      ],
+      "varargs": false,
+      "source_section": "MarketplaceService",
+      "raw": "MarketplaceService.DelistItem(ListingId)",
+      "arity": 1
+    },
+    {
+      "service": "MarketplaceService",
+      "method": "GetListing",
+      "params": [
+        "ListingId"
+      ],
+      "varargs": false,
+      "source_section": "MarketplaceService",
+      "raw": "MarketplaceService.GetListing(ListingId)",
+      "arity": 1
+    },
+    {
+      "service": "MarketplaceService",
+      "method": "GetListings",
+      "params": [
+        "Seller"
+      ],
+      "varargs": false,
+      "source_section": "MarketplaceService",
+      "raw": "MarketplaceService.GetListings(Seller)",
+      "arity": 1
+    },
+    {
+      "service": "MarketplaceService",
+      "method": "GetTransactionHistory",
+      "params": [
+        "Username",
+        "Limit"
+      ],
+      "varargs": false,
+      "source_section": "MarketplaceService",
+      "raw": "MarketplaceService.GetTransactionHistory(Username, Limit)",
+      "arity": 2
+    },
+    {
+      "service": "MarketplaceService",
+      "method": "ListItem",
+      "params": [
+        "Seller",
+        "ItemId",
+        "Price",
+        "CurrencyType",
+        "Quantity"
+      ],
+      "varargs": false,
+      "source_section": "MarketplaceService",
+      "raw": "MarketplaceService.ListItem(Seller, ItemId, Price, CurrencyType, Quantity)",
+      "arity": 5
+    },
+    {
+      "service": "MarketplaceService",
+      "method": "OnPurchase",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "MarketplaceService",
+      "raw": "MarketplaceService.OnPurchase(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "MarketplaceService",
+      "method": "OnSale",
+      "params": [
+        "Seller",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "MarketplaceService",
+      "raw": "MarketplaceService.OnSale(Seller, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "MarketplaceService",
+      "method": "Search",
+      "params": [
+        "Query",
+        "Filters"
+      ],
+      "varargs": false,
+      "source_section": "MarketplaceService",
+      "raw": "MarketplaceService.Search(Query, Filters)",
+      "arity": 2
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "CloseRoom",
+      "params": [
+        "RoomId"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.CloseRoom(RoomId)",
+      "arity": 1
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "CreateQueue",
+      "params": [
+        "QueueName",
+        "MaxPlayers"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.CreateQueue(QueueName, MaxPlayers)",
+      "arity": 2
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "CreateRoom",
+      "params": [
+        "RoomId",
+        "QueueName"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.CreateRoom(RoomId, QueueName)",
+      "arity": 2
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "DeleteQueue",
+      "params": [
+        "QueueName"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.DeleteQueue(QueueName)",
+      "arity": 1
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "GetQueue",
+      "params": [
+        "QueueName"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.GetQueue(QueueName)",
+      "arity": 1
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "GetRoom",
+      "params": [
+        "RoomId"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.GetRoom(RoomId)",
+      "arity": 1
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "GetRooms",
+      "params": [
+        "QueueName"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.GetRooms(QueueName)",
+      "arity": 1
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "Join",
+      "params": [
+        "Username",
+        "QueueName"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.Join(Username, QueueName)",
+      "arity": 2
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "Leave",
+      "params": [
+        "Username",
+        "QueueName"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.Leave(Username, QueueName)",
+      "arity": 2
+    },
+    {
+      "service": "MatchmakingService",
+      "method": "OnMatch",
+      "params": [
+        "QueueName",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "MatchmakingService",
+      "raw": "MatchmakingService.OnMatch(QueueName, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "Disconnect",
+      "params": [
+        "EventName"
+      ],
+      "varargs": false,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.Disconnect(EventName)",
+      "arity": 1
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "Exists",
+      "params": [
+        "EventName"
+      ],
+      "varargs": false,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.Exists(EventName)",
+      "arity": 1
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "FireAllClients",
+      "params": [
+        "EventName"
+      ],
+      "varargs": true,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.FireAllClients(EventName, ...)",
+      "arity": 1
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "FireAllClientsExcept",
+      "params": [
+        "EventName",
+        "ExcludeUsername"
+      ],
+      "varargs": true,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.FireAllClientsExcept(EventName, ExcludeUsername, ...)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "FireClient",
+      "params": [
+        "EventName",
+        "Username"
+      ],
+      "varargs": true,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.FireClient(EventName, Username, ...)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "FireServer",
+      "params": [
+        "EventName"
+      ],
+      "varargs": true,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.FireServer(EventName, ...)",
+      "arity": 1
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "InvokeServer",
+      "params": [
+        "EventName"
+      ],
+      "varargs": true,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.InvokeServer(EventName, ...)",
+      "arity": 1
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "OnClientEvent",
+      "params": [
+        "EventName",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.OnClientEvent(EventName, function(...) -- xử lý dữ liệu từ server end)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "OnServerEvent",
+      "params": [
+        "EventName",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.OnServerEvent(EventName, function(Username, ...) -- xử lý dữ liệu từ client end)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkEventService",
+      "method": "OnServerInvoke",
+      "params": [
+        "EventName",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "NetworkEventService",
+      "raw": "NetworkEventService.OnServerInvoke(EventName, function(Username, ...) return result end)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkService",
+      "method": "Create",
+      "params": [
+        "Name",
+        "Parent"
+      ],
+      "varargs": false,
+      "source_section": "NetworkService",
+      "raw": "NetworkService.Create(Name, Parent)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkService",
+      "method": "Destroy",
+      "params": [
+        "Name",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "NetworkService",
+      "raw": "NetworkService.Destroy(Name, Index)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkService",
+      "method": "Disconnect",
+      "params": [
+        "Name",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "NetworkService",
+      "raw": "NetworkService.Disconnect(Name, Index)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkService",
+      "method": "FireAllClients",
+      "params": [
+        "Name",
+        "Index"
+      ],
+      "varargs": true,
+      "source_section": "NetworkService",
+      "raw": "NetworkService.FireAllClients(Name, ..., Index)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkService",
+      "method": "FireClient",
+      "params": [
+        "Name",
+        "Username",
+        "Index"
+      ],
+      "varargs": true,
+      "source_section": "NetworkService",
+      "raw": "NetworkService.FireClient(Name, Username, ..., Index)",
+      "arity": 3
+    },
+    {
+      "service": "NetworkService",
+      "method": "FireServer",
+      "params": [
+        "Name",
+        "Index"
+      ],
+      "varargs": true,
+      "source_section": "NetworkService",
+      "raw": "NetworkService.FireServer(Name, ..., Index)",
+      "arity": 2
+    },
+    {
+      "service": "NetworkService",
+      "method": "OnClientEvent",
+      "params": [
+        "Name",
+        "Callback",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "NetworkService",
+      "raw": "NetworkService.OnClientEvent(Name, Callback, Index)",
+      "arity": 3
+    },
+    {
+      "service": "NetworkService",
+      "method": "OnServerEvent",
+      "params": [
+        "Name",
+        "Callback",
+        "Index"
+      ],
+      "varargs": false,
+      "source_section": "NetworkService",
+      "raw": "NetworkService.OnServerEvent(Name, Callback, Index)",
+      "arity": 3
+    },
+    {
+      "service": "NotificationService",
+      "method": "Dismiss",
+      "params": [
+        "Username",
+        "NotificationId"
+      ],
+      "varargs": false,
+      "source_section": "NotificationService",
+      "raw": "NotificationService.Dismiss(Username, NotificationId)",
+      "arity": 2
+    },
+    {
+      "service": "NotificationService",
+      "method": "OnDismiss",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "NotificationService",
+      "raw": "NotificationService.OnDismiss(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "NotificationService",
+      "method": "Send",
+      "params": [
+        "Username",
+        "Title",
+        "Message",
+        "Type",
+        "Duration"
+      ],
+      "varargs": false,
+      "source_section": "NotificationService",
+      "raw": "NotificationService.Send(Username, Title, Message, Type, Duration)",
+      "arity": 5
+    },
+    {
+      "service": "NotificationService",
+      "method": "SendAll",
+      "params": [
+        "Title",
+        "Message",
+        "Type",
+        "Duration"
+      ],
+      "varargs": false,
+      "source_section": "NotificationService",
+      "raw": "NotificationService.SendAll(Title, Message, Type, Duration)",
+      "arity": 4
+    },
+    {
+      "service": "PartyService",
+      "method": "AcceptInvite",
+      "params": [
+        "PartyId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.AcceptInvite(PartyId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "PartyService",
+      "method": "CreateParty",
+      "params": [
+        "Leader",
+        "MaxSize"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.CreateParty(Leader, MaxSize)",
+      "arity": 2
+    },
+    {
+      "service": "PartyService",
+      "method": "DeclineInvite",
+      "params": [
+        "PartyId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.DeclineInvite(PartyId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "PartyService",
+      "method": "DisbandParty",
+      "params": [
+        "PartyId"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.DisbandParty(PartyId)",
+      "arity": 1
+    },
+    {
+      "service": "PartyService",
+      "method": "GetParty",
+      "params": [
+        "PartyId"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.GetParty(PartyId)",
+      "arity": 1
+    },
+    {
+      "service": "PartyService",
+      "method": "GetPartyOf",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.GetPartyOf(Username)",
+      "arity": 1
+    },
+    {
+      "service": "PartyService",
+      "method": "Invite",
+      "params": [
+        "PartyId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.Invite(PartyId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "PartyService",
+      "method": "Kick",
+      "params": [
+        "PartyId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.Kick(PartyId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "PartyService",
+      "method": "Leave",
+      "params": [
+        "PartyId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.Leave(PartyId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "PartyService",
+      "method": "OnInvite",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.OnInvite(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "PartyService",
+      "method": "TransferLeader",
+      "params": [
+        "PartyId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PartyService",
+      "raw": "PartyService.TransferLeader(PartyId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "PassService",
+      "method": "CheckPermission",
+      "params": [
+        "Username",
+        "Permission"
+      ],
+      "varargs": false,
+      "source_section": "PassService",
+      "raw": "PassService.CheckPermission(Username, Permission)",
+      "arity": 2
+    },
+    {
+      "service": "PassService",
+      "method": "GetAll",
+      "params": [],
+      "varargs": false,
+      "source_section": "PassService",
+      "raw": "PassService.GetAll()",
+      "arity": 0
+    },
+    {
+      "service": "PassService",
+      "method": "GetPasses",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PassService",
+      "raw": "PassService.GetPasses(Username)",
+      "arity": 1
+    },
+    {
+      "service": "PassService",
+      "method": "Grant",
+      "params": [
+        "Username",
+        "PassId"
+      ],
+      "varargs": false,
+      "source_section": "PassService",
+      "raw": "PassService.Grant(Username, PassId)",
+      "arity": 2
+    },
+    {
+      "service": "PassService",
+      "method": "HasPass",
+      "params": [
+        "Username",
+        "PassId"
+      ],
+      "varargs": false,
+      "source_section": "PassService",
+      "raw": "PassService.HasPass(Username, PassId)",
+      "arity": 2
+    },
+    {
+      "service": "PassService",
+      "method": "OnGrant",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "PassService",
+      "raw": "PassService.OnGrant(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "PassService",
+      "method": "Register",
+      "params": [
+        "PassId",
+        "Name",
+        "Description",
+        "Permissions"
+      ],
+      "varargs": false,
+      "source_section": "PassService",
+      "raw": "PassService.Register(PassId, Name, Description, Permissions)",
+      "arity": 4
+    },
+    {
+      "service": "PassService",
+      "method": "Revoke",
+      "params": [
+        "Username",
+        "PassId"
+      ],
+      "varargs": false,
+      "source_section": "PassService",
+      "raw": "PassService.Revoke(Username, PassId)",
+      "arity": 2
+    },
+    {
+      "service": "PassService",
+      "method": "Unregister",
+      "params": [
+        "PassId"
+      ],
+      "varargs": false,
+      "source_section": "PassService",
+      "raw": "PassService.Unregister(PassId)",
+      "arity": 1
+    },
+    {
+      "service": "PathfindingService",
+      "method": "ComputePath",
+      "params": [
+        "NpcName",
+        "Destination",
+        "AgentRadius",
+        "AgentHeight"
+      ],
+      "varargs": false,
+      "source_section": "PathfindingService",
+      "raw": "PathfindingService.ComputePath(NpcName, Destination, AgentRadius, AgentHeight)",
+      "arity": 4
+    },
+    {
+      "service": "PathfindingService",
+      "method": "GetWaypoints",
+      "params": [
+        "NpcName"
+      ],
+      "varargs": false,
+      "source_section": "PathfindingService",
+      "raw": "PathfindingService.GetWaypoints(NpcName)",
+      "arity": 1
+    },
+    {
+      "service": "PathfindingService",
+      "method": "MoveAlongWaypoints",
+      "params": [
+        "NpcName",
+        "Waypoints"
+      ],
+      "varargs": false,
+      "source_section": "PathfindingService",
+      "raw": "PathfindingService.MoveAlongWaypoints(NpcName, Waypoints)",
+      "arity": 2
+    },
+    {
+      "service": "PathfindingService",
+      "method": "MoveTo",
+      "params": [
+        "NpcName",
+        "Destination"
+      ],
+      "varargs": false,
+      "source_section": "PathfindingService",
+      "raw": "PathfindingService.MoveTo(NpcName, Destination)",
+      "arity": 2
+    },
+    {
+      "service": "PathfindingService",
+      "method": "OnBlocked",
+      "params": [
+        "NpcName",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "PathfindingService",
+      "raw": "PathfindingService.OnBlocked(NpcName, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "PathfindingService",
+      "method": "OnReached",
+      "params": [
+        "NpcName",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "PathfindingService",
+      "raw": "PathfindingService.OnReached(NpcName, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "PathfindingService",
+      "method": "Pause",
+      "params": [
+        "NpcName"
+      ],
+      "varargs": false,
+      "source_section": "PathfindingService",
+      "raw": "PathfindingService.Pause(NpcName)",
+      "arity": 1
+    },
+    {
+      "service": "PathfindingService",
+      "method": "Resume",
+      "params": [
+        "NpcName"
+      ],
+      "varargs": false,
+      "source_section": "PathfindingService",
+      "raw": "PathfindingService.Resume(NpcName)",
+      "arity": 1
+    },
+    {
+      "service": "PathfindingService",
+      "method": "Stop",
+      "params": [
+        "NpcName"
+      ],
+      "varargs": false,
+      "source_section": "PathfindingService",
+      "raw": "PathfindingService.Stop(NpcName)",
+      "arity": 1
+    },
+    {
+      "service": "PhysicsService",
+      "method": "ApplyForce",
+      "params": [
+        "Instance",
+        "Force",
+        "Duration"
+      ],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.ApplyForce(Instance, Force, Duration)",
+      "arity": 3
+    },
+    {
+      "service": "PhysicsService",
+      "method": "ApplyImpulse",
+      "params": [
+        "Instance",
+        "Force"
+      ],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.ApplyImpulse(Instance, Force)",
+      "arity": 2
+    },
+    {
+      "service": "PhysicsService",
+      "method": "GetGravity",
+      "params": [],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.GetGravity()",
+      "arity": 0
+    },
+    {
+      "service": "PhysicsService",
+      "method": "GetVelocity",
+      "params": [
+        "Instance"
+      ],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.GetVelocity(Instance)",
+      "arity": 1
+    },
+    {
+      "service": "PhysicsService",
+      "method": "SetAnchored",
+      "params": [
+        "Instance",
+        "Boolean"
+      ],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.SetAnchored(Instance, Boolean)",
+      "arity": 2
+    },
+    {
+      "service": "PhysicsService",
+      "method": "SetElasticity",
+      "params": [
+        "Instance",
+        "Elasticity"
+      ],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.SetElasticity(Instance, Elasticity)",
+      "arity": 2
+    },
+    {
+      "service": "PhysicsService",
+      "method": "SetFriction",
+      "params": [
+        "Instance",
+        "Friction"
+      ],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.SetFriction(Instance, Friction)",
+      "arity": 2
+    },
+    {
+      "service": "PhysicsService",
+      "method": "SetGravity",
+      "params": [
+        "Gravity"
+      ],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.SetGravity(Gravity)",
+      "arity": 1
+    },
+    {
+      "service": "PhysicsService",
+      "method": "SetMass",
+      "params": [
+        "Instance",
+        "Mass"
+      ],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.SetMass(Instance, Mass)",
+      "arity": 2
+    },
+    {
+      "service": "PhysicsService",
+      "method": "SetVelocity",
+      "params": [
+        "Instance",
+        "Velocity"
+      ],
+      "varargs": false,
+      "source_section": "PhysicsService",
+      "raw": "PhysicsService.SetVelocity(Instance, Velocity)",
+      "arity": 2
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetCoors",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetCoors(Username)",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayer",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayer(\"Username\")",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayerAvatar",
+      "params": [
+        "UserId"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayerAvatar(UserId)",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayerAvatarUrl",
+      "params": [
+        "UserId"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayerAvatarUrl(UserId)",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayerCharacter",
+      "params": [
+        "UserId"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayerCharacter(UserId)",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayerCharacterUrl",
+      "params": [
+        "UserId"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayerCharacterUrl(UserId)",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayerCountry",
+      "params": [
+        "UserId"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayerCountry(UserId)",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayerName",
+      "params": [
+        "UserId"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayerName(UserId)",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayerThumbnail",
+      "params": [
+        "UserId"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayerThumbnail(UserId)",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayerThumbnailUrl",
+      "params": [
+        "UserId"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayerThumbnailUrl(UserId)",
+      "arity": 1
+    },
+    {
+      "service": "PlayerService",
+      "method": "GetPlayers",
+      "params": [],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.GetPlayers()",
+      "arity": 0
+    },
+    {
+      "service": "PlayerService",
+      "method": "Teleport",
+      "params": [
+        "Username",
+        "Coors"
+      ],
+      "varargs": false,
+      "source_section": "PlayerService",
+      "raw": "PlayerService.Teleport(Username, Coors)",
+      "arity": 2
+    },
+    {
+      "service": "ProximityService",
+      "method": "Create",
+      "params": [
+        "PromptId",
+        "Instance",
+        "Label",
+        "KeyCode",
+        "MaxDistance",
+        "HoldDuration"
+      ],
+      "varargs": false,
+      "source_section": "ProximityService",
+      "raw": "ProximityService.Create(PromptId, Instance, Label, KeyCode, MaxDistance, HoldDuration)",
+      "arity": 6
+    },
+    {
+      "service": "ProximityService",
+      "method": "GetAllPrompts",
+      "params": [],
+      "varargs": false,
+      "source_section": "ProximityService",
+      "raw": "ProximityService.GetAllPrompts()",
+      "arity": 0
+    },
+    {
+      "service": "ProximityService",
+      "method": "GetPrompt",
+      "params": [
+        "PromptId"
+      ],
+      "varargs": false,
+      "source_section": "ProximityService",
+      "raw": "ProximityService.GetPrompt(PromptId)",
+      "arity": 1
+    },
+    {
+      "service": "ProximityService",
+      "method": "OnEnter",
+      "params": [
+        "PromptId",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "ProximityService",
+      "raw": "ProximityService.OnEnter(PromptId, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "ProximityService",
+      "method": "OnExit",
+      "params": [
+        "PromptId",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "ProximityService",
+      "raw": "ProximityService.OnExit(PromptId, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "ProximityService",
+      "method": "OnTriggered",
+      "params": [
+        "PromptId",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "ProximityService",
+      "raw": "ProximityService.OnTriggered(PromptId, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "ProximityService",
+      "method": "Remove",
+      "params": [
+        "PromptId"
+      ],
+      "varargs": false,
+      "source_section": "ProximityService",
+      "raw": "ProximityService.Remove(PromptId)",
+      "arity": 1
+    },
+    {
+      "service": "ProximityService",
+      "method": "SetEnabled",
+      "params": [
+        "PromptId",
+        "Boolean"
+      ],
+      "varargs": false,
+      "source_section": "ProximityService",
+      "raw": "ProximityService.SetEnabled(PromptId, Boolean)",
+      "arity": 2
+    },
+    {
+      "service": "ProximityService",
+      "method": "SetVisible",
+      "params": [
+        "PromptId",
+        "Boolean"
+      ],
+      "varargs": false,
+      "source_section": "ProximityService",
+      "raw": "ProximityService.SetVisible(PromptId, Boolean)",
+      "arity": 2
+    },
+    {
+      "service": "PurchaseService",
+      "method": "CancelOrder",
+      "params": [
+        "OrderId"
+      ],
+      "varargs": false,
+      "source_section": "PurchaseService",
+      "raw": "PurchaseService.CancelOrder(OrderId)",
+      "arity": 1
+    },
+    {
+      "service": "PurchaseService",
+      "method": "ConfirmOrder",
+      "params": [
+        "OrderId"
+      ],
+      "varargs": false,
+      "source_section": "PurchaseService",
+      "raw": "PurchaseService.ConfirmOrder(OrderId)",
+      "arity": 1
+    },
+    {
+      "service": "PurchaseService",
+      "method": "CreateOrder",
+      "params": [
+        "Username",
+        "ItemId",
+        "Amount",
+        "CurrencyType"
+      ],
+      "varargs": false,
+      "source_section": "PurchaseService",
+      "raw": "PurchaseService.CreateOrder(Username, ItemId, Amount, CurrencyType)",
+      "arity": 4
+    },
+    {
+      "service": "PurchaseService",
+      "method": "GetOrder",
+      "params": [
+        "OrderId"
+      ],
+      "varargs": false,
+      "source_section": "PurchaseService",
+      "raw": "PurchaseService.GetOrder(OrderId)",
+      "arity": 1
+    },
+    {
+      "service": "PurchaseService",
+      "method": "GetOrderHistory",
+      "params": [
+        "Username",
+        "Limit"
+      ],
+      "varargs": false,
+      "source_section": "PurchaseService",
+      "raw": "PurchaseService.GetOrderHistory(Username, Limit)",
+      "arity": 2
+    },
+    {
+      "service": "PurchaseService",
+      "method": "OnPurchase",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "PurchaseService",
+      "raw": "PurchaseService.OnPurchase(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "PurchaseService",
+      "method": "Refund",
+      "params": [
+        "OrderId"
+      ],
+      "varargs": false,
+      "source_section": "PurchaseService",
+      "raw": "PurchaseService.Refund(OrderId)",
+      "arity": 1
+    },
+    {
+      "service": "QuestService",
+      "method": "AddProgress",
+      "params": [
+        "Username",
+        "QuestId",
+        "StepIndex",
+        "Delta"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.AddProgress(Username, QuestId, StepIndex, Delta)",
+      "arity": 4
+    },
+    {
+      "service": "QuestService",
+      "method": "Assign",
+      "params": [
+        "Username",
+        "QuestId"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.Assign(Username, QuestId)",
+      "arity": 2
+    },
+    {
+      "service": "QuestService",
+      "method": "Complete",
+      "params": [
+        "Username",
+        "QuestId"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.Complete(Username, QuestId)",
+      "arity": 2
+    },
+    {
+      "service": "QuestService",
+      "method": "GetActive",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.GetActive(Username)",
+      "arity": 1
+    },
+    {
+      "service": "QuestService",
+      "method": "GetProgress",
+      "params": [
+        "Username",
+        "QuestId"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.GetProgress(Username, QuestId)",
+      "arity": 2
+    },
+    {
+      "service": "QuestService",
+      "method": "IsCompleted",
+      "params": [
+        "Username",
+        "QuestId"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.IsCompleted(Username, QuestId)",
+      "arity": 2
+    },
+    {
+      "service": "QuestService",
+      "method": "OnComplete",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.OnComplete(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "QuestService",
+      "method": "Register",
+      "params": [
+        "QuestId",
+        "Name",
+        "Description",
+        "Steps",
+        "Rewards"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.Register(QuestId, Name, Description, Steps, Rewards)",
+      "arity": 5
+    },
+    {
+      "service": "QuestService",
+      "method": "SetProgress",
+      "params": [
+        "Username",
+        "QuestId",
+        "StepIndex",
+        "Progress"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.SetProgress(Username, QuestId, StepIndex, Progress)",
+      "arity": 4
+    },
+    {
+      "service": "QuestService",
+      "method": "Unassign",
+      "params": [
+        "Username",
+        "QuestId"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.Unassign(Username, QuestId)",
+      "arity": 2
+    },
+    {
+      "service": "QuestService",
+      "method": "Unregister",
+      "params": [
+        "QuestId"
+      ],
+      "varargs": false,
+      "source_section": "QuestService",
+      "raw": "QuestService.Unregister(QuestId)",
+      "arity": 1
+    },
+    {
+      "service": "RewardService",
+      "method": "ClaimDaily",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "RewardService",
+      "raw": "RewardService.ClaimDaily(Username)",
+      "arity": 1
+    },
+    {
+      "service": "RewardService",
+      "method": "ClaimLoginReward",
+      "params": [
+        "Username",
+        "RewardId"
+      ],
+      "varargs": false,
+      "source_section": "RewardService",
+      "raw": "RewardService.ClaimLoginReward(Username, RewardId)",
+      "arity": 2
+    },
+    {
+      "service": "RewardService",
+      "method": "GetCodeInfo",
+      "params": [
+        "Code"
+      ],
+      "varargs": false,
+      "source_section": "RewardService",
+      "raw": "RewardService.GetCodeInfo(Code)",
+      "arity": 1
+    },
+    {
+      "service": "RewardService",
+      "method": "GetDailyStreak",
+      "params": [
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "RewardService",
+      "raw": "RewardService.GetDailyStreak(Username)",
+      "arity": 1
+    },
+    {
+      "service": "RewardService",
+      "method": "OnClaim",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "RewardService",
+      "raw": "RewardService.OnClaim(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "RewardService",
+      "method": "RedeemCode",
+      "params": [
+        "Username",
+        "Code"
+      ],
+      "varargs": false,
+      "source_section": "RewardService",
+      "raw": "RewardService.RedeemCode(Username, Code)",
+      "arity": 2
+    },
+    {
+      "service": "RewardService",
+      "method": "RegisterCode",
+      "params": [
+        "Code",
+        "Rewards",
+        "MaxUses",
+        "ExpiresAt"
+      ],
+      "varargs": false,
+      "source_section": "RewardService",
+      "raw": "RewardService.RegisterCode(Code, Rewards, MaxUses, ExpiresAt)",
+      "arity": 4
+    },
+    {
+      "service": "RewardService",
+      "method": "RevokeCode",
+      "params": [
+        "Code"
+      ],
+      "varargs": false,
+      "source_section": "RewardService",
+      "raw": "RewardService.RevokeCode(Code)",
+      "arity": 1
+    },
+    {
+      "service": "SoundEffectService",
+      "method": "Play",
+      "params": [
+        "SoundId",
+        "Position",
+        "Volume",
+        "RolloffDistance"
+      ],
+      "varargs": false,
+      "source_section": "SoundEffectService",
+      "raw": "SoundEffectService.Play(SoundId, Position, Volume, RolloffDistance)",
+      "arity": 4
+    },
+    {
+      "service": "SoundEffectService",
+      "method": "PlayOn",
+      "params": [
+        "SoundId",
+        "Instance",
+        "Volume",
+        "RolloffDistance"
+      ],
+      "varargs": false,
+      "source_section": "SoundEffectService",
+      "raw": "SoundEffectService.PlayOn(SoundId, Instance, Volume, RolloffDistance)",
+      "arity": 4
+    },
+    {
+      "service": "SoundEffectService",
+      "method": "Preload",
+      "params": [
+        "SoundId"
+      ],
+      "varargs": false,
+      "source_section": "SoundEffectService",
+      "raw": "SoundEffectService.Preload(SoundId)",
+      "arity": 1
+    },
+    {
+      "service": "SoundEffectService",
+      "method": "Release",
+      "params": [
+        "SoundId"
+      ],
+      "varargs": false,
+      "source_section": "SoundEffectService",
+      "raw": "SoundEffectService.Release(SoundId)",
+      "arity": 1
+    },
+    {
+      "service": "SoundEffectService",
+      "method": "SetVolume",
+      "params": [
+        "SoundId",
+        "Volume"
+      ],
+      "varargs": false,
+      "source_section": "SoundEffectService",
+      "raw": "SoundEffectService.SetVolume(SoundId, Volume)",
+      "arity": 2
+    },
+    {
+      "service": "SoundEffectService",
+      "method": "Stop",
+      "params": [
+        "SoundId"
+      ],
+      "varargs": false,
+      "source_section": "SoundEffectService",
+      "raw": "SoundEffectService.Stop(SoundId)",
+      "arity": 1
+    },
+    {
+      "service": "SpawnService",
+      "method": "AssignSpawn",
+      "params": [
+        "TargetType",
+        "Username",
+        "SpawnName"
+      ],
+      "varargs": false,
+      "source_section": "SpawnService",
+      "raw": "SpawnService.AssignSpawn(TargetType, Username, SpawnName)",
+      "arity": 3
+    },
+    {
+      "service": "SpawnService",
+      "method": "CreateSpawn",
+      "params": [
+        "SpawnName",
+        "Position"
+      ],
+      "varargs": false,
+      "source_section": "SpawnService",
+      "raw": "SpawnService.CreateSpawn(SpawnName, Position)",
+      "arity": 2
+    },
+    {
+      "service": "SpawnService",
+      "method": "DeleteSpawn",
+      "params": [
+        "SpawnName"
+      ],
+      "varargs": false,
+      "source_section": "SpawnService",
+      "raw": "SpawnService.DeleteSpawn(SpawnName)",
+      "arity": 1
+    },
+    {
+      "service": "SpawnService",
+      "method": "GetAllSpawns",
+      "params": [],
+      "varargs": false,
+      "source_section": "SpawnService",
+      "raw": "SpawnService.GetAllSpawns()",
+      "arity": 0
+    },
+    {
+      "service": "SpawnService",
+      "method": "GetSpawn",
+      "params": [
+        "SpawnName"
+      ],
+      "varargs": false,
+      "source_section": "SpawnService",
+      "raw": "SpawnService.GetSpawn(SpawnName)",
+      "arity": 1
+    },
+    {
+      "service": "SpawnService",
+      "method": "Respawn",
+      "params": [
+        "TargetType",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "SpawnService",
+      "raw": "SpawnService.Respawn(TargetType, Username)",
+      "arity": 2
+    },
+    {
+      "service": "SpawnService",
+      "method": "RespawnAt",
+      "params": [
+        "TargetType",
+        "Username",
+        "SpawnName"
+      ],
+      "varargs": false,
+      "source_section": "SpawnService",
+      "raw": "SpawnService.RespawnAt(TargetType, Username, SpawnName)",
+      "arity": 3
+    },
+    {
+      "service": "SpawnService",
+      "method": "SetSpawn",
+      "params": [
+        "SpawnName",
+        "Position"
+      ],
+      "varargs": false,
+      "source_section": "SpawnService",
+      "raw": "SpawnService.SetSpawn(SpawnName, Position)",
+      "arity": 2
+    },
+    {
+      "service": "TeleportService",
+      "method": "GetZone",
+      "params": [
+        "ZoneName"
+      ],
+      "varargs": false,
+      "source_section": "TeleportService",
+      "raw": "TeleportService.GetZone(ZoneName)",
+      "arity": 1
+    },
+    {
+      "service": "TeleportService",
+      "method": "GetZones",
+      "params": [],
+      "varargs": false,
+      "source_section": "TeleportService",
+      "raw": "TeleportService.GetZones()",
+      "arity": 0
+    },
+    {
+      "service": "TeleportService",
+      "method": "OnTeleport",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "TeleportService",
+      "raw": "TeleportService.OnTeleport(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "TeleportService",
+      "method": "RegisterZone",
+      "params": [
+        "ZoneName",
+        "ServerId",
+        "SpawnPosition"
+      ],
+      "varargs": false,
+      "source_section": "TeleportService",
+      "raw": "TeleportService.RegisterZone(ZoneName, ServerId, SpawnPosition)",
+      "arity": 3
+    },
+    {
+      "service": "TeleportService",
+      "method": "TeleportGroup",
+      "params": [
+        "Usernames",
+        "ZoneName",
+        "Position"
+      ],
+      "varargs": false,
+      "source_section": "TeleportService",
+      "raw": "TeleportService.TeleportGroup(Usernames, ZoneName, Position)",
+      "arity": 3
+    },
+    {
+      "service": "TeleportService",
+      "method": "TeleportToServer",
+      "params": [
+        "Username",
+        "ServerId",
+        "Position"
+      ],
+      "varargs": false,
+      "source_section": "TeleportService",
+      "raw": "TeleportService.TeleportToServer(Username, ServerId, Position)",
+      "arity": 3
+    },
+    {
+      "service": "TeleportService",
+      "method": "TeleportToZone",
+      "params": [
+        "Username",
+        "ZoneName",
+        "Position"
+      ],
+      "varargs": false,
+      "source_section": "TeleportService",
+      "raw": "TeleportService.TeleportToZone(Username, ZoneName, Position)",
+      "arity": 3
+    },
+    {
+      "service": "TeleportService",
+      "method": "UnregisterZone",
+      "params": [
+        "ZoneName"
+      ],
+      "varargs": false,
+      "source_section": "TeleportService",
+      "raw": "TeleportService.UnregisterZone(ZoneName)",
+      "arity": 1
+    },
+    {
+      "service": "TextService",
+      "method": "CountCharacters",
+      "params": [
+        "Text"
+      ],
+      "varargs": false,
+      "source_section": "TextService",
+      "raw": "TextService.CountCharacters(Text)",
+      "arity": 1
+    },
+    {
+      "service": "TextService",
+      "method": "EscapeRichText",
+      "params": [
+        "Text"
+      ],
+      "varargs": false,
+      "source_section": "TextService",
+      "raw": "TextService.EscapeRichText(Text)",
+      "arity": 1
+    },
+    {
+      "service": "TextService",
+      "method": "Filter",
+      "params": [
+        "Username",
+        "Text"
+      ],
+      "varargs": false,
+      "source_section": "TextService",
+      "raw": "TextService.Filter(Username, Text)",
+      "arity": 2
+    },
+    {
+      "service": "TextService",
+      "method": "FitText",
+      "params": [
+        "Text",
+        "MaxWidth",
+        "Font",
+        "FontSize"
+      ],
+      "varargs": false,
+      "source_section": "TextService",
+      "raw": "TextService.FitText(Text, MaxWidth, Font, FontSize)",
+      "arity": 4
+    },
+    {
+      "service": "TextService",
+      "method": "MeasureText",
+      "params": [
+        "Text",
+        "Font",
+        "FontSize"
+      ],
+      "varargs": false,
+      "source_section": "TextService",
+      "raw": "TextService.MeasureText(Text, Font, FontSize)",
+      "arity": 3
+    },
+    {
+      "service": "TextService",
+      "method": "Truncate",
+      "params": [
+        "Text",
+        "MaxLines",
+        "Ellipsis"
+      ],
+      "varargs": false,
+      "source_section": "TextService",
+      "raw": "TextService.Truncate(Text, MaxLines, Ellipsis)",
+      "arity": 3
+    },
+    {
+      "service": "TextService",
+      "method": "WrapText",
+      "params": [
+        "Text",
+        "MaxWidth",
+        "Font",
+        "FontSize"
+      ],
+      "varargs": false,
+      "source_section": "TextService",
+      "raw": "TextService.WrapText(Text, MaxWidth, Font, FontSize)",
+      "arity": 4
+    },
+    {
+      "service": "TradingService",
+      "method": "CancelTrade",
+      "params": [
+        "TradeId"
+      ],
+      "varargs": false,
+      "source_section": "TradingService",
+      "raw": "TradingService.CancelTrade(TradeId)",
+      "arity": 1
+    },
+    {
+      "service": "TradingService",
+      "method": "Confirm",
+      "params": [
+        "TradeId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "TradingService",
+      "raw": "TradingService.Confirm(TradeId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "TradingService",
+      "method": "CreateTrade",
+      "params": [
+        "FromUsername",
+        "ToUsername"
+      ],
+      "varargs": false,
+      "source_section": "TradingService",
+      "raw": "TradingService.CreateTrade(FromUsername, ToUsername)",
+      "arity": 2
+    },
+    {
+      "service": "TradingService",
+      "method": "Decline",
+      "params": [
+        "TradeId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "TradingService",
+      "raw": "TradingService.Decline(TradeId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "TradingService",
+      "method": "GetOffer",
+      "params": [
+        "TradeId",
+        "Username"
+      ],
+      "varargs": false,
+      "source_section": "TradingService",
+      "raw": "TradingService.GetOffer(TradeId, Username)",
+      "arity": 2
+    },
+    {
+      "service": "TradingService",
+      "method": "GetTrade",
+      "params": [
+        "TradeId"
+      ],
+      "varargs": false,
+      "source_section": "TradingService",
+      "raw": "TradingService.GetTrade(TradeId)",
+      "arity": 1
+    },
+    {
+      "service": "TradingService",
+      "method": "GetTradeHistory",
+      "params": [
+        "Username",
+        "Limit"
+      ],
+      "varargs": false,
+      "source_section": "TradingService",
+      "raw": "TradingService.GetTradeHistory(Username, Limit)",
+      "arity": 2
+    },
+    {
+      "service": "TradingService",
+      "method": "OnTradeComplete",
+      "params": [
+        "Username",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "TradingService",
+      "raw": "TradingService.OnTradeComplete(Username, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "TradingService",
+      "method": "SetOffer",
+      "params": [
+        "TradeId",
+        "Username",
+        "Offer"
+      ],
+      "varargs": false,
+      "source_section": "TradingService",
+      "raw": "TradingService.SetOffer(TradeId, Username, Offer)",
+      "arity": 3
+    },
+    {
+      "service": "TweenService",
+      "method": "Back",
+      "params": [
+        "Instance"
+      ],
+      "varargs": false,
+      "source_section": "TweenService",
+      "raw": "TweenService.Back(Instance)",
+      "arity": 1
+    },
+    {
+      "service": "TweenService",
+      "method": "Move",
+      "params": [
+        "Instance",
+        "EndPosition",
+        "Time",
+        "EasingDirection",
+        "EasingStyle",
+        "Loop",
+        "RGBA"
+      ],
+      "varargs": false,
+      "source_section": "TweenService",
+      "raw": "TweenService.Move(Instance, EndPosition, Time, EasingDirection, EasingStyle, Loop, RGBA)",
+      "arity": 7
+    },
+    {
+      "service": "TweenService",
+      "method": "Pause",
+      "params": [
+        "Instance"
+      ],
+      "varargs": false,
+      "source_section": "TweenService",
+      "raw": "TweenService.Pause(Instance)",
+      "arity": 1
+    },
+    {
+      "service": "TweenService",
+      "method": "Resume",
+      "params": [
+        "Instance"
+      ],
+      "varargs": false,
+      "source_section": "TweenService",
+      "raw": "TweenService.Resume(Instance)",
+      "arity": 1
+    },
+    {
+      "service": "TweenService",
+      "method": "Stop",
+      "params": [
+        "Instance"
+      ],
+      "varargs": false,
+      "source_section": "TweenService",
+      "raw": "TweenService.Stop(Instance)",
+      "arity": 1
+    },
+    {
+      "service": "UIService",
+      "method": "Create",
+      "params": [
+        "Name",
+        "Type",
+        "Parent",
+        "Properties"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.Create(Name, Type, Parent, Properties)",
+      "arity": 4
+    },
+    {
+      "service": "UIService",
+      "method": "Destroy",
+      "params": [
+        "Name"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.Destroy(Name)",
+      "arity": 1
+    },
+    {
+      "service": "UIService",
+      "method": "GetCanvasSize",
+      "params": [
+        "Name"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.GetCanvasSize(Name)",
+      "arity": 1
+    },
+    {
+      "service": "UIService",
+      "method": "GetProperty",
+      "params": [
+        "Name",
+        "Property"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.GetProperty(Name, Property)",
+      "arity": 2
+    },
+    {
+      "service": "UIService",
+      "method": "GetScrollPosition",
+      "params": [
+        "Name"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.GetScrollPosition(Name)",
+      "arity": 1
+    },
+    {
+      "service": "UIService",
+      "method": "GetText",
+      "params": [
+        "Name"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.GetText(Name)",
+      "arity": 1
+    },
+    {
+      "service": "UIService",
+      "method": "OnClick",
+      "params": [
+        "Name",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.OnClick(Name, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "UIService",
+      "method": "OnTextChanged",
+      "params": [
+        "Name",
+        "Callback"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.OnTextChanged(Name, Callback)",
+      "arity": 2
+    },
+    {
+      "service": "UIService",
+      "method": "RemoveCallback",
+      "params": [
+        "Name"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.RemoveCallback(Name)",
+      "arity": 1
+    },
+    {
+      "service": "UIService",
+      "method": "SetCanvasSize",
+      "params": [
+        "Name",
+        "Width",
+        "Height"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.SetCanvasSize(Name, Width, Height)",
+      "arity": 3
+    },
+    {
+      "service": "UIService",
+      "method": "SetImage",
+      "params": [
+        "Name",
+        "AssetId"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.SetImage(Name, AssetId)",
+      "arity": 2
+    },
+    {
+      "service": "UIService",
+      "method": "SetPlaceholder",
+      "params": [
+        "Name",
+        "PlaceholderText"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.SetPlaceholder(Name, PlaceholderText)",
+      "arity": 2
+    },
+    {
+      "service": "UIService",
+      "method": "SetProperty",
+      "params": [
+        "Name",
+        "Property",
+        "Value"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.SetProperty(Name, Property, Value)",
+      "arity": 3
+    },
+    {
+      "service": "UIService",
+      "method": "SetScrollPosition",
+      "params": [
+        "Name",
+        "X",
+        "Y"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.SetScrollPosition(Name, X, Y)",
+      "arity": 3
+    },
+    {
+      "service": "UIService",
+      "method": "SetText",
+      "params": [
+        "Name",
+        "Text"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.SetText(Name, Text)",
+      "arity": 2
+    },
+    {
+      "service": "UIService",
+      "method": "SetVisible",
+      "params": [
+        "Name",
+        "Boolean"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.SetVisible(Name, Boolean)",
+      "arity": 2
+    },
+    {
+      "service": "UIService",
+      "method": "Tween",
+      "params": [
+        "Name",
+        "Properties",
+        "Time",
+        "EasingDirection",
+        "EasingStyle"
+      ],
+      "varargs": false,
+      "source_section": "UIService",
+      "raw": "UIService.Tween(Name, Properties, Time, EasingDirection, EasingStyle)",
+      "arity": 5
+    }
+  ]
+}

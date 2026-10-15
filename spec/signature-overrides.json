@@ -1,0 +1,46 @@
+{
+  "_comment": [
+    "Corrections for signatures whose parameter names in the vendored documentation",
+    "are shown as a usage example (string literals) or as an inline callback body.",
+    "Only parameter *names* are normalised; no signature is added or removed.",
+    "Every entry cites the documentation prose that justifies the real names.",
+    "See spec/tools/extract_signatures.py."
+  ],
+  "signatures": [
+    {
+      "key": "AccessoryService",
+      "service": "AccessoryService",
+      "method": "",
+      "params": ["TargetName", "TargetType", "AccessoryIds"],
+      "reason": "api.md section 'AccessoryService': 'Tất cả 3 tham số đều là chuỗi' with the example AccessoryService(\"Player1\", \"Player\", \"1082345, 1082350, 1082360\") -> target name, target type (Player|NPC), comma-separated accessory ids."
+    },
+    {
+      "key": "PlayerService.GetPlayer",
+      "service": "PlayerService",
+      "method": "GetPlayer",
+      "params": ["Username"],
+      "reason": "api.md section 'PlayerService': listed as PlayerService.GetPlayer(\"Username\"), a username lookup."
+    },
+    {
+      "key": "NetworkEventService.OnServerEvent",
+      "service": "NetworkEventService",
+      "method": "OnServerEvent",
+      "params": ["EventName", "Callback"],
+      "reason": "api.md section 'NetworkEventService': 'Callback là hàm xử lý nhận dữ liệu từ event.'"
+    },
+    {
+      "key": "NetworkEventService.OnClientEvent",
+      "service": "NetworkEventService",
+      "method": "OnClientEvent",
+      "params": ["EventName", "Callback"],
+      "reason": "api.md section 'NetworkEventService': 'Callback là hàm xử lý nhận dữ liệu từ event.'"
+    },
+    {
+      "key": "NetworkEventService.OnServerInvoke",
+      "service": "NetworkEventService",
+      "method": "OnServerInvoke",
+      "params": ["EventName", "Callback"],
+      "reason": "api.md section 'NetworkEventService': 'Callback là hàm xử lý...' and the example returns a result."
+    }
+  ]
+}

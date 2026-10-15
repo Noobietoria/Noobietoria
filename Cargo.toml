@@ -1,0 +1,69 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/nb-types",
+    "crates/nb-world",
+    "crates/nb-store",
+    "crates/nb-api",
+    "crates/nb-script",
+    "crates/nb-net",
+    "crates/nb-render",
+    "crates/nb-http",
+    "apps/noobietoria-dedicated",
+    "apps/noobietoria-client",
+    "apps/noobietoria-studio",
+    "apps/noobietoria-web",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/noobietoria/noobietoria"
+authors = ["Noobietoria Team"]
+
+[workspace.dependencies]
+nb-types = { path = "crates/nb-types" }
+nb-world = { path = "crates/nb-world" }
+nb-store = { path = "crates/nb-store" }
+nb-api = { path = "crates/nb-api" }
+nb-script = { path = "crates/nb-script" }
+nb-net = { path = "crates/nb-net" }
+nb-render = { path = "crates/nb-render" }
+nb-http = { path = "crates/nb-http" }
+
+anyhow = "1"
+base64 = "0.22"
+eframe = { version = "0.33", default-features = false, features = ["wgpu", "default_fonts"] }
+egui = { version = "0.33", default-features = false }
+image = { version = "0.25", default-features = false, features = ["png"] }
+mlua = { version = "0.12", features = ["luau", "vendored", "serialize", "send"] }
+parking_lot = "0.12"
+rand = "0.9"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "io-util", "time", "sync", "fs"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+wgpu = "27"
+bytemuck = { version = "1", features = ["derive"] }
+axum = { version = "0.8", features = ["multipart"] }
+tower-http = { version = "0.6", features = ["fs", "trace"] }
+argon2 = "0.5"
+hex = "0.4"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 2

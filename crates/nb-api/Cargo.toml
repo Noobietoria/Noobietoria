@@ -1,0 +1,16 @@
+[package]
+name = "nb-api"
+description = "The Noobietoria service registry: every service function documented in Docs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+nb-store.workspace = true
+nb-types.workspace = true
+nb-world.workspace = true
+parking_lot.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true

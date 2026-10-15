@@ -1,0 +1,17 @@
+[package]
+name = "nb-script"
+description = "Luau script runtime: binds the Noobietoria services into a sandboxed VM."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+nb-api.workspace = true
+nb-store.workspace = true
+nb-types.workspace = true
+nb-world.workspace = true
+mlua.workspace = true
+parking_lot.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true

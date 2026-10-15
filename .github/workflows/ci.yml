@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev pkg-config libxkbcommon-dev libwayland-dev
+
+      - name: Configure toolchain for Linux
+        if: runner.os == 'Linux'
+        run: |
+          sed -i 's/stable-x86_64-pc-windows-msvc/stable/' rust-toolchain.toml
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Cargo check
+        run: cargo check --workspace --all-targets
+
+      - name: Run tests
+        run: cargo test --workspace --all-targets
+
+      - name: Run doc-tests
+        run: cargo test --workspace --doc
+
+  build:
+    name: Build Release (${{ matrix.os }})
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev pkg-config libxkbcommon-dev libwayland-dev
+
+      - name: Configure toolchain for Linux
+        if: runner.os == 'Linux'
+        run: |
+          sed -i 's/stable-x86_64-pc-windows-msvc/stable/' rust-toolchain.toml
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build all apps in release mode
+        run: cargo build --release --workspace
+
+      - name: Package artifacts (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          mkdir release-dist
+          copy target\release\noobietoria-dedicated.exe release-dist\
+          copy target\release\noobietoria-client.exe release-dist\
+          copy target\release\noobietoria-studio.exe release-dist\
+          copy target\release\noobietoria-web.exe release-dist\
+        shell: cmd
+
+      - name: Package artifacts (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir release-dist
+          cp target/release/noobietoria-dedicated release-dist/
+          cp target/release/noobietoria-client release-dist/
+          cp target/release/noobietoria-studio release-dist/
+          cp target/release/noobietoria-web release-dist/
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: noobietoria-${{ runner.os }}-x86_64
+          path: release-dist/*
