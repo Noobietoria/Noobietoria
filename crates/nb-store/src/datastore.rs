@@ -22,8 +22,10 @@ use std::collections::BTreeMap;
 use std::fmt;
 use std::sync::Arc;
 
+use nb_persistence::KeyValueStore;
 use nb_types::Value;
 use parking_lot::RwLock;
+use serde_json;
 
 use crate::budget::{BudgetError, RequestKind, RequestLedger};
 
@@ -251,6 +253,12 @@ pub enum DataStoreError {
     /// A request was refused by the budget ledger.
     #[error(transparent)]
     Budget(#[from] BudgetError),
+    /// The underlying persistence backend failed.
+    #[error("backend error: {reason}")]
+    Backend {
+        /// The failure reason.
+        reason: String,
+    },
 }
 
 /// One named datastore, equivalent to a Roblox `DataStore` handle.
@@ -834,6 +842,53 @@ impl DataStoreService {
             }
         }
         Ok(imported)
+    }
+
+    /// Persists the entire store state to `store` under `key` (async).
+    ///
+    /// All namespaces and their entries are serialised as one JSON document.
+    /// Call this on shutdown or periodically to durable storage.
+    pub async fn save_to(
+        &self,
+        store: &dyn KeyValueStore,
+        key: &str,
+    ) -> Result<(), DataStoreError> {
+        let exported = self.export();
+        let json = serde_json::to_string(&exported).map_err(|e| DataStoreError::NotJson {
+            reason: e.to_string(),
+        })?;
+        store
+            .set(key, &Value::from(json))
+            .await
+            .map_err(|e| DataStoreError::Backend {
+                reason: e.to_string(),
+            })?;
+        Ok(())
+    }
+
+    /// Loads the entire store state from `store` under `key` (async).
+    ///
+    /// Replaces all current in-memory data with the persisted state.
+    pub async fn load_from(
+        &self,
+        store: &dyn KeyValueStore,
+        key: &str,
+    ) -> Result<(), DataStoreError> {
+        let val = match store.get(key).await.map_err(|e| DataStoreError::Backend {
+            reason: e.to_string(),
+        })? {
+            Some(v) => v,
+            None => return Ok(()), // nothing persisted yet
+        };
+        let json = val.as_str().ok_or_else(|| DataStoreError::NotJson {
+            reason: "persisted value is not a string".to_owned(),
+        })?;
+        let data: BTreeMap<String, BTreeMap<String, String>> =
+            serde_json::from_str(json).map_err(|e| DataStoreError::NotJson {
+                reason: e.to_string(),
+            })?;
+        self.import(data)?;
+        Ok(())
     }
 }
 

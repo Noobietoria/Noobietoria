@@ -1,8 +1,5 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-// Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.
+// Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.
 // PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING IS STRICTLY PROHIBITED.
 
 //! Noobietoria Web — site + API server.
@@ -87,7 +84,7 @@ fn find_static_dir() -> PathBuf {
 
 fn print_help() {
     println!("Noobietoria Web - Closed-Source Proprietary Gaming Platform");
-    println!("Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.");
+    println!("Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.");
     println!();
     println!("Usage: noobietoria-web [OPTIONS]");
     println!();
@@ -133,6 +130,49 @@ async fn place_servers_handler(
     }
 }
 
+/// `POST /api/v1/servers/register` — a dedicated server announces itself.
+///
+/// Dedicated servers post a heartbeat every few seconds; the registration
+/// expires on its own if the heartbeats stop, so a crashed host disappears from
+/// the client's server list without any explicit deregistration.
+async fn register_server_handler(
+    State(state): State<AppState>,
+    Json(registration): Json<state::ServerRegistration>,
+) -> impl IntoResponse {
+    if registration.server_id.trim().is_empty() || registration.place_id.trim().is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "success": false,
+                "message": "server_id and place_id are required",
+            })),
+        );
+    }
+    if registration.port == 0 {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "success": false,
+                "message": "port must be non-zero",
+            })),
+        );
+    }
+
+    let known = state.games.read().contains_key(&registration.place_id);
+    let advertised = state.register_server(registration);
+    (
+        StatusCode::OK,
+        Json(serde_json::json!({
+            // `known_place: false` means the server hosts a place the website
+            // does not publish; it is still registered, but clients browsing
+            // the catalog will not surface it.
+            "success": true,
+            "known_place": known,
+            "server": advertised,
+        })),
+    )
+}
+
 fn build_router(state: AppState, static_dir: &PathBuf) -> Router {
     let serve_dir = ServeDir::new(static_dir).append_index_html_on_directories(true);
 
@@ -156,6 +196,7 @@ fn build_router(state: AppState, static_dir: &PathBuf) -> Router {
         )
         // ── Server directory (join endpoints for clients) ─────────────────────
         .route("/api/v1/servers", get(list_servers_handler))
+        .route("/api/v1/servers/register", post(register_server_handler))
         .route(
             "/api/v1/places/{place_id}/servers",
             get(place_servers_handler),

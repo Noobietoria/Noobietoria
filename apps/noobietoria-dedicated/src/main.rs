@@ -38,11 +38,14 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use nb_api::{ApiContext, PendingEvent, PlayerRecord, Side};
+use nb_persistence::SqlKvStore;
+use nb_store::DataStoreService;
 use nb_world::WorldFile;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
+use tokio::signal;
 use tokio::sync::mpsc;
 use tokio::time;
 use tracing::{error, info, warn};
@@ -110,15 +113,25 @@ struct ServerState {
     connections: HashMap<SocketAddr, Arc<RwLock<Conn>>>,
     max_players: u32,
     server_name: String,
+    kv_store: Arc<SqlKvStore>,
+    datastore: Arc<DataStoreService>,
 }
 
 impl ServerState {
-    fn new(ctx: ApiContext, max_players: u32, server_name: String) -> Self {
+    fn new(
+        ctx: ApiContext,
+        max_players: u32,
+        server_name: String,
+        kv_store: Arc<SqlKvStore>,
+        datastore: Arc<DataStoreService>,
+    ) -> Self {
         Self {
             ctx,
             connections: HashMap::new(),
             max_players,
             server_name,
+            kv_store,
+            datastore,
         }
     }
 
@@ -149,7 +162,6 @@ async fn main() -> Result<()> {
         .init();
 
     let args: Vec<String> = std::env::args().collect();
-
     // ── --help ────────────────────────────────────────────────────────────────
     if args.iter().any(|a| a == "--help" || a == "-h") {
         println!("Noobietoria Dedicated Server");
@@ -160,6 +172,7 @@ async fn main() -> Result<()> {
         println!("  --world <PATH>       .nbw world file to load");
         println!("  --max-players <N>    Maximum concurrent players  [default: 20]");
         println!("  --name <TEXT>        Server display name");
+        println!("  --data-dir <PATH>    Directory for SQLite database  [default: data/]");
         println!("  --selftest           Run a smoke test then exit");
         println!("  -h, --help           Print this help");
         return Ok(());
@@ -171,6 +184,7 @@ async fn main() -> Result<()> {
     let mut max_players: u32 = 20;
     let mut server_name = String::from("Noobietoria Server");
     let mut selftest = false;
+    let mut data_dir: PathBuf = PathBuf::from("data");
 
     let mut i = 1usize;
     while i < args.len() {
@@ -194,6 +208,10 @@ async fn main() -> Result<()> {
                 i += 1;
             }
             "--selftest" => selftest = true,
+            "--data-dir" if i + 1 < args.len() => {
+                data_dir = PathBuf::from(&args[i + 1]);
+                i += 1;
+            }
             _ => {}
         }
         i += 1;
@@ -213,6 +231,22 @@ async fn main() -> Result<()> {
     }
 
     ctx.runtime.record_visit();
+
+    // ── Persistence ─────────────────────────────────────────────────────────
+    std::fs::create_dir_all(&data_dir)
+        .with_context(|| format!("creating data dir {:?}", data_dir))?;
+    let db_path = data_dir.join("noobietoria.sqlite");
+    let kv_store = Arc::new(
+        SqlKvStore::sqlite(db_path.to_string_lossy().as_ref())
+            .await
+            .with_context(|| format!("opening sqlite database {:?}", db_path))?,
+    );
+    let datastore = Arc::new(DataStoreService::new());
+    datastore
+        .load_from(kv_store.as_ref(), "datastore")
+        .await
+        .with_context(|| "loading datastore from persistence")?;
+    info!("Persistence initialised at {:?}", db_path);
 
     // ── Self-test ─────────────────────────────────────────────────────────────
     if selftest {
@@ -236,7 +270,13 @@ async fn main() -> Result<()> {
     }
 
     // ── Shared state ──────────────────────────────────────────────────────────
-    let state = Arc::new(RwLock::new(ServerState::new(ctx, max_players, server_name)));
+    let state = Arc::new(RwLock::new(ServerState::new(
+        ctx,
+        max_players,
+        server_name,
+        kv_store,
+        datastore,
+    )));
 
     // ── TCP listener ──────────────────────────────────────────────────────────
     let addr: SocketAddr = format!("0.0.0.0:{port}").parse()?;
@@ -319,16 +359,133 @@ async fn main() -> Result<()> {
     }
 
     // ── Accept loop ───────────────────────────────────────────────────────────
+    let mut shutdown = std::pin::pin!(signal::ctrl_c());
     loop {
-        let (stream, addr) = listener.accept().await?;
-        info!("New connection: {addr}");
+        tokio::select! {
+            result = listener.accept() => {
+                let (stream, addr) = result?;
+                info!("New connection: {addr}");
 
-        let state = Arc::clone(&state);
-        tokio::spawn(async move {
-            if let Err(e) = handle_conn(stream, addr, state).await {
-                warn!("{addr}: {e:#}");
+                let state = Arc::clone(&state);
+                tokio::spawn(async move {
+                    if let Err(e) = handle_conn(stream, addr, state).await {
+                        warn!("{addr}: {e:#}");
+                    }
+                });
             }
-        });
+            _ = &mut shutdown => {
+                info!("Shutdown signal received – saving datastore…");
+                let srv = state.read();
+                if let Err(e) = srv.datastore.save_to(srv.kv_store.as_ref(), "datastore").await {
+                    warn!("failed to save datastore on shutdown: {e:#}");
+                } else {
+                    info!("Datastore saved.");
+                }
+                break Ok(());
+            }
+        }
+    }
+}
+
+// ── Website registration ───────────────────────────────────────────────────────
+
+/// How often the server re-announces itself to the website. Kept comfortably
+/// below the website's registration TTL so a single dropped heartbeat does not
+/// make the server disappear from the client's server list.
+const REGISTER_INTERVAL: Duration = Duration::from_secs(5);
+
+/// The heartbeat payload, matching `nb_web::ServerRegistration` on the website.
+#[derive(Debug, Serialize)]
+struct Registration<'a> {
+    server_id: &'a str,
+    place_id: &'a str,
+    host: &'a str,
+    port: u16,
+    players: u32,
+    max_players: u32,
+    region: &'a str,
+}
+
+/// Starts the heartbeat task that announces this server to the website.
+///
+/// `api_base` empty disables registration (a purely local server). The task
+/// keeps running for the lifetime of the process; if the website is down, the
+/// next heartbeat retries and the server keeps serving players regardless.
+fn spawn_registration(
+    api_base: String,
+    server_id: String,
+    place_id: String,
+    host: String,
+    port: u16,
+    max_players: u32,
+    region: String,
+    state: Arc<RwLock<ServerState>>,
+) {
+    if api_base.trim().is_empty() {
+        info!("Website registration disabled (--api \"\").");
+        return;
+    }
+
+    tokio::spawn(async move {
+        let url = format!(
+            "{}/api/v1/servers/register",
+            api_base.trim_end_matches('/')
+        );
+        let client = match reqwest::Client::builder()
+            .timeout(Duration::from_secs(5))
+            .build()
+        {
+            Ok(c) => c,
+            Err(e) => {
+                warn!("registration disabled, HTTP client failed: {e}");
+                return;
+            }
+        };
+
+        let mut ticker = time::interval(REGISTER_INTERVAL);
+        let mut announced = false;
+        loop {
+            ticker.tick().await;
+
+            // CCU as reported by the runtime, so the website shows real numbers.
+            let players = state.read().ccu();
+            let payload = Registration {
+                server_id: &server_id,
+                place_id: &place_id,
+                host: &host,
+                port,
+                players,
+                max_players,
+                region: &region,
+            };
+
+            match client.post(&url).json(&payload).send().await {
+                Ok(resp) if resp.status().is_success() => {
+                    if !announced {
+                        announced = true;
+                        info!(
+                            "Registered with {url} as {server_id} ({players}/{max_players} players)"
+                        );
+                    }
+                }
+                Ok(resp) => {
+                    warned_once(&mut announced, &format!("{url} returned {}", resp.status()));
+                }
+                Err(e) => {
+                    warned_once(&mut announced, &format!("{url}: {e}"));
+                }
+            }
+        }
+    });
+}
+
+/// Logs a registration problem once per outage, then stays quiet.
+fn warned_once(announced: &mut bool, message: &str) {
+    if *announced {
+        warn!("Website registration lost: {message}");
+        *announced = false;
+    } else {
+        info!("Website registration retrying: {message}");
     }
 }
 

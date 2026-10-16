@@ -4,6 +4,7 @@ members = [
     "crates/nb-types",
     "crates/nb-world",
     "crates/nb-store",
+    "crates/nb-persistence",
     "crates/nb-api",
     "crates/nb-script",
     "crates/nb-net",
@@ -27,6 +28,7 @@ authors = ["Noobietoria Team"]
 nb-types = { path = "crates/nb-types" }
 nb-world = { path = "crates/nb-world" }
 nb-store = { path = "crates/nb-store" }
+nb-persistence = { path = "crates/nb-persistence" }
 nb-api = { path = "crates/nb-api" }
 nb-script = { path = "crates/nb-script" }
 nb-net = { path = "crates/nb-net" }
@@ -56,6 +58,9 @@ tower-http = { version = "0.6", features = ["fs", "trace"] }
 argon2 = "0.5"
 hex = "0.4"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "migrate", "any"] }
+s3 = { version = "0.13", default-features = false, features = ["rustls-tls"] }
+futures-util = "0.3"
 
 [profile.release]
 opt-level = 3

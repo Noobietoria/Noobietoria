@@ -1,8 +1,4 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
-
-// Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.
+// Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.
 // PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING IS STRICTLY PROHIBITED.
 
 mod graphql;
@@ -36,7 +32,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if args.iter().any(|a| a == "--help" || a == "-h") {
         println!("Noobietoria Web - Closed-Source Proprietary Gaming Platform");
-        println!("Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.");
+        println!("Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.");
         println!();
         println!("Usage: noobietoria-web [OPTIONS]");
         println!();
