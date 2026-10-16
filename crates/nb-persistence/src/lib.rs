@@ -54,16 +54,12 @@ pub mod kv_store;
 pub mod object_store;
 pub mod sql;
 
-pub use kv_store::{
-    KeyValueStore, MemoryKvStore, SqlKvStoreConfig,
-};
+pub use kv_store::{KeyValueStore, MemoryKvStore, SqlKvStoreConfig};
 
 #[cfg(any(feature = "sqlite", feature = "any-db"))]
 pub use kv_store::SqlKvStore;
 
-pub use object_store::{
-    ObjectStore, LocalFileObjectStore, MemoryObjectStore,
-};
+pub use object_store::{LocalFileObjectStore, MemoryObjectStore, ObjectStore};
 
 #[cfg(feature = "s3")]
 pub use object_store::{S3ObjectStore, S3ObjectStoreConfig};

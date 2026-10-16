@@ -164,12 +164,10 @@ impl ObjectStore for LocalFileObjectStore {
 
     async fn get_object(&self, key: &str) -> ObjResult<Bytes> {
         let path = self.path_for(key);
-        let data = tokio::fs::read(&path)
-            .await
-            .map_err(|e| match e.kind() {
-                std::io::ErrorKind::NotFound => ObjError::NotFound(key.to_owned()),
-                _ => ObjError::Backend(e.to_string()),
-            })?;
+        let data = tokio::fs::read(&path).await.map_err(|e| match e.kind() {
+            std::io::ErrorKind::NotFound => ObjError::NotFound(key.to_owned()),
+            _ => ObjError::Backend(e.to_string()),
+        })?;
         Ok(Bytes::from(data))
     }
 
@@ -193,9 +191,7 @@ impl ObjectStore for LocalFileObjectStore {
 
     async fn contains(&self, key: &str) -> ObjResult<bool> {
         let path = self.path_for(key);
-        Ok(tokio::fs::try_exists(&path)
-            .await
-            .unwrap_or(false))
+        Ok(tokio::fs::try_exists(&path).await.unwrap_or(false))
     }
 }
 
@@ -225,7 +221,6 @@ impl LocalFileObjectStore {
         Ok(())
     }
 }
-
 
 // ════════════════════════════════════════════════════════════════════════════
 // S3 / R2 implementation
@@ -325,10 +320,7 @@ impl ObjectStore for S3ObjectStore {
         let mut keys = Vec::new();
         let mut continuation_token: Option<String> = None;
         loop {
-            let mut req = self
-                .client
-                .list_objects_v2()
-                .bucket(&self.bucket);
+            let mut req = self.client.list_objects_v2().bucket(&self.bucket);
             if let Some(p) = prefix {
                 req = req.prefix(p);
             }
@@ -402,4 +394,3 @@ impl ObjectStore for S3ObjectStore {
         Err(ObjError::Backend("s3 feature disabled".into()))
     }
 }
-

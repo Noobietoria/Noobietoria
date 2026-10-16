@@ -427,10 +427,7 @@ fn spawn_registration(
     }
 
     tokio::spawn(async move {
-        let url = format!(
-            "{}/api/v1/servers/register",
-            api_base.trim_end_matches('/')
-        );
+        let url = format!("{}/api/v1/servers/register", api_base.trim_end_matches('/'));
         let client = match reqwest::Client::builder()
             .timeout(Duration::from_secs(5))
             .build()

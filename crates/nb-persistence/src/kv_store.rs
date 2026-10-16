@@ -140,11 +140,7 @@ impl KeyValueStore for MemoryKvStore {
 impl MemoryKvStore {
     /// Atomic read-modify-write on a single key (inherent, not part of the
     /// object-safe `KeyValueStore` trait).
-    pub async fn update<F, R>(
-        &self,
-        key: &str,
-        f: F,
-    ) -> KvResult<R>
+    pub async fn update<F, R>(&self, key: &str, f: F) -> KvResult<R>
     where
         F: Fn(Option<&Value>) -> KvResult<(Option<Value>, R)> + Send + Sync,
         R: Send,
@@ -220,7 +216,6 @@ impl SqlKvStore {
         .await
     }
 }
-
 
 #[cfg(any(feature = "sqlite", feature = "any-db"))]
 #[async_trait]
@@ -336,4 +331,3 @@ mod tests {
         assert_eq!(store.get("counter").await.unwrap(), Some(Value::from(1i64)));
     }
 }
-
