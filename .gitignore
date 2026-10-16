@@ -7,10 +7,12 @@
 /data
 *.nbplace
 *.nbsession
+/ui-shot-*.png
+/scripts
 
 # Local scratch used while reading upstream docs
 /_docs_src
-
+_sigs
 # OS / editor
 .DS_Store
 Thumbs.db

@@ -33,10 +33,10 @@ noobietoria/
 ├── .github/          # GitHub workflows, CI/CD, and asset files
 ├── _sigs/            # Game system specifications (economy, player, system, ui)
 ├── apps/             # End-user applications and services
-│   ├── noobietoria-client     # Game client to browse & join published places
+│   ├── noobietoria-client     # PC app: icon rail, place grid, join a server
 │   ├── noobietoria-dedicated  # Authoritative host server for multiplayer sessions
 │   ├── noobietoria-studio     # Creator tooling & level editing suite
-│   └── noobietoria-web        # Web frontend interface
+│   └── noobietoria-web        # Website + API (place catalog, server directory)
 ├── crates/           # Reusable engine crates and shared libraries
 │   ├── nb-types      # Core shared data structures and types
 │   ├── nb-world      # World simulation, map data, and logic
@@ -79,20 +79,98 @@ Ensure you have **Rust 1.85+** and Cargo installed on your system (managed via `
 
 ### Running Applications
 
-* **Run the Game Client:**
+* **Run the PC app:**
   ```bash
    cargo run -p noobietoria-client
    ```
+  It opens on the Home shell — an icon rail (Home, Search, Explore, Avatar Shop,
+  Create, Chat, Profile), the `Noobietoria` lockup and a grid of place tiles.
+  Picking a place lists the servers running it and joins the one you choose; the
+  player never types an IP address or a port. Home is the finished section today,
+  the other six rail sections render a placeholder.
+
+  Flags: `--api <URL>` points the app at a website other than
+  `http://127.0.0.1:3000`, `--join <place_id>:<n>` jumps straight into an
+  advertised server, `--username <NAME>` pre-fills the player name, and
+  `--selftest` runs the headless ping check against `--server <HOST:PORT>`.
+
+  The UI lives in the `noobietoria_client` library, so it can also be rendered to
+  a PNG for design review:
+  ```bash
+   cargo run -p noobietoria-client --bin ui-shot -- shot.png [home|place|connecting|lobby] [w] [h]
+  ```
 
 * **Run the Dedicated Game Server:**
   ```bash
    cargo run -p noobietoria-dedicated
    ```
 
+* **Run the Website (API + static pages):**
+  ```bash
+   cargo run -p noobietoria-web
+   ```
+  Listens on port 3000 (override with `-p <PORT>`). The hostname it advertises to
+  clients defaults to `127.0.0.1`; set `NOOBIE_SERVER_HOST` when the dedicated
+  servers run elsewhere. `--selftest` runs the backend, moderation and
+  server-directory checks.
+
 * **Run the Studio Tooling:**
   ```bash
    cargo run -p noobietoria-studio
    ```
+
+### Brand artwork
+
+The client ships the brand assets under `apps/noobietoria-client/assets/`:
+`logo-mark.png`, `logo-wordmark.png` and the light `logo-lockup.png`. They are
+derived from the design owner's artwork and can be regenerated with:
+
+```bash
+python scripts/make-logo-assets.py <mark.png> <light-lockup.png>
+```
+
+### Server directory API
+
+The website is the single source of truth for join endpoints, so the client
+never asks the player to type one:
+
+```text
+GET /api/v1/servers                       every joinable server
+GET /api/v1/places/{place_id}/servers     joinable servers of one place
+```
+
+```json
+{
+  "count": 1,
+  "servers": [
+    {
+      "server_id": "starter_baseplate:1",
+      "place_id": "starter_baseplate",
+      "place_name": "Classic Baseplate",
+      "host": "127.0.0.1",
+      "port": 53640,
+      "players": 0,
+      "max_players": 50,
+      "region": "Singapore",
+      "ping_ms": 60,
+      "status": "online"
+    }
+  ]
+}
+```
+
+The worlds page uses the same endpoint: clicking a world opens a dialog with its
+live servers and a Join button per server.
+
+### End-to-end check
+
+With `noobietoria-web` running and a `noobietoria-dedicated` listening on an
+advertised port, this discovers a server through the API and joins it over the
+game protocol:
+
+```bash
+node scripts/e2e-join.mjs
+```
 
 ## 🤝 Contributing
 

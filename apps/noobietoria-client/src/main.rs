@@ -2,38 +2,40 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-//! Noobietoria Client
+//! Noobietoria Client — the PC app.
 //!
-//! A Roblox-style game client built with eframe/egui.
+//! A Roblox-style game client built with eframe/egui:
 //!
-//! # What it does
+//! * Opens on the Home shell: an icon rail, the "Noobietoria." lockup and a
+//!   grid of place tiles.
+//! * Opening a place lists the servers currently running it, with region,
+//!   occupancy and ping, and one Join button per server.
+//! * Joining dials the endpoint that the website handed out — the player never
+//!   types an IP address or a port.
+//! * Receives `snapshot` packets and renders a live list of world instances,
+//!   and lets the player fire custom network events and read the server log.
 //!
-//! * Opens a splash / connect screen where the player enters a username,
-//!   server host, and port.
-//! * Connects to the dedicated server over TCP (newline-delimited JSON).
-//! * Receives `snapshot` packets and renders a live list of world instances.
-//! * Lets the player fire custom network events and view the server chat log.
-//! * Background I/O lives in a Tokio runtime spawned on a separate thread so
-//!   the UI thread is never blocked.
+//! The UI, state machine and I/O live in the `noobietoria_client` library so the
+//! dev-only `ui-shot` binary can render the same screens to PNG.
 //!
 //! # CLI flags
 //!
 //! ```text
 //! noobietoria-client [OPTIONS]
 //! Options:
-//!   --host <HOST>        Server address  [default: 127.0.0.1]
-//!   --port <PORT>        Server port     [default: 7777]
+//!   --api <URL>          Website API base  [default: http://127.0.0.1:3000]
 //!   --username <NAME>    Auto-fill username
-//!   --selftest           Connect → ping → disconnect, then exit 0
+//!   --join <SERVER_ID>   Open a place and join <place_id>:<n> on startup
+//!   --selftest           Ping/pong smoke test, then exit 0
+//!   --server <HOST:PORT> Endpoint used by --selftest  [default: 127.0.0.1:7777]
 //!   -h, --help           Print this help
 //! ```
 
-mod net;
-mod state;
-mod ui;
-
 use eframe::egui;
-use state::ClientApp;
+use noobietoria_client::state::ClientApp;
+
+const DEFAULT_API_BASE: &str = "http://127.0.0.1:3000";
+const DEFAULT_SELFTEST_SERVER: &str = "127.0.0.1:7777";
 
 fn main() -> eframe::Result<()> {
     // Install a subscriber so log! / tracing! macros work.
@@ -52,35 +54,41 @@ fn main() -> eframe::Result<()> {
         println!("Usage: noobietoria-client [OPTIONS]");
         println!();
         println!("Options:");
-        println!("  --host <HOST>        Server address  [default: 127.0.0.1]");
-        println!("  --port <PORT>        Server port     [default: 7777]");
+        println!("  --api <URL>          Website API base  [default: {DEFAULT_API_BASE}]");
         println!("  --username <NAME>    Auto-fill username");
-        println!("  --selftest           Headless ping test then exit");
+        println!("  --join <SERVER_ID>   Open a place and join <place_id>:<n> on startup");
+        println!("  --selftest           Ping/pong smoke test, then exit");
+        println!(
+            "  --server <HOST:PORT> Endpoint used by --selftest  [default: {DEFAULT_SELFTEST_SERVER}]"
+        );
         println!("  -h, --help           Print this help");
         return Ok(());
     }
 
     // ── Parse flags ───────────────────────────────────────────────────────────
-    let mut host = String::from("127.0.0.1");
-    let mut port: u16 = 7777;
+    let mut api_base = String::from(DEFAULT_API_BASE);
     let mut username = String::new();
+    let mut join_target: Option<String> = None;
+    let mut selftest_server = String::from(DEFAULT_SELFTEST_SERVER);
     let mut selftest = false;
 
     let mut i = 1usize;
     while i < args.len() {
         match args[i].as_str() {
-            "--host" if i + 1 < args.len() => {
-                host = args[i + 1].clone();
-                i += 1;
-            }
-            "--port" if i + 1 < args.len() => {
-                if let Ok(p) = args[i + 1].parse() {
-                    port = p;
-                }
+            "--api" if i + 1 < args.len() => {
+                api_base = args[i + 1].clone();
                 i += 1;
             }
             "--username" if i + 1 < args.len() => {
                 username = args[i + 1].clone();
+                i += 1;
+            }
+            "--join" if i + 1 < args.len() => {
+                join_target = Some(args[i + 1].clone());
+                i += 1;
+            }
+            "--server" if i + 1 < args.len() => {
+                selftest_server = args[i + 1].clone();
                 i += 1;
             }
             "--selftest" => selftest = true,
@@ -95,10 +103,10 @@ fn main() -> eframe::Result<()> {
         use std::net::{TcpStream, ToSocketAddrs};
         use std::time::Duration;
 
-        tracing::info!("[selftest] Connecting to {host}:{port}…");
-        let addrs: Vec<_> = format!("{host}:{port}")
+        tracing::info!("[selftest] Connecting to {selftest_server}…");
+        let addrs: Vec<_> = selftest_server
             .to_socket_addrs()
-            .expect("resolve server host:port")
+            .expect("resolve selftest server host:port")
             .collect();
         let addr = addrs.first().expect("no address resolved for host:port");
         let stream = TcpStream::connect_timeout(addr, Duration::from_secs(5))
@@ -129,71 +137,22 @@ fn main() -> eframe::Result<()> {
     // ── Launch GUI ────────────────────────────────────────────────────────────
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_title("Noobietoria Client")
-            .with_inner_size([1100.0, 700.0])
-            .with_min_inner_size([640.0, 400.0]),
+            .with_title("Noobietoria")
+            .with_inner_size([1176.0, 675.0])
+            .with_min_inner_size([720.0, 460.0]),
         ..Default::default()
     };
 
     eframe::run_native(
-        "Noobietoria Client",
+        "Noobietoria",
         native_options,
-        Box::new(move |cc| Ok(Box::new(ClientApp::new(cc, host, port, username)))),
+        Box::new(move |cc| {
+            Ok(Box::new(ClientApp::new(
+                cc,
+                api_base,
+                username,
+                join_target,
+            )))
+        }),
     )
-}
-
-#[cfg(test)]
-mod tests {
-    use super::net::*;
-    use super::state::*;
-
-    #[test]
-    fn test_client_receives_server_messages() {
-        let welcome_raw =
-            r#"{"kind":"welcome","server_name":"Noobietoria Alpha","max_players":32}"#;
-        let welcome: ServerMsg = serde_json::from_str(welcome_raw).expect("deserialize welcome");
-        match welcome {
-            ServerMsg::Welcome {
-                server_name,
-                max_players,
-            } => {
-                assert_eq!(server_name, "Noobietoria Alpha");
-                assert_eq!(max_players, 32);
-            }
-            _ => panic!("expected welcome message"),
-        }
-
-        let snap_raw =
-            r#"{"kind":"snapshot","instances":[{"name":"Baseplate","kind":"Part"}],"tick":12}"#;
-        let snap: ServerMsg = serde_json::from_str(snap_raw).expect("deserialize snapshot");
-        match snap {
-            ServerMsg::Snapshot { instances, tick } => {
-                assert_eq!(tick, 12);
-                assert_eq!(instances.len(), 1);
-            }
-            _ => panic!("expected snapshot message"),
-        }
-
-        let kick_raw = r#"{"kind":"kicked","reason":"Server is full (20/20)"}"#;
-        let kick: ServerMsg = serde_json::from_str(kick_raw).expect("deserialize kicked");
-        match kick {
-            ServerMsg::Kicked { reason } => {
-                assert_eq!(reason, "Server is full (20/20)");
-            }
-            _ => panic!("expected kicked message"),
-        }
-    }
-
-    #[test]
-    fn test_client_log_entries() {
-        let entry = LogEntry::system("Hello");
-        assert_eq!(entry.kind, LogKind::System);
-        assert_eq!(entry.text, "Hello");
-
-        let err = LogEntry::error("Failed");
-        assert_eq!(err.kind, LogKind::Error);
-
-        let evt = LogEntry::event("Fired");
-        assert_eq!(evt.kind, LogKind::Event);
-    }
 }

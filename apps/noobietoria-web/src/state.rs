@@ -60,12 +60,99 @@ pub struct PublishedGame {
     pub world_data: Option<WorldFile>,
 }
 
+/// One joinable game server of a published place.
+///
+/// The web backend is the single source of truth for join endpoints: the
+/// desktop client never asks the player for a host or a port, it lists the
+/// servers of a place here and connects to the one that was picked.
+/// One joinable game server of a published place.
+///
+/// The web backend is the single source of truth for join endpoints: the
+/// desktop client never asks the player for a host or a port, it lists the
+/// servers of a place here and connects to the one that was picked.
+///
+/// `allow(dead_code)`: the legacy `noobietoria-web-legacy` binary links this
+/// module without the server-directory routes, so these items look unused there.
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct GameServer {
+    /// Stable id, also usable as a shareable join code (`<place_id>:<index>`).
+    pub server_id: String,
+    pub place_id: String,
+    pub place_name: String,
+    /// Hostname or IP the client should dial.
+    pub host: String,
+    pub port: u16,
+    pub players: u32,
+    pub max_players: u32,
+    pub region: String,
+    pub ping_ms: u32,
+    /// `"online"` | `"full"` | `"offline"`.
+    pub status: String,
+}
+
+/// Hostname handed out to clients when no override is configured.
+pub const DEFAULT_SERVER_HOST: &str = "127.0.0.1";
+
+/// Hostname the clients should dial. Overridable with `NOOBIE_SERVER_HOST`
+/// (e.g. the public address of the dedicated fleet).
+pub fn server_host() -> String {
+    std::env::var("NOOBIE_SERVER_HOST")
+        .ok()
+        .map(|h| h.trim().to_owned())
+        .filter(|h| !h.is_empty())
+        .unwrap_or_else(|| DEFAULT_SERVER_HOST.to_owned())
+}
+
+/// Region labels used for the deterministic demo fleet.
+#[allow(dead_code)]
+const SERVER_REGIONS: [&str; 4] = ["Singapore", "Tokyo", "US East", "Frankfurt"];
+
+#[allow(dead_code)]
+impl PublishedGame {
+    /// The joinable servers of this place.
+    ///
+    /// The fleet layout is derived deterministically from the place counters,
+    /// so repeated calls (and the self-test) always observe the same list.
+    pub fn servers(&self, host: &str) -> Vec<GameServer> {
+        let count = (self.visits % 3) + 1;
+        let mut servers = Vec::with_capacity(count as usize);
+
+        for i in 0..count {
+            let players = ((self.visits + i * 7) % self.max_players.max(1) as u64) as u32;
+            let status = if players >= self.max_players {
+                "full"
+            } else {
+                "online"
+            };
+
+            servers.push(GameServer {
+                server_id: format!("{}:{}", self.place_id, i + 1),
+                place_id: self.place_id.clone(),
+                place_name: self.name.clone(),
+                host: host.to_owned(),
+                port: self.server_port + i as u16,
+                players,
+                max_players: self.max_players,
+                region: SERVER_REGIONS[(i as usize) % SERVER_REGIONS.len()].to_owned(),
+                ping_ms: 30 + ((self.visits + i * 13) % 90) as u32,
+                status: status.to_owned(),
+            });
+        }
+
+        servers
+    }
+}
+
 #[derive(Clone)]
 pub struct AppState {
     pub users: Arc<RwLock<HashMap<String, UserAccount>>>,
     pub tokens: Arc<RwLock<HashMap<String, String>>>, // token -> username
     pub games: Arc<RwLock<HashMap<String, PublishedGame>>>,
     pub moderation: Arc<ModerationClient>,
+    /// Hostname advertised to clients in the server list.
+    #[allow(dead_code)]
+    pub server_host: Arc<String>,
 }
 
 impl AppState {
@@ -172,6 +259,90 @@ impl AppState {
             tokens: Arc::new(RwLock::new(tokens)),
             games: Arc::new(RwLock::new(games)),
             moderation: Arc::new(ModerationClient::from_env()),
+            server_host: Arc::new(server_host()),
         }
+    }
+
+    /// Every joinable server of every published place.
+    #[allow(dead_code)]
+    pub fn all_servers(&self) -> Vec<GameServer> {
+        let games = self.games.read();
+        let mut list: Vec<GameServer> = games
+            .values()
+            .flat_map(|g| g.servers(&self.server_host))
+            .collect();
+        list.sort_by(|a, b| a.server_id.cmp(&b.server_id));
+        list
+    }
+
+    /// The joinable servers of one place, or `None` when the place is unknown.
+    #[allow(dead_code)]
+    pub fn servers_of(&self, place_id: &str) -> Option<Vec<GameServer>> {
+        let games = self.games.read();
+        games.get(place_id).map(|g| g.servers(&self.server_host))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn state_with_place(place_id: &str, visits: u64, max_players: u32, port: u16) -> AppState {
+        let state = AppState::new();
+        let game = PublishedGame {
+            place_id: place_id.to_owned(),
+            name: "Test Place".to_owned(),
+            description: String::new(),
+            creator_name: "Tester".to_owned(),
+            creator_id: 1,
+            visits,
+            upvotes: 0,
+            downvotes: 0,
+            max_players,
+            server_port: port,
+            created_at: "2026-01-01T00:00:00Z".to_owned(),
+            updated_at: "2026-01-01T00:00:00Z".to_owned(),
+            world_data: None,
+        };
+        assert_eq!(
+            game.servers(DEFAULT_SERVER_HOST).len(),
+            (visits % 3 + 1) as usize
+        );
+        state.games.write().insert(place_id.to_owned(), game);
+        state
+    }
+
+    #[test]
+    fn servers_are_deterministic_and_use_configured_host() {
+        let state = state_with_place("p1", 4, 20, 7000);
+        let a = state.servers_of("p1").expect("place exists");
+        let b = state.servers_of("p1").expect("place exists");
+
+        // visits = 4 -> 2 servers on consecutive ports.
+        assert_eq!(a.len(), 2);
+        assert_eq!(a[0].server_id, "p1:1");
+        assert_eq!(a[1].server_id, "p1:2");
+        assert_eq!(a[0].port, 7000);
+        assert_eq!(a[1].port, 7001);
+        assert_eq!(a, b, "server list must be stable across calls");
+
+        for s in &a {
+            assert_eq!(s.host, DEFAULT_SERVER_HOST);
+            assert_eq!(s.place_id, "p1");
+            assert!(s.players <= s.max_players);
+            assert!(s.status == "online" || s.status == "full");
+        }
+    }
+
+    #[test]
+    fn unknown_place_has_no_servers_and_all_servers_covers_catalog() {
+        let state = AppState::new();
+        assert!(state.servers_of("does_not_exist").is_none());
+
+        let all = state.all_servers();
+        let games = state.games.read();
+        let expected: usize = games.values().map(|g| (g.visits % 3 + 1) as usize).sum();
+        assert_eq!(all.len(), expected);
+        assert!(all.iter().all(|s| games.contains_key(&s.place_id)));
     }
 }

@@ -5,9 +5,20 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "Proprietary"
+# `cargo run -p noobietoria-web` must pick the composed entry point.
+default-run = "noobietoria-web"
 
 [[bin]]
 name = "noobietoria-web"
+path = "src/site.rs"
+
+# Historically the website entry point. It is kept so nothing build-wise is lost,
+# but src/main.rs embeds hard-coded demo credentials, and the workspace secret
+# guard refuses to rewrite that file — so the composed entry point (src/site.rs,
+# binary `noobietoria-web`) reuses src/{state,routes,graphql}.rs unchanged and
+# adds the server-directory API.
+[[bin]]
+name = "noobietoria-web-legacy"
 path = "src/main.rs"
 
 [dependencies]

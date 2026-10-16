@@ -1469,3 +1469,66 @@ button { font-family: var(--font); }
     margin-top: 18px;
 }
 
+
+
+/* ============================================================
+   Server directory (join dialog) — endpoints come from the API
+   ============================================================ */
+
+.modal--wide { width: min(720px, calc(100vw - 32px)); }
+
+.srv-hint {
+    color: var(--muted);
+    font-size: .86rem;
+    margin-bottom: 12px;
+}
+
+.srv-list { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; }
+
+.srv-loading, .srv-empty { color: var(--muted); font-size: .88rem; padding: 10px 2px; }
+
+.srv-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+}
+
+.srv-row__main { display: flex; flex-direction: column; min-width: 130px; }
+.srv-row__region { font-weight: 700; font-size: .9rem; }
+.srv-row__id { color: var(--muted); font-size: .72rem; }
+
+.srv-row__stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: .82rem;
+    color: var(--muted);
+    flex: 1;
+}
+
+.srv-row__action { display: flex; align-items: center; gap: 10px; }
+
+.srv-row__endpoint {
+    font-size: .74rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 6px;
+}
+
+.srv-status {
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+.srv-status--online { color: var(--green); }
+.srv-status--full { color: #ff7a7a; }
+.srv-status--offline { color: var(--muted); }
+
+.btn:disabled { opacity: .5; cursor: not-allowed; filter: none; }

@@ -61,6 +61,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (next) next.click();
     }
 
+    /* ----- join dialog: server list straight from the website API ----- */
+    function openJoinDialog(placeId, placeName) {
+        if (!window.NooServers) {
+            window.API.toast("Server directory unavailable", "error");
+            return;
+        }
+        window.NooServers.openJoinDialog(placeId, placeName, (server) => {
+            // The player picked a server; the desktop client takes it from here.
+            const deepLink = `noobietoria://join/${server.server_id}`;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(deepLink).catch(() => {});
+            }
+            window.API.toast(`Joining ${server.server_id} (${server.host}:${server.port}) 🎮`);
+        });
+    }
+
     /* ----- worlds grid ----- */
     async function loadWorlds() {
         const genre = selects[0] ? selects[0].value : "";
@@ -81,7 +97,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             grid.querySelectorAll("[data-world]").forEach((card) => {
                 card.addEventListener("click", () => {
-                    window.API.toast("World joining is coming with the game client 🎮");
+                    const placeId = card.dataset.world;
+                    const title = card.querySelector(".world-card__title");
+                    const placeName = title ? title.textContent.trim() : placeId;
+                    openJoinDialog(placeId, placeName);
                 });
             });
         } catch (err) {
