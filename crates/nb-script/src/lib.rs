@@ -18,9 +18,9 @@ pub use log::{LogLevel, ScriptLog};
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
     use nb_api::{ApiContext, PlayerRecord, Side};
     use nb_types::Value;
+    use std::sync::Arc;
 
     #[test]
     fn test_luau_eval_math() {
@@ -34,7 +34,9 @@ mod tests {
     fn test_luau_print_and_logs() {
         let ctx = Arc::new(ApiContext::new(Side::Server));
         let engine = ScriptEngine::new(ctx).expect("engine creation");
-        engine.eval("print('Hello', 'Luau', 2026)").expect("print call");
+        engine
+            .eval("print('Hello', 'Luau', 2026)")
+            .expect("print call");
         let logs = engine.get_logs();
         assert_eq!(logs.len(), 1);
         assert_eq!(logs[0].level, LogLevel::Info);
@@ -56,4 +58,3 @@ mod tests {
         assert_eq!(res, Value::Number(500.0));
     }
 }
-

@@ -31,15 +31,13 @@ pub mod kv;
 #[cfg(feature = "storage")]
 pub mod storage;
 
-pub use backend::{KvBackend, MemoryBackend};
 #[cfg(feature = "sqlx")]
 pub use backend::SqlxBackend;
-#[cfg(feature = "storage")]
-pub use storage::{BlobStorage, LocalStorage, S3Storage, StorageError, StorageManager};
+pub use backend::{KvBackend, MemoryBackend};
 pub use budget::{BudgetError, RequestKind, RequestLedger};
 pub use datastore::{
     DataStoreError, DataStoreLimits, DataStoreService, DataStoreValue, OrderedEntry, SessionId,
 };
 pub use kv::{KeyedStore, StoreError, StoreResult};
-
-
+#[cfg(feature = "storage")]
+pub use storage::{BlobStorage, LocalStorage, S3Storage, StorageError, StorageManager};

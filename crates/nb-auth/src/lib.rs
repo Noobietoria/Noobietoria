@@ -8,19 +8,19 @@
 
 pub mod auth;
 pub mod backend;
+#[cfg(feature = "postgres")]
+pub mod postgres;
 pub mod session;
 #[cfg(feature = "sqlite")]
 pub mod sqlite;
-#[cfg(feature = "postgres")]
-pub mod postgres;
 
 pub use auth::AuthService;
 pub use backend::AuthBackend;
+#[cfg(feature = "postgres")]
+pub use postgres::PostgresAuthService;
 pub use session::{Session, UserRecord};
 #[cfg(feature = "sqlite")]
 pub use sqlite::SqliteAuthService;
-#[cfg(feature = "postgres")]
-pub use postgres::PostgresAuthService;
 
 use thiserror::Error;
 

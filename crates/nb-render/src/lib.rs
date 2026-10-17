@@ -193,9 +193,18 @@ pub fn draw_box_3d(
 
     let stroke = Stroke::new(if selected { 2.2 } else { 1.0 }, edge_color);
     let edges = [
-        (0, 1), (1, 2), (2, 3), (3, 0),
-        (4, 5), (5, 6), (6, 7), (7, 4),
-        (0, 4), (1, 5), (2, 6), (3, 7),
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 0),
+        (4, 5),
+        (5, 6),
+        (6, 7),
+        (7, 4),
+        (0, 4),
+        (1, 5),
+        (2, 6),
+        (3, 7),
     ];
     for &(i1, i2) in &edges {
         if let (Some(p1), Some(p2)) = (projected[i1], projected[i2]) {
@@ -284,9 +293,18 @@ pub fn draw_oriented_box_3d(
         ),
     );
     let edges = [
-        (0, 1), (1, 2), (2, 3), (3, 0),
-        (4, 5), (5, 6), (6, 7), (7, 4),
-        (0, 4), (1, 5), (2, 6), (3, 7),
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 0),
+        (4, 5),
+        (5, 6),
+        (6, 7),
+        (7, 4),
+        (0, 4),
+        (1, 5),
+        (2, 6),
+        (3, 7),
     ];
     for &(i1, i2) in &edges {
         if let (Some(p1), Some(p2)) = (projected[i1], projected[i2]) {
@@ -308,7 +326,11 @@ pub fn draw_ground_grid(painter: &egui::Painter, cam: &Camera3D, rect: Rect, siz
             cam.project(Vector3::new(-size_half, 0.0, z), rect),
             cam.project(Vector3::new(size_half, 0.0, z), rect),
         ) {
-            let col = if z.abs() < 0.01 { center_color } else { grid_color };
+            let col = if z.abs() < 0.01 {
+                center_color
+            } else {
+                grid_color
+            };
             painter.line_segment([p1, p2], Stroke::new(1.0, col));
         }
         z += step;
@@ -320,7 +342,11 @@ pub fn draw_ground_grid(painter: &egui::Painter, cam: &Camera3D, rect: Rect, siz
             cam.project(Vector3::new(x, 0.0, -size_half), rect),
             cam.project(Vector3::new(x, 0.0, size_half), rect),
         ) {
-            let col = if x.abs() < 0.01 { center_color } else { grid_color };
+            let col = if x.abs() < 0.01 {
+                center_color
+            } else {
+                grid_color
+            };
             painter.line_segment([p1, p2], Stroke::new(1.0, col));
         }
         x += step;
@@ -529,7 +555,9 @@ pub fn draw_avatar_3d(
 
         // Dark pill background
         let name_font = egui::FontId::proportional(11.0);
-        let text_size = painter.layout_no_wrap(display_name.clone(), name_font.clone(), Color32::WHITE).size();
+        let text_size = painter
+            .layout_no_wrap(display_name.clone(), name_font.clone(), Color32::WHITE)
+            .size();
         let pill_rect = Rect::from_center_size(tag_p, Vec2::new(text_size.x + 14.0, 18.0));
         painter.rect_filled(pill_rect, 9.0, Color32::from_black_alpha(170));
         painter.text(
@@ -537,7 +565,11 @@ pub fn draw_avatar_3d(
             egui::Align2::CENTER_CENTER,
             display_name,
             name_font,
-            if is_local_player { Color32::from_rgb(255, 220, 100) } else { Color32::WHITE },
+            if is_local_player {
+                Color32::from_rgb(255, 220, 100)
+            } else {
+                Color32::WHITE
+            },
         );
 
         // Health Bar below name
@@ -549,10 +581,7 @@ pub fn draw_avatar_3d(
         );
         painter.rect_filled(bar_rect, 2.0, Color32::from_rgb(60, 20, 20));
         if hp_pct > 0.0 {
-            let filled_rect = Rect::from_min_size(
-                bar_rect.min,
-                Vec2::new(bar_width * hp_pct, 4.0),
-            );
+            let filled_rect = Rect::from_min_size(bar_rect.min, Vec2::new(bar_width * hp_pct, 4.0));
             painter.rect_filled(filled_rect, 2.0, Color32::from_rgb(50, 220, 70));
         }
     }
@@ -568,7 +597,10 @@ fn draw_avatar_face(painter: &egui::Painter, p: Pos2, face_id: &str) {
             // Left eye open, right eye winking line
             painter.circle_filled(Pos2::new(p.x - 3.5, p.y - 2.0), eye_radius, eye_col);
             painter.line_segment(
-                [Pos2::new(p.x + 2.0, p.y - 2.0), Pos2::new(p.x + 5.0, p.y - 1.0)],
+                [
+                    Pos2::new(p.x + 2.0, p.y - 2.0),
+                    Pos2::new(p.x + 5.0, p.y - 1.0),
+                ],
                 Stroke::new(1.8, eye_col),
             );
             // Smile
@@ -576,34 +608,53 @@ fn draw_avatar_face(painter: &egui::Painter, p: Pos2, face_id: &str) {
         }
         "chill" => {
             // Sunglasses
-            let glasses_rect = Rect::from_center_size(Pos2::new(p.x, p.y - 2.0), Vec2::new(12.0, 5.0));
+            let glasses_rect =
+                Rect::from_center_size(Pos2::new(p.x, p.y - 2.0), Vec2::new(12.0, 5.0));
             painter.rect_filled(glasses_rect, 2.0, Color32::from_rgb(15, 15, 20));
             painter.line_segment(
-                [Pos2::new(p.x - 6.0, p.y - 2.0), Pos2::new(p.x + 6.0, p.y - 2.0)],
+                [
+                    Pos2::new(p.x - 6.0, p.y - 2.0),
+                    Pos2::new(p.x + 6.0, p.y - 2.0),
+                ],
                 Stroke::new(1.5, Color32::from_rgb(80, 80, 90)),
             );
             // Chill smirk
             painter.line_segment(
-                [Pos2::new(p.x - 2.0, p.y + 2.5), Pos2::new(p.x + 3.0, p.y + 1.8)],
+                [
+                    Pos2::new(p.x - 2.0, p.y + 2.5),
+                    Pos2::new(p.x + 3.0, p.y + 1.8),
+                ],
                 Stroke::new(1.4, eye_col),
             );
         }
         "joy" => {
             // Happy squinting curves ^ ^
             painter.line_segment(
-                [Pos2::new(p.x - 5.0, p.y - 1.5), Pos2::new(p.x - 3.5, p.y - 3.0)],
+                [
+                    Pos2::new(p.x - 5.0, p.y - 1.5),
+                    Pos2::new(p.x - 3.5, p.y - 3.0),
+                ],
                 Stroke::new(1.6, eye_col),
             );
             painter.line_segment(
-                [Pos2::new(p.x - 3.5, p.y - 3.0), Pos2::new(p.x - 2.0, p.y - 1.5)],
+                [
+                    Pos2::new(p.x - 3.5, p.y - 3.0),
+                    Pos2::new(p.x - 2.0, p.y - 1.5),
+                ],
                 Stroke::new(1.6, eye_col),
             );
             painter.line_segment(
-                [Pos2::new(p.x + 2.0, p.y - 1.5), Pos2::new(p.x + 3.5, p.y - 3.0)],
+                [
+                    Pos2::new(p.x + 2.0, p.y - 1.5),
+                    Pos2::new(p.x + 3.5, p.y - 3.0),
+                ],
                 Stroke::new(1.6, eye_col),
             );
             painter.line_segment(
-                [Pos2::new(p.x + 3.5, p.y - 3.0), Pos2::new(p.x + 5.0, p.y - 1.5)],
+                [
+                    Pos2::new(p.x + 3.5, p.y - 3.0),
+                    Pos2::new(p.x + 5.0, p.y - 1.5),
+                ],
                 Stroke::new(1.6, eye_col),
             );
             // Big open grin
@@ -613,7 +664,10 @@ fn draw_avatar_face(painter: &egui::Painter, p: Pos2, face_id: &str) {
             // Wink eye + Tongue sticking out
             painter.circle_filled(Pos2::new(p.x - 3.5, p.y - 2.0), eye_radius, eye_col);
             painter.line_segment(
-                [Pos2::new(p.x + 2.0, p.y - 2.0), Pos2::new(p.x + 5.0, p.y - 1.0)],
+                [
+                    Pos2::new(p.x + 2.0, p.y - 2.0),
+                    Pos2::new(p.x + 5.0, p.y - 1.0),
+                ],
                 Stroke::new(1.8, eye_col),
             );
             // Tongue
@@ -628,20 +682,36 @@ fn draw_avatar_face(painter: &egui::Painter, p: Pos2, face_id: &str) {
             // Wide circular eyes + open O mouth
             painter.circle_filled(Pos2::new(p.x - 3.5, p.y - 2.0), 2.0, eye_col);
             painter.circle_filled(Pos2::new(p.x + 3.5, p.y - 2.0), 2.0, eye_col);
-            painter.circle_filled(Pos2::new(p.x, p.y + 3.0), 2.2, Color32::from_rgb(30, 20, 20));
+            painter.circle_filled(
+                Pos2::new(p.x, p.y + 3.0),
+                2.2,
+                Color32::from_rgb(30, 20, 20),
+            );
         }
         "ninja" => {
             // Mask covering lower face + intense squinting eyes
-            let mask_rect = Rect::from_min_max(Pos2::new(p.x - 6.5, p.y), Pos2::new(p.x + 6.5, p.y + 6.0));
+            let mask_rect =
+                Rect::from_min_max(Pos2::new(p.x - 6.5, p.y), Pos2::new(p.x + 6.5, p.y + 6.0));
             painter.rect_filled(mask_rect, 1.0, Color32::from_rgb(25, 25, 30));
-            painter.circle_filled(Pos2::new(p.x - 3.5, p.y - 2.0), 1.5, Color32::from_rgb(240, 240, 240));
-            painter.circle_filled(Pos2::new(p.x + 3.5, p.y - 2.0), 1.5, Color32::from_rgb(240, 240, 240));
+            painter.circle_filled(
+                Pos2::new(p.x - 3.5, p.y - 2.0),
+                1.5,
+                Color32::from_rgb(240, 240, 240),
+            );
+            painter.circle_filled(
+                Pos2::new(p.x + 3.5, p.y - 2.0),
+                1.5,
+                Color32::from_rgb(240, 240, 240),
+            );
         }
         "smirk" => {
             painter.circle_filled(Pos2::new(p.x - 3.5, p.y - 2.0), eye_radius, eye_col);
             painter.circle_filled(Pos2::new(p.x + 3.5, p.y - 2.0), eye_radius, eye_col);
             painter.line_segment(
-                [Pos2::new(p.x - 2.0, p.y + 3.0), Pos2::new(p.x + 3.5, p.y + 1.5)],
+                [
+                    Pos2::new(p.x - 2.0, p.y + 3.0),
+                    Pos2::new(p.x + 3.5, p.y + 1.5),
+                ],
                 Stroke::new(1.6, eye_col),
             );
         }

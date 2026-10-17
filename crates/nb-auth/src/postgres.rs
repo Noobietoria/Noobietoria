@@ -71,10 +71,12 @@ impl PostgresAuthService {
         .map_err(|e| AuthError::Database(e.to_string()))?;
 
         // Index for fast cleanup_expired scans.
-        sqlx::query("CREATE INDEX IF NOT EXISTS idx_nb_sessions_expires ON nb_sessions(expires_at)")
-            .execute(&self.pool)
-            .await
-            .map_err(|e| AuthError::Database(e.to_string()))?;
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_nb_sessions_expires ON nb_sessions(expires_at)",
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| AuthError::Database(e.to_string()))?;
         Ok(())
     }
 
@@ -85,13 +87,12 @@ impl PostgresAuthService {
         email: &str,
         password: &str,
     ) -> Result<UserRecord, AuthError> {
-        let dup: Option<String> =
-            sqlx::query("SELECT username FROM nb_users WHERE username = $1")
-                .bind(username)
-                .fetch_optional(&self.pool)
-                .await
-                .map_err(|e| AuthError::Database(e.to_string()))?
-                .map(|r| r.get("username"));
+        let dup: Option<String> = sqlx::query("SELECT username FROM nb_users WHERE username = $1")
+            .bind(username)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|e| AuthError::Database(e.to_string()))?
+            .map(|r| r.get("username"));
         if dup.is_some() {
             return Err(AuthError::UsernameTaken(username.to_string()));
         }
@@ -250,8 +251,8 @@ impl crate::backend::AuthBackend for PostgresAuthService {
 
 fn hash_password(password: &str) -> Result<String, AuthError> {
     let salt_bytes: [u8; 16] = rand::random();
-    let salt = SaltString::encode_b64(&salt_bytes)
-        .map_err(|e| AuthError::Database(e.to_string()))?;
+    let salt =
+        SaltString::encode_b64(&salt_bytes).map_err(|e| AuthError::Database(e.to_string()))?;
     Argon2::default()
         .hash_password(password.as_bytes(), &salt)
         .map(|h| h.to_string())

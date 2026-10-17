@@ -59,8 +59,9 @@ pub async fn graphql_handler(
             Ok(record) => {
                 // Mirror the auth record into the rich UserAccount store.
                 let mut users = state.users.write();
-                let account = users.entry(record.username.clone()).or_insert_with(|| {
-                    UserAccount {
+                let account = users
+                    .entry(record.username.clone())
+                    .or_insert_with(|| UserAccount {
                         user_id: record.user_id as u64,
                         username: record.username.clone(),
                         email: record.email.clone(),
@@ -88,8 +89,7 @@ pub async fn graphql_handler(
                         studs: 25,
                         last_studs_claim: None,
                         avatar: Some(nb_types::AvatarConfig::classic_noob()),
-                    }
-                });
+                    });
                 Some(account.clone())
             }
             Err(_) => {
@@ -111,7 +111,14 @@ pub async fn graphql_handler(
     let q = payload.query.trim();
     let vars = &payload.variables;
 
-    let res = dispatch(&state, q, vars, current_user.as_ref(), auth_token.as_deref()).await;
+    let res = dispatch(
+        &state,
+        q,
+        vars,
+        current_user.as_ref(),
+        auth_token.as_deref(),
+    )
+    .await;
 
     match res {
         Ok(data) => Json(GraphQLResponse {
@@ -215,8 +222,7 @@ async fn dispatch(
         }
         match state.auth_register(&u, &e, &p).await {
             Ok(_) => {}
-            Err(nb_auth::AuthError::UsernameTaken(_))
-            | Err(nb_auth::AuthError::EmailTaken(_)) => {
+            Err(nb_auth::AuthError::UsernameTaken(_)) | Err(nb_auth::AuthError::EmailTaken(_)) => {
                 return Err("That username is already taken. Please choose another.".to_owned());
             }
             Err(e) => return Err(format!("Registration failed: {e}")),

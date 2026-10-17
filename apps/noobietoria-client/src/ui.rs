@@ -379,7 +379,11 @@ fn draw_header(app: &mut ClientApp, ctx: &egui::Context, ui: &mut egui::Ui) {
         Vec2::new(studs_w, 28.0),
     );
     let studs_resp = ui
-        .interact(studs_rect, ui.id().with("header-studs-pill"), Sense::click())
+        .interact(
+            studs_rect,
+            ui.id().with("header-studs-pill"),
+            Sense::click(),
+        )
         .on_hover_text("Your Studs balance. Click to open Avatar Shop!");
     painter.rect_filled(
         studs_rect,
@@ -415,7 +419,11 @@ fn draw_header(app: &mut ClientApp, ctx: &egui::Context, ui: &mut egui::Ui) {
             Vec2::new(claim_w, 28.0),
         );
         let claim_resp = ui
-            .interact(claim_rect, ui.id().with("header-claim-daily"), Sense::click())
+            .interact(
+                claim_rect,
+                ui.id().with("header-claim-daily"),
+                Sense::click(),
+            )
             .on_hover_text("Claim your daily 5 Studs reward!");
         painter.rect_filled(
             claim_rect,
@@ -910,17 +918,35 @@ pub fn draw_avatar_shop(app: &mut ClientApp, _ctx: &egui::Context, ui: &mut egui
     ui.add_space(16.0);
     ui.horizontal(|ui| {
         ui.add_space(20.0);
-        ui.label(RichText::new("🛍️ Avatar Shop & Customization").size(22.0).strong().color(INK));
+        ui.label(
+            RichText::new("🛍️ Avatar Shop & Customization")
+                .size(22.0)
+                .strong()
+                .color(INK),
+        );
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             ui.add_space(20.0);
             if app.can_claim_daily_studs() {
-                if ui.button(RichText::new("🎁 Claim Daily 5 Studs").color(Color32::WHITE)).clicked() {
+                if ui
+                    .button(RichText::new("🎁 Claim Daily 5 Studs").color(Color32::WHITE))
+                    .clicked()
+                {
                     app.do_claim_daily_studs();
                 }
             } else {
-                ui.label(RichText::new("✓ Daily 5 Studs Claimed Today").size(12.0).color(Color32::from_rgb(35, 134, 54)).strong());
+                ui.label(
+                    RichText::new("✓ Daily 5 Studs Claimed Today")
+                        .size(12.0)
+                        .color(Color32::from_rgb(35, 134, 54))
+                        .strong(),
+                );
             }
-            ui.label(RichText::new(format!("🟡 Balance: {} Studs", app.studs)).size(15.0).strong().color(INK));
+            ui.label(
+                RichText::new(format!("🟡 Balance: {} Studs", app.studs))
+                    .size(15.0)
+                    .strong()
+                    .color(INK),
+            );
         });
     });
 
@@ -928,7 +954,12 @@ pub fn draw_avatar_shop(app: &mut ClientApp, _ctx: &egui::Context, ui: &mut egui
         ui.add_space(8.0);
         ui.horizontal(|ui| {
             ui.add_space(20.0);
-            ui.label(RichText::new(format!("💬 {fb}")).size(13.0).color(Color32::from_rgb(170, 50, 50)).strong());
+            ui.label(
+                RichText::new(format!("💬 {fb}"))
+                    .size(13.0)
+                    .color(Color32::from_rgb(170, 50, 50))
+                    .strong(),
+            );
         });
     }
 
@@ -940,30 +971,36 @@ pub fn draw_avatar_shop(app: &mut ClientApp, _ctx: &egui::Context, ui: &mut egui
         // --- Left column: 3D Preview ---
         ui.vertical(|ui| {
             ui.set_width(260.0);
-            ui.label(RichText::new("3D Avatar Preview").size(15.0).strong().color(INK));
+            ui.label(
+                RichText::new("3D Avatar Preview")
+                    .size(15.0)
+                    .strong()
+                    .color(INK),
+            );
             ui.add_space(4.0);
 
-            let (preview_rect, _) = ui.allocate_exact_size(Vec2::new(260.0, 310.0), Sense::click_and_drag());
+            let (preview_rect, _) =
+                ui.allocate_exact_size(Vec2::new(260.0, 310.0), Sense::click_and_drag());
             let painter = ui.painter();
 
             painter.rect_filled(preview_rect, 10.0, Color32::from_rgb(34, 25, 25));
-            painter.rect_stroke(preview_rect, 10.0, Stroke::new(1.5, RAIL), StrokeKind::Middle);
+            painter.rect_stroke(
+                preview_rect,
+                10.0,
+                Stroke::new(1.5, RAIL),
+                StrokeKind::Middle,
+            );
 
             let t = ui.input(|i| i.time) as f32;
             let yaw = 0.5 + (t * 0.4).sin() * 0.25;
-            let preview_cam = nb_render::Camera3D::new(
-                Vector3::new(0.0, 2.5, 0.0),
-                12.5,
-                yaw,
-                0.2,
-            );
+            let preview_cam = nb_render::Camera3D::new(Vector3::new(0.0, 2.5, 0.0), 12.5, yaw, 0.2);
 
             // Ground grid inside preview
-            nb_render::draw_ground_grid(&painter, &preview_cam, preview_rect, 8.0);
+            nb_render::draw_ground_grid(painter, &preview_cam, preview_rect, 8.0);
 
             // Avatar 3D
             nb_render::draw_avatar_3d(
-                &painter,
+                painter,
                 &preview_cam,
                 preview_rect,
                 Vector3::ZERO,
@@ -985,10 +1022,27 @@ pub fn draw_avatar_shop(app: &mut ClientApp, _ctx: &egui::Context, ui: &mut egui
             }
 
             ui.add_space(8.0);
-            ui.label(RichText::new("Current Outfit:").size(12.0).strong().color(INK));
-            ui.label(RichText::new(format!("• Face: {}", app.avatar.face)).size(11.0).color(INK_SOFT));
-            ui.label(RichText::new(format!("• Shirt: {}", app.avatar.shirt)).size(11.0).color(INK_SOFT));
-            ui.label(RichText::new(format!("• Pants: {}", app.avatar.pants)).size(11.0).color(INK_SOFT));
+            ui.label(
+                RichText::new("Current Outfit:")
+                    .size(12.0)
+                    .strong()
+                    .color(INK),
+            );
+            ui.label(
+                RichText::new(format!("• Face: {}", app.avatar.face))
+                    .size(11.0)
+                    .color(INK_SOFT),
+            );
+            ui.label(
+                RichText::new(format!("• Shirt: {}", app.avatar.shirt))
+                    .size(11.0)
+                    .color(INK_SOFT),
+            );
+            ui.label(
+                RichText::new(format!("• Pants: {}", app.avatar.pants))
+                    .size(11.0)
+                    .color(INK_SOFT),
+            );
         });
 
         ui.add_space(20.0);
@@ -1003,7 +1057,10 @@ pub fn draw_avatar_shop(app: &mut ClientApp, _ctx: &egui::Context, ui: &mut egui
                     (AvatarCategory::Face, "🙂 Faces"),
                 ] {
                     let is_active = app.shop_category == cat;
-                    if ui.selectable_label(is_active, RichText::new(label).size(13.0).strong()).clicked() {
+                    if ui
+                        .selectable_label(is_active, RichText::new(label).size(13.0).strong())
+                        .clicked()
+                    {
                         app.shop_category = cat;
                     }
                 }
@@ -1034,13 +1091,25 @@ pub fn draw_avatar_shop(app: &mut ClientApp, _ctx: &egui::Context, ui: &mut egui
                             frame.show(ui, |ui| {
                                 ui.set_width(170.0);
                                 ui.label(RichText::new(&item.name).size(13.0).strong().color(INK));
-                                ui.label(RichText::new(&item.description).size(10.0).color(INK_SOFT));
+                                ui.label(
+                                    RichText::new(&item.description).size(10.0).color(INK_SOFT),
+                                );
                                 ui.add_space(4.0);
 
                                 if item.price_studs == 0 {
-                                    ui.label(RichText::new("FREE").size(11.0).color(Color32::from_rgb(0, 130, 50)).strong());
+                                    ui.label(
+                                        RichText::new("FREE")
+                                            .size(11.0)
+                                            .color(Color32::from_rgb(0, 130, 50))
+                                            .strong(),
+                                    );
                                 } else {
-                                    ui.label(RichText::new(format!("🟡 {} Studs", item.price_studs)).size(11.0).color(Color32::from_rgb(180, 110, 20)).strong());
+                                    ui.label(
+                                        RichText::new(format!("🟡 {} Studs", item.price_studs))
+                                            .size(11.0)
+                                            .color(Color32::from_rgb(180, 110, 20))
+                                            .strong(),
+                                    );
                                 }
 
                                 ui.add_space(6.0);
@@ -1053,9 +1122,15 @@ pub fn draw_avatar_shop(app: &mut ClientApp, _ctx: &egui::Context, ui: &mut egui
                                 };
 
                                 if is_equipped {
-                                    ui.label(RichText::new("✓ Equipped").size(12.0).color(Color32::from_rgb(0, 140, 50)).strong());
+                                    ui.label(
+                                        RichText::new("✓ Equipped")
+                                            .size(12.0)
+                                            .color(Color32::from_rgb(0, 140, 50))
+                                            .strong(),
+                                    );
                                 } else {
-                                    let can_afford = item.price_studs == 0 || app.studs >= item.price_studs as i64;
+                                    let can_afford = item.price_studs == 0
+                                        || app.studs >= item.price_studs as i64;
                                     let btn_text = if item.price_studs == 0 {
                                         "Equip"
                                     } else {
@@ -1178,7 +1253,11 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
 
                 ui.separator();
                 ui.selectable_value(&mut app.lobby_tab, LobbyTab::Game, "🎮 Game View");
-                ui.selectable_value(&mut app.lobby_tab, LobbyTab::DevInspector, "🛠️ Dev Inspector");
+                ui.selectable_value(
+                    &mut app.lobby_tab,
+                    LobbyTab::DevInspector,
+                    "🛠️ Dev Inspector",
+                );
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if ui
@@ -1205,7 +1284,11 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
     if app.lobby_tab == LobbyTab::Game {
         // --- 🎮 Playable 3D Interactive Viewport ---
         egui::CentralPanel::default()
-            .frame(egui::Frame::default().fill(GAME_BG).inner_margin(egui::Margin::ZERO))
+            .frame(
+                egui::Frame::default()
+                    .fill(GAME_BG)
+                    .inner_margin(egui::Margin::ZERO),
+            )
             .show(ctx, |ui| {
                 let rect = ui.available_rect_before_wrap();
                 let response = ui.allocate_rect(rect, Sense::click_and_drag());
@@ -1239,9 +1322,17 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                     if kind == "Part" || kind == "SpawnLocation" {
                         let name = inst.get("name").and_then(|n| n.as_str()).unwrap_or("");
                         let (pos, size, color) = if name.contains("Baseplate") {
-                            (Vector3::new(0.0, -0.5, 0.0), Vector3::new(120.0, 1.0, 120.0), Color32::from_rgb(60, 75, 90))
+                            (
+                                Vector3::new(0.0, -0.5, 0.0),
+                                Vector3::new(120.0, 1.0, 120.0),
+                                Color32::from_rgb(60, 75, 90),
+                            )
                         } else {
-                            (Vector3::new(0.0, 1.0, 0.0), Vector3::new(4.0, 2.0, 4.0), Color32::from_rgb(150, 80, 80))
+                            (
+                                Vector3::new(0.0, 1.0, 0.0),
+                                Vector3::new(4.0, 2.0, 4.0),
+                                Color32::from_rgb(150, 80, 80),
+                            )
                         };
                         nb_render::draw_box_3d(
                             &painter,
@@ -1295,8 +1386,17 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                     Pos2::new(rect.min.x + 12.0, rect.min.y + 12.0),
                     Vec2::new(340.0, 52.0),
                 );
-                painter.rect_filled(controls_rect, 6.0, Color32::from_rgba_unmultiplied(20, 20, 25, 200));
-                painter.rect_stroke(controls_rect, 6.0, Stroke::new(1.0, Color32::from_rgba_unmultiplied(80, 80, 95, 180)), StrokeKind::Middle);
+                painter.rect_filled(
+                    controls_rect,
+                    6.0,
+                    Color32::from_rgba_unmultiplied(20, 20, 25, 200),
+                );
+                painter.rect_stroke(
+                    controls_rect,
+                    6.0,
+                    Stroke::new(1.0, Color32::from_rgba_unmultiplied(80, 80, 95, 180)),
+                    StrokeKind::Middle,
+                );
                 painter.text(
                     Pos2::new(controls_rect.min.x + 10.0, controls_rect.min.y + 16.0),
                     egui::Align2::LEFT_CENTER,
@@ -1317,12 +1417,26 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                     Pos2::new(rect.max.x - 230.0, rect.min.y + 12.0),
                     Vec2::new(218.0, 52.0),
                 );
-                painter.rect_filled(status_rect, 6.0, Color32::from_rgba_unmultiplied(20, 20, 25, 200));
-                painter.rect_stroke(status_rect, 6.0, Stroke::new(1.0, Color32::from_rgba_unmultiplied(80, 80, 95, 180)), StrokeKind::Middle);
+                painter.rect_filled(
+                    status_rect,
+                    6.0,
+                    Color32::from_rgba_unmultiplied(20, 20, 25, 200),
+                );
+                painter.rect_stroke(
+                    status_rect,
+                    6.0,
+                    Stroke::new(1.0, Color32::from_rgba_unmultiplied(80, 80, 95, 180)),
+                    StrokeKind::Middle,
+                );
                 painter.text(
                     Pos2::new(status_rect.min.x + 10.0, status_rect.min.y + 16.0),
                     egui::Align2::LEFT_CENTER,
-                    format!("Pos: ({:.1}, {:.1}, {:.1})", app.character.position.x, app.character.position.y, app.character.position.z),
+                    format!(
+                        "Pos: ({:.1}, {:.1}, {:.1})",
+                        app.character.position.x,
+                        app.character.position.y,
+                        app.character.position.z
+                    ),
                     egui::FontId::monospace(10.5),
                     GAME_INK,
                 );
@@ -1331,8 +1445,20 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                     Pos2::new(status_rect.min.x + 10.0, status_rect.min.y + 27.0),
                     Vec2::new(80.0, 18.0),
                 );
-                let respawn_resp = ui.interact(respawn_btn_rect, ui.id().with("in-game-respawn"), Sense::click());
-                painter.rect_filled(respawn_btn_rect, 4.0, if respawn_resp.hovered() { Color32::from_rgb(180, 80, 80) } else { Color32::from_rgb(140, 50, 50) });
+                let respawn_resp = ui.interact(
+                    respawn_btn_rect,
+                    ui.id().with("in-game-respawn"),
+                    Sense::click(),
+                );
+                painter.rect_filled(
+                    respawn_btn_rect,
+                    4.0,
+                    if respawn_resp.hovered() {
+                        Color32::from_rgb(180, 80, 80)
+                    } else {
+                        Color32::from_rgb(140, 50, 50)
+                    },
+                );
                 painter.text(
                     respawn_btn_rect.center(),
                     egui::Align2::CENTER_CENTER,
@@ -1356,13 +1482,21 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
 
                 let chat_frame = egui::Frame::default()
                     .fill(Color32::from_rgba_unmultiplied(20, 20, 25, 210))
-                    .stroke(Stroke::new(1.0, Color32::from_rgba_unmultiplied(70, 70, 85, 180)))
+                    .stroke(Stroke::new(
+                        1.0,
+                        Color32::from_rgba_unmultiplied(70, 70, 85, 180),
+                    ))
                     .corner_radius(6)
                     .inner_margin(egui::Margin::same(8));
 
                 ui.allocate_ui_at_rect(chat_rect, |ui| {
                     chat_frame.show(ui, |ui| {
-                        ui.label(RichText::new("💬 Chat").size(11.0).strong().color(GAME_WARN));
+                        ui.label(
+                            RichText::new("💬 Chat")
+                                .size(11.0)
+                                .strong()
+                                .color(GAME_WARN),
+                        );
                         ui.separator();
 
                         // Chat messages log
@@ -1371,11 +1505,20 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                             .stick_to_bottom(true)
                             .show(ui, |ui| {
                                 if app.chat_messages.is_empty() {
-                                    ui.label(RichText::new("No chat messages yet.").size(10.0).color(Color32::GRAY));
+                                    ui.label(
+                                        RichText::new("No chat messages yet.")
+                                            .size(10.0)
+                                            .color(Color32::GRAY),
+                                    );
                                 } else {
                                     for (sender, msg) in &app.chat_messages {
                                         ui.horizontal(|ui| {
-                                            ui.label(RichText::new(format!("{sender}:")).size(11.0).strong().color(RAIL));
+                                            ui.label(
+                                                RichText::new(format!("{sender}:"))
+                                                    .size(11.0)
+                                                    .strong()
+                                                    .color(RAIL),
+                                            );
                                             ui.label(RichText::new(msg).size(11.0).color(GAME_INK));
                                         });
                                     }
@@ -1391,7 +1534,8 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                             );
 
                             let send_clicked = ui.button("Send").clicked();
-                            let enter_pressed = input_resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+                            let enter_pressed = input_resp.lost_focus()
+                                && ui.input(|i| i.key_pressed(egui::Key::Enter));
 
                             if send_clicked || enter_pressed {
                                 app.do_send_chat();
@@ -1443,7 +1587,9 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                                 ui.with_layout(
                                     egui::Layout::right_to_left(egui::Align::Center),
                                     |ui| {
-                                        ui.label(RichText::new(container).size(10.0).color(GAME_WARN));
+                                        ui.label(
+                                            RichText::new(container).size(10.0).color(GAME_WARN),
+                                        );
                                     },
                                 );
                             });

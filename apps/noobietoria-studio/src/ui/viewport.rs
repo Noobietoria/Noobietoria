@@ -256,7 +256,11 @@ pub fn render_viewport(app: &mut StudioApp, ui: &mut Ui) {
             ui.label(
                 egui::RichText::new(status_label)
                     .strong()
-                    .color(if is_in_playtest { Color32::from_rgb(100, 255, 120) } else { Color32::WHITE }),
+                    .color(if is_in_playtest {
+                        Color32::from_rgb(100, 255, 120)
+                    } else {
+                        Color32::WHITE
+                    }),
             );
             ui.label(
                 egui::RichText::new(format!("Instances: {}", app.world.len()))
@@ -268,7 +272,10 @@ pub fn render_viewport(app: &mut StudioApp, ui: &mut Ui) {
                 ui.label(
                     egui::RichText::new(format!(
                         "Player: ({:.1}, {:.1}, {:.1}) | HP: {:.0}%",
-                        char_state.position.x, char_state.position.y, char_state.position.z, char_state.health
+                        char_state.position.x,
+                        char_state.position.y,
+                        char_state.position.z,
+                        char_state.health
                     ))
                     .size(11.0)
                     .color(Color32::from_rgb(255, 220, 100)),
@@ -292,11 +299,25 @@ pub fn render_viewport(app: &mut StudioApp, ui: &mut Ui) {
             if is_in_playtest {
                 ui.add_space(2.0);
                 ui.horizontal(|ui| {
-                    if ui.button(egui::RichText::new("⏹ Stop").color(Color32::from_rgb(255, 100, 100)).small()).clicked() {
+                    if ui
+                        .button(
+                            egui::RichText::new("⏹ Stop")
+                                .color(Color32::from_rgb(255, 100, 100))
+                                .small(),
+                        )
+                        .clicked()
+                    {
                         stop_clicked = true;
                     }
                     if app.playtest == PlaytestState::PlayingSolo {
-                        if ui.button(egui::RichText::new("🔄 Respawn").color(Color32::LIGHT_BLUE).small()).clicked() {
+                        if ui
+                            .button(
+                                egui::RichText::new("🔄 Respawn")
+                                    .color(Color32::LIGHT_BLUE)
+                                    .small(),
+                            )
+                            .clicked()
+                        {
                             respawn_clicked = true;
                         }
                     }

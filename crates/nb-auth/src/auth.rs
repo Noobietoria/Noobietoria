@@ -74,9 +74,10 @@ impl AuthService {
     pub fn login(&self, username: &str, password: &str) -> Result<String, AuthError> {
         let user = {
             let users = self.inner.users.read();
-            users.get(username).cloned().ok_or_else(|| {
-                AuthError::UserNotFound(username.to_string())
-            })?
+            users
+                .get(username)
+                .cloned()
+                .ok_or_else(|| AuthError::UserNotFound(username.to_string()))?
         };
         if !verify_password(password, &user.password_hash) {
             return Err(AuthError::InvalidCredentials);
@@ -135,8 +136,8 @@ impl Default for AuthService {
 
 fn hash_password(password: &str) -> Result<String, AuthError> {
     let salt_bytes: [u8; 16] = rand::random();
-    let salt = SaltString::encode_b64(&salt_bytes)
-        .map_err(|e| AuthError::Database(e.to_string()))?;
+    let salt =
+        SaltString::encode_b64(&salt_bytes).map_err(|e| AuthError::Database(e.to_string()))?;
     Argon2::default()
         .hash_password(password.as_bytes(), &salt)
         .map(|h| h.to_string())

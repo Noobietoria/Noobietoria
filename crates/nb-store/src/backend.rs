@@ -7,8 +7,8 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use nb_types::Value;
 use crate::kv::StoreError;
+use nb_types::Value;
 #[cfg(feature = "sqlx")]
 pub mod sqlx;
 #[cfg(feature = "sqlx")]
@@ -38,7 +38,9 @@ pub struct MemoryBackend {
 }
 
 impl MemoryBackend {
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> Self {
+        Self::default()
+    }
 }
 
 impl KvBackend for MemoryBackend {
@@ -70,4 +72,3 @@ impl KvBackend for MemoryBackend {
         Ok(())
     }
 }
-

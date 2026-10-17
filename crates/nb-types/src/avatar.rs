@@ -4,8 +4,8 @@
 
 //! Avatar customization: body colors, clothes (shirts & pants), and faces.
 
-use serde::{Deserialize, Serialize};
 use crate::math::Rgba;
+use serde::{Deserialize, Serialize};
 
 /// Full avatar appearance configuration.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -44,11 +44,11 @@ impl AvatarConfig {
     /// Classic Roblox Noob: Yellow head/arms, Blue torso, Green legs, Classic Smile.
     pub fn classic_noob() -> Self {
         Self {
-            head_color: Rgba::new(245.0, 205.0, 48.0, 255.0),      // Bright yellow
-            torso_color: Rgba::new(13.0, 105.0, 172.0, 255.0),     // Bright blue
-            left_arm_color: Rgba::new(245.0, 205.0, 48.0, 255.0),  // Bright yellow
+            head_color: Rgba::new(245.0, 205.0, 48.0, 255.0), // Bright yellow
+            torso_color: Rgba::new(13.0, 105.0, 172.0, 255.0), // Bright blue
+            left_arm_color: Rgba::new(245.0, 205.0, 48.0, 255.0), // Bright yellow
             right_arm_color: Rgba::new(245.0, 205.0, 48.0, 255.0), // Bright yellow
-            left_leg_color: Rgba::new(164.0, 189.0, 71.0, 255.0),  // Bright yellowish green
+            left_leg_color: Rgba::new(164.0, 189.0, 71.0, 255.0), // Bright yellowish green
             right_leg_color: Rgba::new(164.0, 189.0, 71.0, 255.0), // Bright yellowish green
             shirt: "default".to_owned(),
             pants: "default".to_owned(),
@@ -211,7 +211,6 @@ pub fn default_catalog() -> Vec<CatalogItem> {
             description: "Stealthy mask covering everything except sharp eyes.".to_owned(),
             icon: "🥷".to_owned(),
         },
-
         // ── Shirts ────────────────────────────────────────────────────────────
         CatalogItem {
             id: "default".to_owned(),
@@ -269,7 +268,6 @@ pub fn default_catalog() -> Vec<CatalogItem> {
             description: "Vibrant horizontal stripes with retro charm.".to_owned(),
             icon: "🧶".to_owned(),
         },
-
         // ── Pants ─────────────────────────────────────────────────────────────
         CatalogItem {
             id: "default".to_owned(),
@@ -319,7 +317,6 @@ pub fn default_catalog() -> Vec<CatalogItem> {
             description: "Breezy shorts perfect for a tropical baseplate.".to_owned(),
             icon: "🩳".to_owned(),
         },
-
         // ── Body Color Presets ────────────────────────────────────────────────
         CatalogItem {
             id: "preset_noob".to_owned(),

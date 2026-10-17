@@ -95,13 +95,12 @@ impl SqliteAuthService {
         email: &str,
         password: &str,
     ) -> Result<UserRecord, AuthError> {
-        let dup: Option<String> =
-            sqlx::query("SELECT username FROM nb_users WHERE username = ?")
-                .bind(username)
-                .fetch_optional(&self.pool)
-                .await
-                .map_err(|e| AuthError::Database(e.to_string()))?
-                .map(|r| r.get("username"));
+        let dup: Option<String> = sqlx::query("SELECT username FROM nb_users WHERE username = ?")
+            .bind(username)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|e| AuthError::Database(e.to_string()))?
+            .map(|r| r.get("username"));
         if dup.is_some() {
             return Err(AuthError::UsernameTaken(username.to_string()));
         }
@@ -147,14 +146,12 @@ impl SqliteAuthService {
 
     /// Verify credentials and mint a session token.
     pub async fn login(&self, username: &str, password: &str) -> Result<String, AuthError> {
-        let row = sqlx::query(
-            "SELECT user_id, password_hash FROM nb_users WHERE username = ?",
-        )
-        .bind(username)
-        .fetch_optional(&self.pool)
-        .await
-        .map_err(|e| AuthError::Database(e.to_string()))?
-        .ok_or_else(|| AuthError::UserNotFound(username.to_string()))?;
+        let row = sqlx::query("SELECT user_id, password_hash FROM nb_users WHERE username = ?")
+            .bind(username)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|e| AuthError::Database(e.to_string()))?
+            .ok_or_else(|| AuthError::UserNotFound(username.to_string()))?;
 
         let user_id: i64 = row.get("user_id");
         let stored_hash: String = row.get("password_hash");
@@ -270,8 +267,8 @@ impl crate::backend::AuthBackend for SqliteAuthService {
 
 fn hash_password(password: &str) -> Result<String, AuthError> {
     let salt_bytes: [u8; 16] = rand::random();
-    let salt = SaltString::encode_b64(&salt_bytes)
-        .map_err(|e| AuthError::Database(e.to_string()))?;
+    let salt =
+        SaltString::encode_b64(&salt_bytes).map_err(|e| AuthError::Database(e.to_string()))?;
     Argon2::default()
         .hash_password(password.as_bytes(), &salt)
         .map(|h| h.to_string())
@@ -315,19 +312,14 @@ mod tests {
     async fn duplicate_username_rejected() {
         let auth = SqliteAuthService::in_memory().await.unwrap();
         auth.register("bob", "b1@test.com", "x").await.unwrap();
-        let err = auth
-            .register("bob", "b2@test.com", "y")
-            .await
-            .unwrap_err();
+        let err = auth.register("bob", "b2@test.com", "y").await.unwrap_err();
         assert!(matches!(err, AuthError::UsernameTaken(_)));
     }
 
     #[tokio::test]
     async fn wrong_password_rejected() {
         let auth = SqliteAuthService::in_memory().await.unwrap();
-        auth.register("carol", "c@test.com", "right")
-            .await
-            .unwrap();
+        auth.register("carol", "c@test.com", "right").await.unwrap();
         let err = auth.login("carol", "wrong").await.unwrap_err();
         assert!(matches!(err, AuthError::InvalidCredentials));
     }

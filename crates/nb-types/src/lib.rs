@@ -34,7 +34,7 @@ pub mod instance;
 pub mod math;
 pub mod value;
 
-pub use avatar::{AvatarCategory, AvatarConfig, CatalogItem, default_catalog};
+pub use avatar::{default_catalog, AvatarCategory, AvatarConfig, CatalogItem};
 pub use instance::{Container, InstanceType};
 pub use math::{CFrame, Orientation, Rgba, Vector3};
 pub use value::Value;

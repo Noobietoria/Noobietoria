@@ -145,20 +145,17 @@ impl KvBackend for SqlxBackend {
         let pool = self.pool.clone();
         let key_str = key.to_owned();
 
-        let row_opt = self.block_on(async move {
-            sqlx::query(&sql)
-                .bind(key_str)
-                .fetch_optional(&pool)
-                .await
-        });
+        let row_opt = self
+            .block_on(async move { sqlx::query(&sql).bind(key_str).fetch_optional(&pool).await });
 
         match row_opt {
             Ok(Some(row)) => {
                 let raw_json: String = row.get(0);
-                let val: Value = serde_json::from_str(&raw_json).map_err(|_| StoreError::NotAString {
-                    key: key.to_owned(),
-                    actual: "corrupted_json",
-                })?;
+                let val: Value =
+                    serde_json::from_str(&raw_json).map_err(|_| StoreError::NotAString {
+                        key: key.to_owned(),
+                        actual: "corrupted_json",
+                    })?;
                 Ok(Some(val))
             }
             Ok(None) => Ok(None),
@@ -206,9 +203,8 @@ impl KvBackend for SqlxBackend {
             let del_sql = format!("DELETE FROM {} WHERE kv_key = $1", self.table_name);
             let pool = self.pool.clone();
             let k = key.to_owned();
-            let _ = self.block_on(async move {
-                sqlx::query(&del_sql).bind(k).execute(&pool).await
-            });
+            let _ =
+                self.block_on(async move { sqlx::query(&del_sql).bind(k).execute(&pool).await });
         }
         Ok(prev)
     }

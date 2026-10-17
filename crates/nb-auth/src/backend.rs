@@ -36,7 +36,10 @@ pub trait AuthBackend: Send + Sync {
     ) -> impl std::future::Future<Output = Result<UserRecord, AuthError>> + Send;
 
     /// Revoke a session token (logout).
-    fn logout(&self, token: &str) -> impl std::future::Future<Output = Result<(), AuthError>> + Send;
+    fn logout(
+        &self,
+        token: &str,
+    ) -> impl std::future::Future<Output = Result<(), AuthError>> + Send;
 
     /// Drop expired sessions; returns how many were removed.
     fn cleanup_expired(&self) -> impl std::future::Future<Output = Result<u64, AuthError>> + Send;

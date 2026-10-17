@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-use std::collections::BTreeMap;
 use mlua::prelude::*;
 use nb_types::Value;
+use std::collections::BTreeMap;
 
 /// Converts an [`nb_types::Value`] to an [`mlua::Value`].
 pub fn value_to_lua<'lua>(lua: &'lua Lua, val: &Value) -> LuaResult<LuaValue> {

@@ -127,10 +127,7 @@ pub async fn register_handler(
         avatar: Some(nb_types::AvatarConfig::classic_noob()),
     };
     state.persist_user(&account);
-    state
-        .users
-        .write()
-        .insert(user.username.clone(), account);
+    state.users.write().insert(user.username.clone(), account);
 
     // Get a session token via the auth service (SQLite-first, durable).
     let token = state
@@ -320,7 +317,10 @@ pub async fn publish_place_handler(
 
     if let Some(ref wf) = world_data {
         if let Ok(bytes) = wf.to_bytes() {
-            let _ = state.storage.put(&format!("places/{place_id}.nbw"), &bytes).await;
+            let _ = state
+                .storage
+                .put(&format!("places/{place_id}.nbw"), &bytes)
+                .await;
         }
     }
 

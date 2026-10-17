@@ -559,11 +559,14 @@ impl ClientApp {
                                 let yaw = args[4].as_f64().unwrap_or(0.0) as f32;
                                 let is_moving = args[5].as_bool().unwrap_or(false);
 
-                                let player_state = self.other_players.entry(uname.to_owned()).or_insert_with(|| {
-                                    let mut p = nb_render::CharacterState::default();
-                                    p.avatar = nb_types::AvatarConfig::classic_noob();
-                                    p
-                                });
+                                let player_state = self
+                                    .other_players
+                                    .entry(uname.to_owned())
+                                    .or_insert_with(|| {
+                                        let mut p = nb_render::CharacterState::default();
+                                        p.avatar = nb_types::AvatarConfig::classic_noob();
+                                        p
+                                    });
                                 player_state.position = nb_types::Vector3::new(x, y, z);
                                 player_state.yaw = yaw;
                                 player_state.is_moving = is_moving;
@@ -643,7 +646,8 @@ impl ClientApp {
         let today_token = format!("day_{now_days}");
         if let Some(ref last) = self.last_studs_claim {
             if last == &today_token {
-                self.daily_claim_status = Some("You already claimed your 5 studs today! Come back tomorrow.".to_owned());
+                self.daily_claim_status =
+                    Some("You already claimed your 5 studs today! Come back tomorrow.".to_owned());
                 return;
             }
         }
@@ -658,7 +662,9 @@ impl ClientApp {
         // If it costs studs and isn't equipped, check balance
         if item.price_studs > 0 {
             if self.studs < item.price_studs as i64 {
-                self.shop_feedback = Some("Not enough Studs! Claim your daily studs to afford this item.".to_owned());
+                self.shop_feedback = Some(
+                    "Not enough Studs! Claim your daily studs to afford this item.".to_owned(),
+                );
                 return;
             }
             self.studs -= item.price_studs as i64;
@@ -674,23 +680,24 @@ impl ClientApp {
             nb_types::AvatarCategory::Pants => {
                 self.avatar.pants = item.id.clone();
             }
-            nb_types::AvatarCategory::BodyColor => {
-                match item.id.as_str() {
-                    "preset_noob" => {
-                        self.avatar = nb_types::AvatarConfig::classic_noob();
-                    }
-                    "preset_skin" => {
-                        self.avatar.set_uniform_color(nb_types::Rgba::new(255.0, 220.0, 185.0, 255.0));
-                    }
-                    "preset_dark" => {
-                        self.avatar.set_uniform_color(nb_types::Rgba::new(45.0, 45.0, 50.0, 255.0));
-                    }
-                    "preset_gold" => {
-                        self.avatar.set_uniform_color(nb_types::Rgba::new(255.0, 215.0, 0.0, 255.0));
-                    }
-                    _ => {}
+            nb_types::AvatarCategory::BodyColor => match item.id.as_str() {
+                "preset_noob" => {
+                    self.avatar = nb_types::AvatarConfig::classic_noob();
                 }
-            }
+                "preset_skin" => {
+                    self.avatar
+                        .set_uniform_color(nb_types::Rgba::new(255.0, 220.0, 185.0, 255.0));
+                }
+                "preset_dark" => {
+                    self.avatar
+                        .set_uniform_color(nb_types::Rgba::new(45.0, 45.0, 50.0, 255.0));
+                }
+                "preset_gold" => {
+                    self.avatar
+                        .set_uniform_color(nb_types::Rgba::new(255.0, 215.0, 0.0, 255.0));
+                }
+                _ => {}
+            },
         }
 
         self.character.avatar = self.avatar.clone();
@@ -705,7 +712,8 @@ impl ClientApp {
         }
         self.chat_input.clear();
         self.is_chatting = false;
-        self.chat_messages.push((self.username.clone(), msg.clone()));
+        self.chat_messages
+            .push((self.username.clone(), msg.clone()));
         if self.chat_messages.len() > 100 {
             self.chat_messages.remove(0);
         }
@@ -753,7 +761,7 @@ impl eframe::App for ClientApp {
 
         // 3D Character Physics & Movement when in Lobby Game view
         if self.screen == Screen::Lobby && self.lobby_tab == LobbyTab::Game {
-            let dt = ctx.input(|i| i.stable_dt as f32).min(0.05);
+            let dt = ctx.input(|i| i.stable_dt).min(0.05);
 
             let typing = ctx.memory(|m| m.focused().is_some()) || self.is_chatting;
             if !typing {
@@ -777,7 +785,8 @@ impl eframe::App for ClientApp {
                     sprint: shift,
                 };
 
-                self.character.update(dt, &input, self.camera.yaw, 196.2 * 0.15);
+                self.character
+                    .update(dt, &input, self.camera.yaw, 196.2 * 0.15);
                 self.character.avatar = self.avatar.clone();
 
                 // Camera follow character
@@ -793,7 +802,13 @@ impl eframe::App for ClientApp {
                     .last_move_broadcast
                     .map(|t| t.elapsed() >= std::time::Duration::from_millis(50))
                     .unwrap_or(true);
-                if should_send && (self.character.is_moving || self.last_move_broadcast.map(|t| t.elapsed() >= std::time::Duration::from_millis(500)).unwrap_or(true)) {
+                if should_send
+                    && (self.character.is_moving
+                        || self
+                            .last_move_broadcast
+                            .map(|t| t.elapsed() >= std::time::Duration::from_millis(500))
+                            .unwrap_or(true))
+                {
                     self.last_move_broadcast = Some(Instant::now());
                     let _ = self.net.cmd_tx.send(crate::net::NetCmd::Fire {
                         event: "Move".to_owned(),

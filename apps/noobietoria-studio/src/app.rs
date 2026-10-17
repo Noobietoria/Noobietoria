@@ -44,7 +44,11 @@ impl App for StudioApp {
 
                 if let Some(ref mut character) = self.playtest_character {
                     let gravity = self.settings.gravity as f32;
-                    let gravity = if gravity <= 0.0 { 196.2 * 0.15 } else { gravity * 0.15 };
+                    let gravity = if gravity <= 0.0 {
+                        196.2 * 0.15
+                    } else {
+                        gravity * 0.15
+                    };
                     character.update(dt, &input, self.camera.yaw, gravity);
 
                     // Camera smoothly follows the player character

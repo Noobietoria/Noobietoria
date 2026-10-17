@@ -345,7 +345,9 @@ impl AppState {
         let db_url = std::env::var("DATABASE_URL")
             .unwrap_or_else(|_| "sqlite://data/noobietoria_web.db?mode=rwc".to_owned());
         let _ = std::fs::create_dir_all("data");
-        let db = nb_store::SqlxBackend::connect(&db_url, "nb_web_store").ok().map(Arc::new);
+        let db = nb_store::SqlxBackend::connect(&db_url, "nb_web_store")
+            .ok()
+            .map(Arc::new);
 
         // Restore stored users and games from DB if available
         if let Some(ref d) = db {
@@ -354,14 +356,21 @@ impl AppState {
                 for key in keys {
                     if let Some(username) = key.strip_prefix("user:") {
                         if let Ok(Some(val)) = d.get(&key) {
-                            if let Ok(user) = serde_json::from_value::<UserAccount>(serde_json::to_value(&val).unwrap_or_default()) {
-                                tokens.insert(format!("nb_jwt_{}", user.user_id), username.to_owned());
+                            if let Ok(user) = serde_json::from_value::<UserAccount>(
+                                serde_json::to_value(&val).unwrap_or_default(),
+                            ) {
+                                tokens.insert(
+                                    format!("nb_jwt_{}", user.user_id),
+                                    username.to_owned(),
+                                );
                                 users.insert(username.to_owned(), user);
                             }
                         }
                     } else if let Some(place_id) = key.strip_prefix("game:") {
                         if let Ok(Some(val)) = d.get(&key) {
-                            if let Ok(game) = serde_json::from_value::<PublishedGame>(serde_json::to_value(&val).unwrap_or_default()) {
+                            if let Ok(game) = serde_json::from_value::<PublishedGame>(
+                                serde_json::to_value(&val).unwrap_or_default(),
+                            ) {
                                 games.insert(place_id.to_owned(), game);
                             }
                         }
@@ -445,9 +454,7 @@ impl AppState {
                 self.pg_auth = Some(svc);
             }
             Err(e) => {
-                tracing::warn!(
-                    "PostgreSQL auth unavailable ({e}); falling back to in-memory"
-                );
+                tracing::warn!("PostgreSQL auth unavailable ({e}); falling back to in-memory");
             }
         }
         self

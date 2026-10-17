@@ -4,9 +4,9 @@
 
 //! Luau Script Runtime Engine: binds Noobietoria world, services, and execution VM.
 
-use std::sync::Arc;
 use mlua::prelude::*;
 use parking_lot::Mutex;
+use std::sync::Arc;
 
 use nb_api::ApiContext;
 use nb_types::Value;
@@ -39,7 +39,10 @@ impl ScriptEngine {
                         LuaValue::Boolean(b) => b.to_string(),
                         LuaValue::Integer(i) => i.to_string(),
                         LuaValue::Number(n) => n.to_string(),
-                        LuaValue::String(s) => s.to_str().map(|b| b.to_string()).unwrap_or_else(|_| "<invalid utf8>".to_owned()),
+                        LuaValue::String(s) => s
+                            .to_str()
+                            .map(|b| b.to_string())
+                            .unwrap_or_else(|_| "<invalid utf8>".to_owned()),
                         LuaValue::Table(_) => "table".to_owned(),
                         LuaValue::Function(_) => "function".to_owned(),
                         _ => format!("{:?}", v),
@@ -58,7 +61,10 @@ impl ScriptEngine {
                 let parts: Vec<String> = args
                     .iter()
                     .map(|v| match v {
-                        LuaValue::String(s) => s.to_str().map(|b| b.to_string()).unwrap_or_else(|_| "<invalid utf8>".to_owned()),
+                        LuaValue::String(s) => s
+                            .to_str()
+                            .map(|b| b.to_string())
+                            .unwrap_or_else(|_| "<invalid utf8>".to_owned()),
                         other => format!("{:?}", other),
                     })
                     .collect();
@@ -94,49 +100,61 @@ impl ScriptEngine {
         let game_tbl = lua.create_table()?;
         {
             let ctx = Arc::clone(&api_ctx);
-            let get_service = lua.create_function(move |lua, (_self_tbl, service_name): (LuaValue, String)| {
-                let s_tbl = lua.create_table()?;
-                s_tbl.set("__service_name", service_name.clone())?;
+            let get_service =
+                lua.create_function(move |lua, (_self_tbl, service_name): (LuaValue, String)| {
+                    let s_tbl = lua.create_table()?;
+                    s_tbl.set("__service_name", service_name.clone())?;
 
-                let meta = lua.create_table()?;
-                let ctx_inner = Arc::clone(&ctx);
-                let s_name = service_name.clone();
+                    let meta = lua.create_table()?;
+                    let ctx_inner = Arc::clone(&ctx);
+                    let s_name = service_name.clone();
 
-                meta.set(
-                    "__index",
-                    lua.create_function(move |lua, (_tbl, method_name): (LuaTable, String)| {
-                        let ctx_call = Arc::clone(&ctx_inner);
-                        let s_call = s_name.clone();
-                        let func = lua.create_function(move |lua, args: LuaMultiValue| {
-                            let mut api_args = Vec::new();
-                            let mut iter = args.into_iter();
-                            if let Some(first) = iter.next() {
-                                let is_self = match &first {
-                                    LuaValue::Table(t) => {
-                                        t.get::<Option<String>>("__service_name").unwrap_or(None).is_some()
-                                    }
-                                    _ => false,
-                                };
-                                if !is_self {
-                                    api_args.push(lua_to_value(first)?);
-                                }
-                            }
-                            for arg in iter {
-                                api_args.push(lua_to_value(arg)?);
-                            }
+                    meta.set(
+                        "__index",
+                        lua.create_function(
+                            move |lua, (_tbl, method_name): (LuaTable, String)| {
+                                let ctx_call = Arc::clone(&ctx_inner);
+                                let s_call = s_name.clone();
+                                let func =
+                                    lua.create_function(move |lua, args: LuaMultiValue| {
+                                        let mut api_args = Vec::new();
+                                        let mut iter = args.into_iter();
+                                        if let Some(first) = iter.next() {
+                                            let is_self = match &first {
+                                                LuaValue::Table(t) => t
+                                                    .get::<Option<String>>("__service_name")
+                                                    .unwrap_or(None)
+                                                    .is_some(),
+                                                _ => false,
+                                            };
+                                            if !is_self {
+                                                api_args.push(lua_to_value(first)?);
+                                            }
+                                        }
+                                        for arg in iter {
+                                            api_args.push(lua_to_value(arg)?);
+                                        }
 
-                            match nb_api::call(&ctx_call, &s_call, &method_name, api_args) {
-                                Ok(val) => value_to_lua(lua, &val),
-                                Err(e) => Err(LuaError::RuntimeError(format!("{s_call}:{method_name} failed: {e}"))),
-                            }
-                        })?;
-                        Ok(func)
-                    })?,
-                )?;
+                                        match nb_api::call(
+                                            &ctx_call,
+                                            &s_call,
+                                            &method_name,
+                                            api_args,
+                                        ) {
+                                            Ok(val) => value_to_lua(lua, &val),
+                                            Err(e) => Err(LuaError::RuntimeError(format!(
+                                                "{s_call}:{method_name} failed: {e}"
+                                            ))),
+                                        }
+                                    })?;
+                                Ok(func)
+                            },
+                        )?,
+                    )?;
 
-                s_tbl.set_metatable(Some(meta))?;
-                Ok(s_tbl)
-            })?;
+                    s_tbl.set_metatable(Some(meta))?;
+                    Ok(s_tbl)
+                })?;
             game_tbl.set("GetService", get_service)?;
         }
         lua.globals().set("game", game_tbl.clone())?;
@@ -152,16 +170,20 @@ impl ScriptEngine {
             let ctx = Arc::clone(&api_ctx);
             instance_tbl.set(
                 "new",
-                lua.create_function(move |lua, (class_name, parent_opt): (String, Option<String>)| {
-                    let mut args = vec![Value::Str(class_name)];
-                    if let Some(p) = parent_opt {
-                        args.push(Value::Str(p));
-                    }
-                    match nb_api::call(&ctx, "InstanceService", "Create", args) {
-                        Ok(val) => value_to_lua(lua, &val),
-                        Err(e) => Err(LuaError::RuntimeError(format!("Instance.new error: {e}"))),
-                    }
-                })?,
+                lua.create_function(
+                    move |lua, (class_name, parent_opt): (String, Option<String>)| {
+                        let mut args = vec![Value::Str(class_name)];
+                        if let Some(p) = parent_opt {
+                            args.push(Value::Str(p));
+                        }
+                        match nb_api::call(&ctx, "InstanceService", "Create", args) {
+                            Ok(val) => value_to_lua(lua, &val),
+                            Err(e) => {
+                                Err(LuaError::RuntimeError(format!("Instance.new error: {e}")))
+                            }
+                        }
+                    },
+                )?,
             )?;
         }
         lua.globals().set("Instance", instance_tbl)?;
@@ -232,7 +254,9 @@ impl ScriptEngine {
         let script_obj = self.lua.create_table().map_err(|e| e.to_string())?;
         script_obj.set("Name", name).map_err(|e| e.to_string())?;
         script_obj.set("GUID", guid).map_err(|e| e.to_string())?;
-        script_obj.set("Disabled", false).map_err(|e| e.to_string())?;
+        script_obj
+            .set("Disabled", false)
+            .map_err(|e| e.to_string())?;
         self.lua
             .globals()
             .set("script", script_obj)
@@ -260,7 +284,13 @@ impl ScriptEngine {
                 ScriptKind::from_instance_type(i.kind) == Some(ScriptKind::Server)
                     && i.properties.enabled
             })
-            .map(|i| (i.name.clone(), i.id.as_str().to_owned(), i.properties.source.clone()))
+            .map(|i| {
+                (
+                    i.name.clone(),
+                    i.id.as_str().to_owned(),
+                    i.properties.source.clone(),
+                )
+            })
             .collect();
         drop(world);
 
