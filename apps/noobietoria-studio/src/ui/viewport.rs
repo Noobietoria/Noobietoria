@@ -205,40 +205,111 @@ pub fn render_viewport(app: &mut StudioApp, ui: &mut Ui) {
         }
     }
 
-    // --- Overlay HUD (Top-right of viewport) ---
-    let hud_rect = Rect::from_min_size(
-        Pos2::new(rect.max.x - 220.0, rect.min.y + 10.0),
-        Vec2::new(210.0, 75.0),
+    // --- Draw Playtest Avatar (Inner Server Simulation) ---
+    let cam_3d = nb_render::Camera3D::new(
+        app.camera.target,
+        app.camera.distance,
+        app.camera.yaw,
+        app.camera.pitch,
     );
-    painter.rect_filled(hud_rect, 6.0, Color32::from_black_alpha(150));
+
+    if app.playtest == PlaytestState::PlayingSolo {
+        if let Some(ref char_state) = app.playtest_character {
+            nb_render::draw_avatar_3d(
+                &painter,
+                &cam_3d,
+                rect,
+                char_state.position,
+                char_state.yaw,
+                char_state.walk_cycle,
+                char_state.is_moving,
+                &char_state.avatar,
+                "You (Playtest)",
+                char_state.health,
+                true,
+            );
+        }
+    }
+
+    // --- Overlay HUD (Top-right of viewport) ---
+    let is_in_playtest = app.playtest != PlaytestState::Stopped;
+    let hud_width = if is_in_playtest { 260.0 } else { 210.0 };
+    let hud_height = if is_in_playtest { 130.0 } else { 75.0 };
+
+    let hud_rect = Rect::from_min_size(
+        Pos2::new(rect.max.x - (hud_width + 10.0), rect.min.y + 10.0),
+        Vec2::new(hud_width, hud_height),
+    );
+    painter.rect_filled(hud_rect, 6.0, Color32::from_black_alpha(190));
 
     let status_label = match app.playtest {
         PlaytestState::Stopped => "MODE: Edit Mode",
-        PlaytestState::PlayingSolo => "MODE: Playtest (Solo)",
-        PlaytestState::RunningServer => "MODE: Running (Server)",
+        PlaytestState::PlayingSolo => "MODE: Playtest (Inner Server Solo)",
+        PlaytestState::RunningServer => "MODE: Running (Inner Server Simulation)",
     };
+
+    let mut stop_clicked = false;
+    let mut respawn_clicked = false;
 
     ui.put(hud_rect, |ui: &mut Ui| {
         ui.vertical(|ui| {
             ui.label(
                 egui::RichText::new(status_label)
                     .strong()
-                    .color(Color32::WHITE),
+                    .color(if is_in_playtest { Color32::from_rgb(100, 255, 120) } else { Color32::WHITE }),
             );
             ui.label(
                 egui::RichText::new(format!("Instances: {}", app.world.len()))
                     .size(11.0)
                     .color(Color32::LIGHT_GRAY),
             );
-            ui.label(
-                egui::RichText::new(format!(
-                    "Cam Target: ({:.1}, {:.1}, {:.1})",
-                    app.camera.target.x, app.camera.target.y, app.camera.target.z
-                ))
-                .size(11.0)
-                .color(Color32::GRAY),
-            );
+
+            if let Some(ref char_state) = app.playtest_character {
+                ui.label(
+                    egui::RichText::new(format!(
+                        "Player: ({:.1}, {:.1}, {:.1}) | HP: {:.0}%",
+                        char_state.position.x, char_state.position.y, char_state.position.z, char_state.health
+                    ))
+                    .size(11.0)
+                    .color(Color32::from_rgb(255, 220, 100)),
+                );
+                ui.label(
+                    egui::RichText::new("WASD: Move | Space: Jump | Shift: Run | RMB: Rotate View")
+                        .size(9.5)
+                        .color(Color32::GRAY),
+                );
+            } else {
+                ui.label(
+                    egui::RichText::new(format!(
+                        "Cam Target: ({:.1}, {:.1}, {:.1})",
+                        app.camera.target.x, app.camera.target.y, app.camera.target.z
+                    ))
+                    .size(11.0)
+                    .color(Color32::GRAY),
+                );
+            }
+
+            if is_in_playtest {
+                ui.add_space(2.0);
+                ui.horizontal(|ui| {
+                    if ui.button(egui::RichText::new("⏹ Stop").color(Color32::from_rgb(255, 100, 100)).small()).clicked() {
+                        stop_clicked = true;
+                    }
+                    if app.playtest == PlaytestState::PlayingSolo {
+                        if ui.button(egui::RichText::new("🔄 Respawn").color(Color32::LIGHT_BLUE).small()).clicked() {
+                            respawn_clicked = true;
+                        }
+                    }
+                });
+            }
         })
         .response
     });
+
+    if stop_clicked {
+        app.stop_playtest();
+    }
+    if respawn_clicked {
+        app.respawn_character();
+    }
 }

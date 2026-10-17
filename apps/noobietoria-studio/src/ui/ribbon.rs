@@ -344,21 +344,10 @@ fn render_playtest(app: &mut StudioApp, ui: &mut Ui) {
                 )
                 .clicked()
             {
-                app.playtest = PlaytestState::PlayingSolo;
-                app.status_text = "Playtest Solo Started".to_owned();
-                app.log(
-                    LogLevel::Info,
-                    "--- Starting Playtest (Solo Client + Server) ---",
-                );
-                app.log(
-                    LogLevel::Info,
-                    "Client connected to local session. Character spawned.",
-                );
+                app.start_playtest_solo();
             }
             if ui.button("▶ Run").clicked() {
-                app.playtest = PlaytestState::RunningServer;
-                app.status_text = "Server Simulation Started".to_owned();
-                app.log(LogLevel::Info, "--- Starting Server-only Simulation ---");
+                app.start_playtest_server();
             }
         }
         PlaytestState::PlayingSolo | PlaytestState::RunningServer => {
@@ -370,12 +359,7 @@ fn render_playtest(app: &mut StudioApp, ui: &mut Ui) {
                 )
                 .clicked()
             {
-                app.playtest = PlaytestState::Stopped;
-                app.status_text = "Simulation Stopped".to_owned();
-                app.log(
-                    LogLevel::Info,
-                    "--- Simulation Stopped. World reset to edit state. ---",
-                );
+                app.stop_playtest();
             }
         }
     }

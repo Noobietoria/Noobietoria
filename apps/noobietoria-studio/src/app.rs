@@ -15,10 +15,48 @@ use crate::ui::{
 
 impl App for StudioApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Playtest simulation tick
+        // Playtest simulation tick (Inner Server Simulation)
         if self.playtest != PlaytestState::Stopped {
-            let dt = ctx.input(|i| i.stable_dt as f64).min(0.1);
-            self.simulation_time += dt;
+            let dt = ctx.input(|i| i.stable_dt as f32).min(0.05);
+            self.simulation_time += dt as f64;
+
+            if self.playtest == PlaytestState::PlayingSolo {
+                // Collect keyboard inputs for character movement
+                let (w, s, a, d, space, shift) = ctx.input(|i| {
+                    (
+                        i.key_down(egui::Key::W) || i.key_down(egui::Key::ArrowUp),
+                        i.key_down(egui::Key::S) || i.key_down(egui::Key::ArrowDown),
+                        i.key_down(egui::Key::A) || i.key_down(egui::Key::ArrowLeft),
+                        i.key_down(egui::Key::D) || i.key_down(egui::Key::ArrowRight),
+                        i.key_down(egui::Key::Space),
+                        i.modifiers.shift,
+                    )
+                });
+
+                let input = nb_render::PlayerInput {
+                    move_forward: w,
+                    move_backward: s,
+                    move_left: a,
+                    move_right: d,
+                    jump: space,
+                    sprint: shift,
+                };
+
+                if let Some(ref mut character) = self.playtest_character {
+                    let gravity = self.settings.gravity as f32;
+                    let gravity = if gravity <= 0.0 { 196.2 * 0.15 } else { gravity * 0.15 };
+                    character.update(dt, &input, self.camera.yaw, gravity);
+
+                    // Camera smoothly follows the player character
+                    let target_cam = nb_types::Vector3::new(
+                        character.position.x,
+                        character.position.y + 2.5,
+                        character.position.z,
+                    );
+                    self.camera.target = target_cam;
+                }
+            }
+
             ctx.request_repaint();
         }
 

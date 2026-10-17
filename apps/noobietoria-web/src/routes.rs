@@ -1,4 +1,8 @@
-// Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.
 // PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING IS STRICTLY PROHIBITED.
 
 use axum::extract::{Path, State};
@@ -57,64 +61,93 @@ pub async fn register_handler(
     State(state): State<AppState>,
     Json(payload): Json<RegisterRequest>,
 ) -> impl IntoResponse {
-    let mut users = state.users.write();
-    if users.contains_key(&payload.username) {
-        return (
-            StatusCode::CONFLICT,
-            Json(AuthResponse {
-                success: false,
-                user_id: None,
-                username: None,
-                token: None,
-                message: "Username already taken".to_owned(),
-            }),
-        );
-    }
+    let email = format!("{}@noobietoria.com", payload.username);
+    // SQLite-first (durable); falls back to in-memory when unconfigured.
+    let auth_result = state
+        .auth_register(&payload.username, &email, &payload.password)
+        .await;
+    let user = match auth_result {
+        Ok(record) => record,
+        Err(nb_auth::AuthError::UsernameTaken(_)) => {
+            return (
+                StatusCode::CONFLICT,
+                Json(AuthResponse {
+                    success: false,
+                    user_id: None,
+                    username: None,
+                    token: None,
+                    message: "Username already taken".to_owned(),
+                }),
+            );
+        }
+        Err(e) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(AuthResponse {
+                    success: false,
+                    user_id: None,
+                    username: None,
+                    token: None,
+                    message: format!("Registration error: {e}"),
+                }),
+            );
+        }
+    };
 
-    let user_id = users.len() as u64 + 1000;
-    let token = format!("nb_jwt_{user_id}");
-    let user = UserAccount {
-        user_id,
-        username: payload.username.clone(),
-        email: format!("{}@noobietoria.com", payload.username),
-        password_hash: format!("sha256:{}", payload.password),
+    // Mirror into the rich UserAccount store for the web UI.
+    let account = UserAccount {
+        user_id: user.user_id as u64,
+        username: user.username.clone(),
+        email: user.email.clone(),
+        password_hash: user.password_hash.clone(),
         display_name: payload
             .display_name
-            .unwrap_or_else(|| payload.username.clone()),
+            .unwrap_or_else(|| user.username.clone()),
         bio: "Playing Noobietoria!".to_owned(),
         avatar_emoji: "😀".to_owned(),
         body_color_hue: 205,
         banner_color: "#1e293b".to_owned(),
-        level: 1,
+        level: user.level,
         plus_tier: "Free".to_owned(),
-        credits: 50,
-        coins: 100, // Starter currency
+        credits: user.credits,
+        coins: user.coins,
         streak: 1,
         longest_streak: 1,
         item_sales: 0,
         networth: 150,
         status: "online".to_owned(),
-        created_at: "2026-10-15T00:00:00Z".to_owned(),
+        created_at: user.created_at.to_rfc3339(),
         last_seen: "Just now".to_owned(),
         friends_count: 0,
         worlds_count: 0,
         inventory: vec![],
         equipped: vec![],
+        studs: 25,
+        last_studs_claim: None,
+        avatar: Some(nb_types::AvatarConfig::classic_noob()),
     };
+    state.persist_user(&account);
+    state
+        .users
+        .write()
+        .insert(user.username.clone(), account);
 
-    users.insert(payload.username.clone(), user);
-    drop(users);
+    // Get a session token via the auth service (SQLite-first, durable).
+    let token = state
+        .auth_login(&user.username, &payload.password)
+        .await
+        .unwrap_or_else(|_| format!("nb_jwt_{}", user.user_id));
     state
         .tokens
         .write()
-        .insert(token.clone(), payload.username.clone());
+        .insert(token.clone(), user.username.clone());
 
     (
         StatusCode::CREATED,
         Json(AuthResponse {
             success: true,
-            user_id: Some(user_id),
-            username: Some(payload.username),
+            user_id: Some(user.user_id as u64),
+            username: Some(user.username.clone()),
             token: Some(token),
             message: "Account created successfully".to_owned(),
         }),
@@ -126,18 +159,21 @@ pub async fn login_handler(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>,
 ) -> impl IntoResponse {
-    let users = state.users.read();
-    if let Some(user) = users.get(&payload.username) {
-        if user.password_hash == format!("sha256:{}", payload.password) {
-            let user_id = user.user_id;
-            let token = format!("nb_jwt_{}", user_id);
-            drop(users);
+    // SQLite-first (durable sessions); falls back to in-memory.
+    match state.auth_login(&payload.username, &payload.password).await {
+        Ok(token) => {
+            // Look up the user_id from the rich store.
+            let user_id = state
+                .users
+                .read()
+                .get(&payload.username)
+                .map(|u| u.user_id)
+                .unwrap_or(0);
             state
                 .tokens
                 .write()
                 .insert(token.clone(), payload.username.clone());
-
-            return (
+            (
                 StatusCode::OK,
                 Json(AuthResponse {
                     success: true,
@@ -146,18 +182,46 @@ pub async fn login_handler(
                     token: Some(token),
                     message: "Login successful".to_owned(),
                 }),
-            );
+            )
         }
+        Err(_) => (
+            StatusCode::UNAUTHORIZED,
+            Json(AuthResponse {
+                success: false,
+                user_id: None,
+                username: None,
+                token: None,
+                message: "Invalid username or password".to_owned(),
+            }),
+        ),
     }
+}
 
+// --- Handler: Logout ---
+pub async fn logout_handler(
+    State(state): State<AppState>,
+    headers: axum::http::HeaderMap,
+) -> impl IntoResponse {
+    let token = headers
+        .get("Authorization")
+        .and_then(|h| h.to_str().ok())
+        .and_then(|s| {
+            s.strip_prefix("Bearer ")
+                .or_else(|| s.strip_prefix("bearer "))
+        })
+        .map(|s| s.trim().to_owned());
+    if let Some(tok) = token {
+        state.auth_logout(&tok).await;
+        state.tokens.write().remove(&tok);
+    }
     (
-        StatusCode::UNAUTHORIZED,
+        StatusCode::OK,
         Json(AuthResponse {
-            success: false,
+            success: true,
             user_id: None,
             username: None,
             token: None,
-            message: "Invalid username or password".to_owned(),
+            message: "Logged out".to_owned(),
         }),
     )
 }
@@ -251,9 +315,16 @@ pub async fn publish_place_handler(
         server_port: 53650,
         created_at: "2026-10-15T00:00:00Z".to_owned(),
         updated_at: "2026-10-15T00:00:00Z".to_owned(),
-        world_data,
+        world_data: world_data.clone(),
     };
 
+    if let Some(ref wf) = world_data {
+        if let Ok(bytes) = wf.to_bytes() {
+            let _ = state.storage.put(&format!("places/{place_id}.nbw"), &bytes).await;
+        }
+    }
+
+    state.persist_game(&published);
     state.games.write().insert(place_id.clone(), published);
     (
         StatusCode::CREATED,
@@ -263,6 +334,51 @@ pub async fn publish_place_handler(
             "message": "Place published successfully to Noobietoria Web!"
         })),
     )
+}
+
+// --- Handler: Download Place File ---
+#[allow(dead_code)]
+pub async fn download_place_handler(
+    State(state): State<AppState>,
+    Path(place_id): Path<String>,
+) -> impl IntoResponse {
+    let storage_key = format!("places/{place_id}.nbw");
+    if let Ok(Some(bytes)) = state.storage.get(&storage_key).await {
+        return (
+            StatusCode::OK,
+            [
+                (axum::http::header::CONTENT_TYPE, "application/octet-stream"),
+                (
+                    axum::http::header::CONTENT_DISPOSITION,
+                    &format!("attachment; filename=\"{place_id}.nbw\""),
+                ),
+            ],
+            bytes,
+        )
+            .into_response();
+    }
+
+    let games = state.games.read();
+    if let Some(game) = games.get(&place_id) {
+        if let Some(ref wf) = game.world_data {
+            if let Ok(bytes) = wf.to_bytes() {
+                return (
+                    StatusCode::OK,
+                    [
+                        (axum::http::header::CONTENT_TYPE, "application/octet-stream"),
+                        (
+                            axum::http::header::CONTENT_DISPOSITION,
+                            &format!("attachment; filename=\"{place_id}.nbw\""),
+                        ),
+                    ],
+                    bytes,
+                )
+                    .into_response();
+            }
+        }
+    }
+
+    (StatusCode::NOT_FOUND, "Place world file not found").into_response()
 }
 
 // --- Handler: Content Moderation Check ---
@@ -293,6 +409,141 @@ pub async fn moderation_check_handler(
             "Content flagged as inappropriate.".to_owned()
         },
     })
+}
+
+// --- Handlers: Studs & Avatar Customization ---
+
+#[derive(Debug, Deserialize)]
+pub struct DailyStudsRequest {
+    pub username: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct DailyStudsResponse {
+    pub success: bool,
+    pub studs: i64,
+    pub message: String,
+    pub claimed: bool,
+}
+
+pub async fn claim_daily_studs_handler(
+    State(state): State<AppState>,
+    headers: axum::http::HeaderMap,
+    Json(payload): Json<DailyStudsRequest>,
+) -> impl IntoResponse {
+    let username = if let Some(u) = payload.username {
+        u
+    } else if let Some(tok) = headers
+        .get("Authorization")
+        .and_then(|h| h.to_str().ok())
+        .and_then(|s| s.strip_prefix("Bearer "))
+    {
+        state
+            .tokens
+            .read()
+            .get(tok)
+            .cloned()
+            .unwrap_or_else(|| "PlayerOne".to_owned())
+    } else {
+        "PlayerOne".to_owned()
+    };
+
+    let mut users = state.users.write();
+    if let Some(user) = users.get_mut(&username) {
+        match user.claim_daily_studs() {
+            Ok(new_studs) => (
+                StatusCode::OK,
+                Json(DailyStudsResponse {
+                    success: true,
+                    studs: new_studs,
+                    message: "You received 5 studs today! Come back tomorrow for more.".to_owned(),
+                    claimed: true,
+                }),
+            ),
+            Err(msg) => (
+                StatusCode::OK,
+                Json(DailyStudsResponse {
+                    success: false,
+                    studs: user.studs,
+                    message: msg,
+                    claimed: false,
+                }),
+            ),
+        }
+    } else {
+        (
+            StatusCode::NOT_FOUND,
+            Json(DailyStudsResponse {
+                success: false,
+                studs: 0,
+                message: "User not found".to_owned(),
+                claimed: false,
+            }),
+        )
+    }
+}
+
+pub async fn catalog_handler() -> impl IntoResponse {
+    Json(nb_types::default_catalog())
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateAvatarRequest {
+    pub username: Option<String>,
+    pub avatar: nb_types::AvatarConfig,
+}
+
+pub async fn update_avatar_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<UpdateAvatarRequest>,
+) -> impl IntoResponse {
+    let username = payload.username.unwrap_or_else(|| "PlayerOne".to_owned());
+    let mut users = state.users.write();
+    if let Some(user) = users.get_mut(&username) {
+        user.avatar = Some(payload.avatar.clone());
+        (
+            StatusCode::OK,
+            Json(serde_json::json!({
+                "success": true,
+                "message": "Avatar updated successfully",
+                "avatar": payload.avatar,
+            })),
+        )
+    } else {
+        (
+            StatusCode::NOT_FOUND,
+            Json(serde_json::json!({
+                "success": false,
+                "message": "User not found",
+            })),
+        )
+    }
+}
+
+pub async fn get_user_profile_handler(
+    State(state): State<AppState>,
+    Path(username): Path<String>,
+) -> impl IntoResponse {
+    let users = state.users.read();
+    if let Some(user) = users.get(&username) {
+        (
+            StatusCode::OK,
+            Json(serde_json::json!({
+                "username": user.username,
+                "display_name": user.display_name,
+                "studs": user.studs,
+                "coins": user.coins,
+                "avatar": user.avatar.clone().unwrap_or_else(nb_types::AvatarConfig::classic_noob),
+            })),
+        )
+    } else {
+        (
+            StatusCode::NOT_FOUND,
+            Json(serde_json::json!({
+                "error": "User not found"
+            })),
+        )
+    }
 }
 
 // --- Handler: Front-end Homepage (Roblox Dark Theme) ---

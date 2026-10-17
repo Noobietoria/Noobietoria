@@ -1,4 +1,8 @@
-// Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.
 // PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING IS STRICTLY PROHIBITED.
 
 //! GraphQL API Dispatcher for Noobietoria Web.
@@ -50,13 +54,55 @@ pub async fn graphql_handler(
         .map(|s| s.trim().to_owned());
 
     let current_user: Option<UserAccount> = if let Some(tok) = &auth_token {
-        let tokens = state.tokens.read();
-        let username = tokens.get(tok).cloned();
-        drop(tokens);
-        if let Some(u) = username {
-            state.users.read().get(&u).cloned()
-        } else {
-            None
+        // SQLite-first (durable sessions), in-memory fallback.
+        match state.auth_validate(tok).await {
+            Ok(record) => {
+                // Mirror the auth record into the rich UserAccount store.
+                let mut users = state.users.write();
+                let account = users.entry(record.username.clone()).or_insert_with(|| {
+                    UserAccount {
+                        user_id: record.user_id as u64,
+                        username: record.username.clone(),
+                        email: record.email.clone(),
+                        password_hash: String::new(),
+                        display_name: record.display_name.clone(),
+                        bio: "Playing Noobietoria!".to_owned(),
+                        avatar_emoji: "😀".to_owned(),
+                        body_color_hue: 205,
+                        banner_color: "#1e293b".to_owned(),
+                        level: record.level,
+                        plus_tier: "Free".to_owned(),
+                        credits: record.credits,
+                        coins: record.coins,
+                        streak: 1,
+                        longest_streak: 1,
+                        item_sales: 0,
+                        networth: 150,
+                        status: "online".to_owned(),
+                        created_at: record.created_at.to_rfc3339(),
+                        last_seen: "Just now".to_owned(),
+                        friends_count: 0,
+                        worlds_count: 0,
+                        inventory: vec![],
+                        equipped: vec![],
+                        studs: 25,
+                        last_studs_claim: None,
+                        avatar: Some(nb_types::AvatarConfig::classic_noob()),
+                    }
+                });
+                Some(account.clone())
+            }
+            Err(_) => {
+                // Fallback: legacy token map (demo user etc.)
+                let tokens = state.tokens.read();
+                let username = tokens.get(tok).cloned();
+                drop(tokens);
+                if let Some(u) = username {
+                    state.users.read().get(&u).cloned()
+                } else {
+                    None
+                }
+            }
         }
     } else {
         None
@@ -65,7 +111,7 @@ pub async fn graphql_handler(
     let q = payload.query.trim();
     let vars = &payload.variables;
 
-    let res = dispatch(&state, q, vars, current_user.as_ref()).await;
+    let res = dispatch(&state, q, vars, current_user.as_ref(), auth_token.as_deref()).await;
 
     match res {
         Ok(data) => Json(GraphQLResponse {
@@ -87,6 +133,7 @@ async fn dispatch(
     query: &str,
     vars: &Value,
     current_user: Option<&UserAccount>,
+    auth_token: Option<&str>,
 ) -> Result<Value, String> {
     let mut data = serde_json::Map::new();
 
@@ -97,23 +144,33 @@ async fn dispatch(
         let p = get_str_var(vars, query, &["p", "password"])
             .ok_or_else(|| "Missing password".to_owned())?;
 
-        let users = state.users.read();
-        let matched = users
-            .values()
-            .find(|acc| acc.username == u || acc.email == u)
-            .cloned();
-        drop(users);
-
-        if let Some(user) = matched {
-            let pass_hash = format!("sha256:{}", p);
-            if user.password_hash == pass_hash || user.password_hash == p {
-                let token = format!("nb_tok_{}", uuid::Uuid::new_v4().simple());
-                state.tokens.write().insert(token.clone(), user.username);
+        // SQLite-first (Argon2 verification, durable sessions).
+        match state.auth_login(&u, &p).await {
+            Ok(token) => {
+                state.tokens.write().insert(token.clone(), u.clone());
                 data.insert("login".to_owned(), json!({ "token": token }));
                 return Ok(Value::Object(data));
             }
+            Err(_) => {
+                // Fallback: legacy in-memory check for the demo user.
+                let users = state.users.read();
+                let matched = users
+                    .values()
+                    .find(|acc| acc.username == u || acc.email == u)
+                    .cloned();
+                drop(users);
+
+                if let Some(user) = matched {
+                    if user.password_hash == p {
+                        let token = format!("nb_tok_{}", uuid::Uuid::new_v4().simple());
+                        state.tokens.write().insert(token.clone(), user.username);
+                        data.insert("login".to_owned(), json!({ "token": token }));
+                        return Ok(Value::Object(data));
+                    }
+                }
+                return Err("Invalid username or password".to_owned());
+            }
         }
-        return Err("Invalid username or password".to_owned());
     }
 
     // ── Mutation: register ────────────────────────────────────────────────────
@@ -147,12 +204,26 @@ async fn dispatch(
             );
         }
 
-        let mut users = state.users.write();
-        if users.contains_key(&u) {
+        // Persist credentials to the durable auth backend first (SQLite when
+        // configured). Best-effort: if the user already exists there from a
+        // previous run, continue with the mirrored in-memory profile.
+        //
+        // NOTE: no lock may be held across `.await` — parking_lot guards are
+        // not Send, which breaks axum's `Handler` bound.
+        if state.users.read().contains_key(&u) {
             return Err("That username is already taken. Please choose another.".to_owned());
         }
+        match state.auth_register(&u, &e, &p).await {
+            Ok(_) => {}
+            Err(nb_auth::AuthError::UsernameTaken(_))
+            | Err(nb_auth::AuthError::EmailTaken(_)) => {
+                return Err("That username is already taken. Please choose another.".to_owned());
+            }
+            Err(e) => return Err(format!("Registration failed: {e}")),
+        }
 
-        let new_id = (users.len() as u64 + 1001).to_string();
+        let user_count = state.users.read().len();
+        let new_id = (user_count as u64 + 1001).to_string();
         let user = UserAccount {
             user_id: new_id.parse().unwrap_or(1001),
             username: u.clone(),
@@ -178,12 +249,18 @@ async fn dispatch(
             worlds_count: 0,
             inventory: vec!["item_classic_cap".to_owned()],
             equipped: vec!["item_classic_cap".to_owned()],
+            studs: 25,
+            last_studs_claim: None,
+            avatar: Some(nb_types::AvatarConfig::classic_noob()),
         };
 
-        users.insert(u.clone(), user);
-        drop(users);
+        state.users.write().insert(u.clone(), user);
 
-        let token = format!("nb_tok_{}", uuid::Uuid::new_v4().simple());
+        // Mint a durable session token so the new account survives restarts.
+        let token = state
+            .auth_login(&u, &p)
+            .await
+            .unwrap_or_else(|_| format!("nb_tok_{}", uuid::Uuid::new_v4().simple()));
         state.tokens.write().insert(token.clone(), u);
         data.insert("register".to_owned(), json!({ "token": token }));
         return Ok(Value::Object(data));
@@ -191,6 +268,10 @@ async fn dispatch(
 
     // ── Mutation: logout ──────────────────────────────────────────────────────
     if query.contains("logout") {
+        if let Some(tok) = auth_token {
+            state.auth_logout(tok).await;
+            state.tokens.write().remove(tok);
+        }
         data.insert("logout".to_owned(), json!(true));
         return Ok(Value::Object(data));
     }
@@ -320,6 +401,9 @@ async fn dispatch(
                 worlds_count: 0,
                 inventory: vec![],
                 equipped: vec![],
+                studs: 25,
+                last_studs_claim: None,
+                avatar: Some(nb_types::AvatarConfig::classic_noob()),
             };
             data.insert("me".to_owned(), user_to_gql(&guest));
         }
@@ -475,6 +559,9 @@ async fn dispatch(
             worlds_count: 1,
             inventory: vec![],
             equipped: vec![],
+            studs: 25,
+            last_studs_claim: None,
+            avatar: Some(nb_types::AvatarConfig::classic_noob()),
         });
 
         data.insert("profile".to_owned(), user_to_gql(&target_user));
@@ -497,6 +584,7 @@ fn user_to_gql(u: &UserAccount) -> Value {
         "plusTier": u.plus_tier,
         "credits": u.credits,
         "coins": u.coins,
+        "studs": u.studs,
         "streak": u.streak,
         "longestStreak": u.longest_streak,
         "itemSales": u.item_sales,

@@ -22,10 +22,12 @@
 //! There is deliberately no host/port input anywhere: every endpoint the client
 //! dials comes from the website API.
 
-use eframe::egui::{self, Color32, Pos2, RichText, Sense, Stroke, StrokeKind, Vec2};
+use eframe::egui::{self, Color32, Pos2, Rect, RichText, Sense, Stroke, StrokeKind, Vec2};
+use nb_types::avatar::AvatarCategory;
+use nb_types::Vector3;
 
 use crate::api::{ServerInfo, WorldInfo};
-use crate::state::{ClientApp, LogKind, NavSection, Screen};
+use crate::state::{ClientApp, LobbyTab, LogKind, NavSection, Screen};
 
 // ── Brand artwork ──────────────────────────────────────────────────────────────
 
@@ -289,6 +291,8 @@ fn draw_header(app: &mut ClientApp, ctx: &egui::Context, ui: &mut egui::Ui) {
     let (rect, _) =
         ui.allocate_exact_size(Vec2::new(ui.available_width(), HEADER_H), Sense::hover());
 
+    let painter = ui.painter();
+
     // On the Home section the header *is* the brand lockup: mark + wordmark,
     // taken from the real artwork.
     let home_lockup = app.screen == Screen::Home && app.nav == NavSection::Home;
@@ -299,8 +303,7 @@ fn draw_header(app: &mut ClientApp, ctx: &egui::Context, ui: &mut egui::Ui) {
             Pos2::new(rect.left() + 27.0, rect.top() + 35.0),
             Vec2::new(mark_h * logos.mark_aspect(), mark_h),
         );
-        ui.painter()
-            .image(logos.mark.id(), mark_rect, UV_FULL, Color32::WHITE);
+        painter.image(logos.mark.id(), mark_rect, UV_FULL, Color32::WHITE);
 
         // Wordmark from its own asset, so the typeface is the brand one.
         let word_h = 17.0;
@@ -308,68 +311,131 @@ fn draw_header(app: &mut ClientApp, ctx: &egui::Context, ui: &mut egui::Ui) {
             Pos2::new(mark_rect.right() + 8.0, rect.top() + 35.0 - word_h / 2.0),
             Vec2::new(word_h * logos.wordmark_aspect(), word_h),
         );
-        ui.painter()
-            .image(logos.wordmark.id(), word_rect, UV_FULL, Color32::WHITE);
-        return;
+        painter.image(logos.wordmark.id(), word_rect, UV_FULL, Color32::WHITE);
+    } else {
+        // Elsewhere the header is the section title, with a small brand mark.
+        let logos = ensure_logos(app, ctx);
+        let mark_h = 22.0;
+        let mark_rect = egui::Rect::from_center_size(
+            Pos2::new(rect.left() + 24.0, rect.top() + 35.0),
+            Vec2::new(mark_h * logos.mark_aspect(), mark_h),
+        );
+        painter.image(logos.mark.id(), mark_rect, UV_FULL, Color32::WHITE);
+
+        // Section title doubles as the wordmark, exactly like the mockup.
+        let title = match app.screen {
+            Screen::Place | Screen::Connecting => app
+                .selected_place
+                .as_ref()
+                .map(|p| p.name.clone())
+                .unwrap_or_else(|| "Noobietoria".to_owned()),
+            _ => app.nav.label().to_owned(),
+        };
+
+        if app.screen == Screen::Place || app.screen == Screen::Connecting {
+            // On a place, the back affordance comes first, then the place's name.
+            let back = ui.interact(
+                egui::Rect::from_min_size(
+                    Pos2::new(rect.left() + 46.0, rect.top() + 22.0),
+                    Vec2::new(56.0, 26.0),
+                ),
+                ui.id().with("back-to-home"),
+                Sense::click(),
+            );
+            painter.text(
+                Pos2::new(rect.left() + 52.0, rect.top() + 35.0),
+                egui::Align2::LEFT_CENTER,
+                "‹ Back",
+                egui::FontId::proportional(13.0),
+                if back.hovered() { INK } else { INK_SOFT },
+            );
+            if back.clicked() {
+                app.go_home();
+            }
+
+            painter.text(
+                Pos2::new(rect.left() + 118.0, rect.top() + 35.0),
+                egui::Align2::LEFT_CENTER,
+                truncate(&title, 46),
+                egui::FontId::proportional(16.0),
+                INK,
+            );
+        } else {
+            painter.text(
+                Pos2::new(rect.left() + 46.0, rect.top() + 35.0),
+                egui::Align2::LEFT_CENTER,
+                title,
+                egui::FontId::proportional(16.0),
+                INK,
+            );
+        }
     }
 
-    let painter = ui.painter();
-
-    // Elsewhere the header is the section title, with a small brand mark.
-    let logos = ensure_logos(app, ctx);
-    let mark_h = 22.0;
-    let mark_rect = egui::Rect::from_center_size(
-        Pos2::new(rect.left() + 24.0, rect.top() + 35.0),
-        Vec2::new(mark_h * logos.mark_aspect(), mark_h),
+    // Right side: Studs & Daily Claim
+    let right_x = rect.right() - 16.0;
+    let studs_w = 114.0;
+    let studs_rect = Rect::from_min_size(
+        Pos2::new(right_x - studs_w, rect.top() + 21.0),
+        Vec2::new(studs_w, 28.0),
     );
-    painter.image(logos.mark.id(), mark_rect, UV_FULL, Color32::WHITE);
+    let studs_resp = ui
+        .interact(studs_rect, ui.id().with("header-studs-pill"), Sense::click())
+        .on_hover_text("Your Studs balance. Click to open Avatar Shop!");
+    painter.rect_filled(
+        studs_rect,
+        14.0,
+        if studs_resp.hovered() {
+            Color32::from_rgb(238, 215, 215)
+        } else {
+            Color32::from_rgb(246, 230, 230)
+        },
+    );
+    painter.rect_stroke(
+        studs_rect,
+        14.0,
+        Stroke::new(1.0, Color32::from_rgb(195, 145, 145)),
+        StrokeKind::Middle,
+    );
+    painter.text(
+        studs_rect.center(),
+        egui::Align2::CENTER_CENTER,
+        format!("🟡 {} Studs", app.studs),
+        egui::FontId::proportional(12.0),
+        INK,
+    );
+    if studs_resp.clicked() {
+        app.nav = NavSection::Shop;
+        app.screen = Screen::Home;
+    }
 
-    // Section title doubles as the wordmark, exactly like the mockup.
-    let title = match app.screen {
-        Screen::Place | Screen::Connecting => app
-            .selected_place
-            .as_ref()
-            .map(|p| p.name.clone())
-            .unwrap_or_else(|| "Noobietoria".to_owned()),
-        _ => app.nav.label().to_owned(),
-    };
-
-    if app.screen == Screen::Place || app.screen == Screen::Connecting {
-        // On a place, the back affordance comes first, then the place's name.
-        let back = ui.interact(
-            egui::Rect::from_min_size(
-                Pos2::new(rect.left() + 46.0, rect.top() + 22.0),
-                Vec2::new(56.0, 26.0),
-            ),
-            ui.id().with("back-to-home"),
-            Sense::click(),
+    if app.can_claim_daily_studs() {
+        let claim_w = 95.0;
+        let claim_rect = Rect::from_min_size(
+            Pos2::new(studs_rect.left() - claim_w - 8.0, rect.top() + 21.0),
+            Vec2::new(claim_w, 28.0),
+        );
+        let claim_resp = ui
+            .interact(claim_rect, ui.id().with("header-claim-daily"), Sense::click())
+            .on_hover_text("Claim your daily 5 Studs reward!");
+        painter.rect_filled(
+            claim_rect,
+            14.0,
+            if claim_resp.hovered() {
+                Color32::from_rgb(46, 160, 67)
+            } else {
+                Color32::from_rgb(35, 134, 54)
+            },
         );
         painter.text(
-            Pos2::new(rect.left() + 52.0, rect.top() + 35.0),
-            egui::Align2::LEFT_CENTER,
-            "‹ Back",
-            egui::FontId::proportional(13.0),
-            if back.hovered() { INK } else { INK_SOFT },
+            claim_rect.center(),
+            egui::Align2::CENTER_CENTER,
+            "🎁 +5 Studs",
+            egui::FontId::proportional(11.5),
+            Color32::WHITE,
         );
-        if back.clicked() {
-            app.go_home();
+        if claim_resp.clicked() {
+            app.do_claim_daily_studs();
         }
-
-        painter.text(
-            Pos2::new(rect.left() + 118.0, rect.top() + 35.0),
-            egui::Align2::LEFT_CENTER,
-            truncate(&title, 46),
-            egui::FontId::proportional(16.0),
-            INK,
-        );
-    } else {
-        painter.text(
-            Pos2::new(rect.left() + 46.0, rect.top() + 35.0),
-            egui::Align2::LEFT_CENTER,
-            title,
-            egui::FontId::proportional(16.0),
-            INK,
-        );
     }
 
     // A hairline under the header keeps the grid visually anchored.
@@ -393,6 +459,8 @@ fn draw_content(app: &mut ClientApp, ctx: &egui::Context, ui: &mut egui::Ui) {
                 Screen::Place => draw_place(app, ctx, ui),
                 Screen::Connecting => draw_connecting(app, ui),
                 _ => match app.nav {
+                    NavSection::Shop => draw_avatar_shop(app, ctx, ui),
+                    NavSection::Profile => draw_profile(app, ctx, ui),
                     other if other.is_implemented() => draw_home(app, ctx, ui),
                     other => draw_placeholder(ui, other),
                 },
@@ -836,7 +904,247 @@ fn draw_connecting(app: &mut ClientApp, ui: &mut egui::Ui) {
     ui.ctx().request_repaint(); // Keep the spinner animating.
 }
 
-// ── Lobby (in-game HUD) ────────────────────────────────────────────────────────
+// ── Avatar Shop & Customization ───────────────────────────────────────────────
+
+pub fn draw_avatar_shop(app: &mut ClientApp, _ctx: &egui::Context, ui: &mut egui::Ui) {
+    ui.add_space(16.0);
+    ui.horizontal(|ui| {
+        ui.add_space(20.0);
+        ui.label(RichText::new("🛍️ Avatar Shop & Customization").size(22.0).strong().color(INK));
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            ui.add_space(20.0);
+            if app.can_claim_daily_studs() {
+                if ui.button(RichText::new("🎁 Claim Daily 5 Studs").color(Color32::WHITE)).clicked() {
+                    app.do_claim_daily_studs();
+                }
+            } else {
+                ui.label(RichText::new("✓ Daily 5 Studs Claimed Today").size(12.0).color(Color32::from_rgb(35, 134, 54)).strong());
+            }
+            ui.label(RichText::new(format!("🟡 Balance: {} Studs", app.studs)).size(15.0).strong().color(INK));
+        });
+    });
+
+    if let Some(ref fb) = app.shop_feedback {
+        ui.add_space(8.0);
+        ui.horizontal(|ui| {
+            ui.add_space(20.0);
+            ui.label(RichText::new(format!("💬 {fb}")).size(13.0).color(Color32::from_rgb(170, 50, 50)).strong());
+        });
+    }
+
+    ui.add_space(16.0);
+
+    ui.horizontal(|ui| {
+        ui.add_space(20.0);
+
+        // --- Left column: 3D Preview ---
+        ui.vertical(|ui| {
+            ui.set_width(260.0);
+            ui.label(RichText::new("3D Avatar Preview").size(15.0).strong().color(INK));
+            ui.add_space(4.0);
+
+            let (preview_rect, _) = ui.allocate_exact_size(Vec2::new(260.0, 310.0), Sense::click_and_drag());
+            let painter = ui.painter();
+
+            painter.rect_filled(preview_rect, 10.0, Color32::from_rgb(34, 25, 25));
+            painter.rect_stroke(preview_rect, 10.0, Stroke::new(1.5, RAIL), StrokeKind::Middle);
+
+            let t = ui.input(|i| i.time) as f32;
+            let yaw = 0.5 + (t * 0.4).sin() * 0.25;
+            let preview_cam = nb_render::Camera3D::new(
+                Vector3::new(0.0, 2.5, 0.0),
+                12.5,
+                yaw,
+                0.2,
+            );
+
+            // Ground grid inside preview
+            nb_render::draw_ground_grid(&painter, &preview_cam, preview_rect, 8.0);
+
+            // Avatar 3D
+            nb_render::draw_avatar_3d(
+                &painter,
+                &preview_cam,
+                preview_rect,
+                Vector3::ZERO,
+                0.0,
+                0.0,
+                false,
+                &app.avatar,
+                &app.username,
+                100.0,
+                true,
+            );
+
+            ui.add_space(8.0);
+            if ui.button("↺ Reset to Classic Noob").clicked() {
+                app.avatar = nb_types::AvatarConfig::classic_noob();
+                app.character.avatar = app.avatar.clone();
+                app.save_local_profile();
+                app.shop_feedback = Some("Reset avatar to Classic Noob!".to_owned());
+            }
+
+            ui.add_space(8.0);
+            ui.label(RichText::new("Current Outfit:").size(12.0).strong().color(INK));
+            ui.label(RichText::new(format!("• Face: {}", app.avatar.face)).size(11.0).color(INK_SOFT));
+            ui.label(RichText::new(format!("• Shirt: {}", app.avatar.shirt)).size(11.0).color(INK_SOFT));
+            ui.label(RichText::new(format!("• Pants: {}", app.avatar.pants)).size(11.0).color(INK_SOFT));
+        });
+
+        ui.add_space(20.0);
+
+        // --- Right column: Category selection & Catalog grid ---
+        ui.vertical(|ui| {
+            ui.horizontal(|ui| {
+                for (cat, label) in [
+                    (AvatarCategory::BodyColor, "🎨 Body Colors"),
+                    (AvatarCategory::Shirt, "👕 Shirts"),
+                    (AvatarCategory::Pants, "👖 Pants"),
+                    (AvatarCategory::Face, "🙂 Faces"),
+                ] {
+                    let is_active = app.shop_category == cat;
+                    if ui.selectable_label(is_active, RichText::new(label).size(13.0).strong()).clicked() {
+                        app.shop_category = cat;
+                    }
+                }
+            });
+
+            ui.add_space(12.0);
+
+            // Catalog items
+            let items: Vec<nb_types::CatalogItem> = app
+                .catalog
+                .iter()
+                .filter(|i| i.category == app.shop_category)
+                .cloned()
+                .collect();
+
+            egui::Grid::new("shop_catalog_grid")
+                .num_columns(3)
+                .spacing(Vec2::new(14.0, 14.0))
+                .show(ui, |ui| {
+                    for (idx, item) in items.iter().enumerate() {
+                        ui.vertical(|ui| {
+                            let frame = egui::Frame::default()
+                                .fill(TILE)
+                                .stroke(Stroke::new(1.0, Color32::from_rgb(190, 150, 150)))
+                                .corner_radius(8)
+                                .inner_margin(egui::Margin::same(10));
+
+                            frame.show(ui, |ui| {
+                                ui.set_width(170.0);
+                                ui.label(RichText::new(&item.name).size(13.0).strong().color(INK));
+                                ui.label(RichText::new(&item.description).size(10.0).color(INK_SOFT));
+                                ui.add_space(4.0);
+
+                                if item.price_studs == 0 {
+                                    ui.label(RichText::new("FREE").size(11.0).color(Color32::from_rgb(0, 130, 50)).strong());
+                                } else {
+                                    ui.label(RichText::new(format!("🟡 {} Studs", item.price_studs)).size(11.0).color(Color32::from_rgb(180, 110, 20)).strong());
+                                }
+
+                                ui.add_space(6.0);
+
+                                let is_equipped = match item.category {
+                                    AvatarCategory::Face => app.avatar.face == item.id,
+                                    AvatarCategory::Shirt => app.avatar.shirt == item.id,
+                                    AvatarCategory::Pants => app.avatar.pants == item.id,
+                                    AvatarCategory::BodyColor => false,
+                                };
+
+                                if is_equipped {
+                                    ui.label(RichText::new("✓ Equipped").size(12.0).color(Color32::from_rgb(0, 140, 50)).strong());
+                                } else {
+                                    let can_afford = item.price_studs == 0 || app.studs >= item.price_studs as i64;
+                                    let btn_text = if item.price_studs == 0 {
+                                        "Equip"
+                                    } else {
+                                        "Buy & Equip"
+                                    };
+                                    let btn = egui::Button::new(RichText::new(btn_text).size(12.0));
+                                    if ui.add_enabled(can_afford, btn).clicked() {
+                                        app.buy_or_equip_item(item);
+                                    }
+                                }
+                            });
+                        });
+
+                        if (idx + 1) % 3 == 0 {
+                            ui.end_row();
+                        }
+                    }
+                });
+        });
+    });
+
+    ui.add_space(40.0);
+}
+
+// ── Profile ───────────────────────────────────────────────────────────────────
+
+pub fn draw_profile(app: &mut ClientApp, _ctx: &egui::Context, ui: &mut egui::Ui) {
+    ui.add_space(20.0);
+    ui.horizontal(|ui| {
+        ui.add_space(24.0);
+        ui.vertical(|ui| {
+            ui.label(RichText::new(format!("👤 Player Profile: {}", app.username)).size(22.0).strong().color(INK));
+            ui.add_space(6.0);
+            ui.label(RichText::new("Welcome to your personal profile & stats summary.").size(12.0).color(INK_SOFT));
+
+            ui.add_space(16.0);
+
+            // Studs & Daily Claim Card
+            let card_frame = egui::Frame::default()
+                .fill(TILE)
+                .stroke(Stroke::new(1.0, Color32::from_rgb(190, 150, 150)))
+                .corner_radius(10)
+                .inner_margin(egui::Margin::same(16));
+
+            card_frame.show(ui, |ui| {
+                ui.set_width(450.0);
+                ui.horizontal(|ui| {
+                    ui.label(RichText::new(format!("🟡 Balance: {} Studs", app.studs)).size(18.0).strong().color(INK));
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if app.can_claim_daily_studs() {
+                            if ui.button(RichText::new("🎁 Claim +5 Studs").color(Color32::WHITE)).clicked() {
+                                app.do_claim_daily_studs();
+                            }
+                        } else {
+                            ui.label(RichText::new("✓ Daily 5 Studs Claimed Today").size(12.0).color(Color32::from_rgb(35, 134, 54)).strong());
+                        }
+                    });
+                });
+
+                ui.add_space(8.0);
+                ui.label(RichText::new("Studs are Noobietoria's currency! Log in every day to claim 5 free Studs and purchase new clothes, faces, and body styles.").size(11.0).color(INK_SOFT));
+            });
+
+            ui.add_space(16.0);
+
+            // Outfit summary
+            let outfit_frame = egui::Frame::default()
+                .fill(TILE)
+                .stroke(Stroke::new(1.0, Color32::from_rgb(190, 150, 150)))
+                .corner_radius(10)
+                .inner_margin(egui::Margin::same(16));
+
+            outfit_frame.show(ui, |ui| {
+                ui.set_width(450.0);
+                ui.label(RichText::new("Equipped Outfit").size(15.0).strong().color(INK));
+                ui.separator();
+                ui.label(RichText::new(format!("• Face: {}", app.avatar.face)).size(12.0).color(INK));
+                ui.label(RichText::new(format!("• Shirt: {}", app.avatar.shirt)).size(12.0).color(INK));
+                ui.label(RichText::new(format!("• Pants: {}", app.avatar.pants)).size(12.0).color(INK));
+                ui.add_space(10.0);
+                if ui.button("🛍️ Open Avatar Shop").clicked() {
+                    app.nav = NavSection::Shop;
+                }
+            });
+        });
+    });
+}
+
+// ── Lobby (in-game HUD & 3D Playable Viewport) ──────────────────────────────────
 
 fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
     egui::TopBottomPanel::top("gamebar")
@@ -868,6 +1176,10 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
                     ui.label(RichText::new(format!("🏓 {ms} ms")).color(color));
                 }
 
+                ui.separator();
+                ui.selectable_value(&mut app.lobby_tab, LobbyTab::Game, "🎮 Game View");
+                ui.selectable_value(&mut app.lobby_tab, LobbyTab::DevInspector, "🛠️ Dev Inspector");
+
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if ui
                         .add(
@@ -890,141 +1202,342 @@ fn draw_lobby(app: &mut ClientApp, ctx: &egui::Context) {
             });
         });
 
-    egui::SidePanel::left("explorer")
-        .default_width(260.0)
-        .min_width(180.0)
-        .frame(
-            egui::Frame::default()
-                .fill(GAME_PANEL)
-                .inner_margin(egui::Margin::same(8)),
-        )
-        .show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.label(RichText::new("🌍 World Explorer").color(RAIL).strong());
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    ui.label(
-                        RichText::new(format!("tick {}", app.snapshot.tick))
-                            .size(10.0)
-                            .color(GAME_WARN),
-                    );
-                });
-            });
-            ui.separator();
+    if app.lobby_tab == LobbyTab::Game {
+        // --- 🎮 Playable 3D Interactive Viewport ---
+        egui::CentralPanel::default()
+            .frame(egui::Frame::default().fill(GAME_BG).inner_margin(egui::Margin::ZERO))
+            .show(ctx, |ui| {
+                let rect = ui.available_rect_before_wrap();
+                let response = ui.allocate_rect(rect, Sense::click_and_drag());
 
-            egui::ScrollArea::vertical().show(ui, |ui| {
-                if app.snapshot.instances.is_empty() {
-                    ui.label(
-                        RichText::new("(waiting for snapshot…)")
-                            .color(GAME_WARN)
-                            .italics(),
-                    );
-                } else {
-                    for inst in &app.snapshot.instances.clone() {
-                        let name = inst.get("name").and_then(|v| v.as_str()).unwrap_or("?");
-                        let kind = inst.get("kind").and_then(|v| v.as_str()).unwrap_or("");
-                        let container =
-                            inst.get("container").and_then(|v| v.as_str()).unwrap_or("");
-
-                        ui.horizontal(|ui| {
-                            ui.label(RichText::new(instance_icon(kind)).size(13.0));
-                            ui.label(RichText::new(name).size(13.0).color(GAME_INK));
-                            ui.with_layout(
-                                egui::Layout::right_to_left(egui::Align::Center),
-                                |ui| {
-                                    ui.label(RichText::new(container).size(10.0).color(GAME_WARN));
-                                },
-                            );
-                        });
-                    }
+                // Orbit camera on mouse drag
+                if response.dragged() {
+                    let delta = response.drag_delta();
+                    app.camera.orbit(delta);
                 }
-            });
-        });
 
-    egui::SidePanel::right("events")
-        .default_width(280.0)
-        .min_width(200.0)
-        .frame(
-            egui::Frame::default()
-                .fill(GAME_PANEL)
-                .inner_margin(egui::Margin::same(8)),
-        )
-        .show(ctx, |ui| {
-            ui.label(RichText::new("📡 Event Console").color(RAIL).strong());
-            ui.separator();
+                let scroll = ui.input(|i| i.smooth_scroll_delta.y);
+                if scroll.abs() > 0.01 {
+                    app.camera.zoom(scroll);
+                }
 
-            ui.label(RichText::new("Event name:").size(11.0).color(GAME_WARN));
-            ui.add(
-                egui::TextEdit::singleline(&mut app.event_name)
-                    .hint_text("e.g. Jump")
-                    .min_size(Vec2::new(ui.available_width(), 26.0)),
-            );
-            ui.add_space(4.0);
-            ui.label(
-                RichText::new("Args (JSON, comma-separated):")
-                    .size(11.0)
-                    .color(GAME_WARN),
-            );
-            ui.add(
-                egui::TextEdit::singleline(&mut app.event_args)
-                    .hint_text(r#""Alice", 42"#)
-                    .min_size(Vec2::new(ui.available_width(), 26.0)),
-            );
-            ui.add_space(6.0);
+                // Follow local player
+                app.camera.target = Vector3::new(
+                    app.character.position.x,
+                    app.character.position.y + 2.5,
+                    app.character.position.z,
+                );
 
-            if ui
-                .add(
-                    egui::Button::new(RichText::new("🔥 Fire Event").color(GAME_INK))
-                        .fill(RAIL)
-                        .min_size(Vec2::new(ui.available_width(), 32.0)),
-                )
-                .clicked()
-            {
-                app.do_fire();
-            }
+                let painter = ui.painter_at(rect);
 
-            ui.add_space(14.0);
-            ui.separator();
-            ui.label(RichText::new("Session").size(11.0).color(GAME_WARN));
-            ui.label(
-                RichText::new(format!("endpoint  {}", app.connected_endpoint))
-                    .size(10.0)
-                    .color(GAME_WARN),
-            );
-            ui.label(
-                RichText::new(format!("server    {}", app.server_name))
-                    .size(10.0)
-                    .color(GAME_WARN),
-            );
-        });
+                // 1. Baseplate ground grid
+                nb_render::draw_ground_grid(&painter, &app.camera, rect, 150.0);
 
-    egui::CentralPanel::default()
-        .frame(
-            egui::Frame::default()
-                .fill(GAME_BG)
-                .inner_margin(egui::Margin::same(8)),
-        )
-        .show(ctx, |ui| {
-            ui.label(RichText::new("📋 Log").color(RAIL).strong());
-            ui.separator();
-
-            egui::ScrollArea::vertical()
-                .auto_shrink([false; 2])
-                .stick_to_bottom(true)
-                .show(ui, |ui| {
-                    for entry in &app.log {
-                        let (icon, color) = match entry.kind {
-                            LogKind::System => ("·", GAME_WARN),
-                            LogKind::Event => ("↔", RAIL),
-                            LogKind::Error => ("✗", GAME_BAD),
+                // 2. Snapshot 3D parts
+                for inst in &app.snapshot.instances {
+                    let kind = inst.get("kind").and_then(|k| k.as_str()).unwrap_or("");
+                    if kind == "Part" || kind == "SpawnLocation" {
+                        let name = inst.get("name").and_then(|n| n.as_str()).unwrap_or("");
+                        let (pos, size, color) = if name.contains("Baseplate") {
+                            (Vector3::new(0.0, -0.5, 0.0), Vector3::new(120.0, 1.0, 120.0), Color32::from_rgb(60, 75, 90))
+                        } else {
+                            (Vector3::new(0.0, 1.0, 0.0), Vector3::new(4.0, 2.0, 4.0), Color32::from_rgb(150, 80, 80))
                         };
-                        ui.label(
-                            RichText::new(format!("{icon} {}", entry.text))
-                                .size(12.0)
-                                .color(color),
+                        nb_render::draw_box_3d(
+                            &painter,
+                            &app.camera,
+                            rect,
+                            pos,
+                            size,
+                            color,
+                            None,
+                            false,
                         );
                     }
+                }
+
+                // 3. Other players
+                for (name, other_char) in &app.other_players {
+                    nb_render::draw_avatar_3d(
+                        &painter,
+                        &app.camera,
+                        rect,
+                        other_char.position,
+                        other_char.yaw,
+                        other_char.walk_cycle,
+                        other_char.is_moving,
+                        &other_char.avatar,
+                        name,
+                        other_char.health,
+                        false,
+                    );
+                }
+
+                // 4. Local player
+                nb_render::draw_avatar_3d(
+                    &painter,
+                    &app.camera,
+                    rect,
+                    app.character.position,
+                    app.character.yaw,
+                    app.character.walk_cycle,
+                    app.character.is_moving,
+                    &app.avatar,
+                    &app.username,
+                    app.character.health,
+                    true,
+                );
+
+                // 5. In-game HUD overlay
+
+                // Top-left: Controls hint
+                let controls_rect = Rect::from_min_size(
+                    Pos2::new(rect.min.x + 12.0, rect.min.y + 12.0),
+                    Vec2::new(340.0, 52.0),
+                );
+                painter.rect_filled(controls_rect, 6.0, Color32::from_rgba_unmultiplied(20, 20, 25, 200));
+                painter.rect_stroke(controls_rect, 6.0, Stroke::new(1.0, Color32::from_rgba_unmultiplied(80, 80, 95, 180)), StrokeKind::Middle);
+                painter.text(
+                    Pos2::new(controls_rect.min.x + 10.0, controls_rect.min.y + 16.0),
+                    egui::Align2::LEFT_CENTER,
+                    "🕹 Controls:",
+                    egui::FontId::proportional(12.0),
+                    GAME_WARN,
+                );
+                painter.text(
+                    Pos2::new(controls_rect.min.x + 10.0, controls_rect.min.y + 36.0),
+                    egui::Align2::LEFT_CENTER,
+                    "WASD: Move  •  Space: Jump  •  Shift: Run  •  Drag: Look",
+                    egui::FontId::proportional(11.0),
+                    GAME_INK,
+                );
+
+                // Top-right: Character status & Respawn
+                let status_rect = Rect::from_min_size(
+                    Pos2::new(rect.max.x - 230.0, rect.min.y + 12.0),
+                    Vec2::new(218.0, 52.0),
+                );
+                painter.rect_filled(status_rect, 6.0, Color32::from_rgba_unmultiplied(20, 20, 25, 200));
+                painter.rect_stroke(status_rect, 6.0, Stroke::new(1.0, Color32::from_rgba_unmultiplied(80, 80, 95, 180)), StrokeKind::Middle);
+                painter.text(
+                    Pos2::new(status_rect.min.x + 10.0, status_rect.min.y + 16.0),
+                    egui::Align2::LEFT_CENTER,
+                    format!("Pos: ({:.1}, {:.1}, {:.1})", app.character.position.x, app.character.position.y, app.character.position.z),
+                    egui::FontId::monospace(10.5),
+                    GAME_INK,
+                );
+
+                let respawn_btn_rect = Rect::from_min_size(
+                    Pos2::new(status_rect.min.x + 10.0, status_rect.min.y + 27.0),
+                    Vec2::new(80.0, 18.0),
+                );
+                let respawn_resp = ui.interact(respawn_btn_rect, ui.id().with("in-game-respawn"), Sense::click());
+                painter.rect_filled(respawn_btn_rect, 4.0, if respawn_resp.hovered() { Color32::from_rgb(180, 80, 80) } else { Color32::from_rgb(140, 50, 50) });
+                painter.text(
+                    respawn_btn_rect.center(),
+                    egui::Align2::CENTER_CENTER,
+                    "↺ Respawn",
+                    egui::FontId::proportional(10.0),
+                    Color32::WHITE,
+                );
+                if respawn_resp.clicked() {
+                    app.character.position = Vector3::new(0.0, 5.0, 0.0);
+                    app.character.velocity_y = 0.0;
+                    app.character.is_grounded = false;
+                }
+
+                // Bottom-left: In-Game Chat Box
+                let chat_w = 340.0;
+                let chat_h = 160.0;
+                let chat_rect = Rect::from_min_size(
+                    Pos2::new(rect.min.x + 12.0, rect.max.y - (chat_h + 12.0)),
+                    Vec2::new(chat_w, chat_h),
+                );
+
+                let chat_frame = egui::Frame::default()
+                    .fill(Color32::from_rgba_unmultiplied(20, 20, 25, 210))
+                    .stroke(Stroke::new(1.0, Color32::from_rgba_unmultiplied(70, 70, 85, 180)))
+                    .corner_radius(6)
+                    .inner_margin(egui::Margin::same(8));
+
+                ui.allocate_ui_at_rect(chat_rect, |ui| {
+                    chat_frame.show(ui, |ui| {
+                        ui.label(RichText::new("💬 Chat").size(11.0).strong().color(GAME_WARN));
+                        ui.separator();
+
+                        // Chat messages log
+                        egui::ScrollArea::vertical()
+                            .max_height(80.0)
+                            .stick_to_bottom(true)
+                            .show(ui, |ui| {
+                                if app.chat_messages.is_empty() {
+                                    ui.label(RichText::new("No chat messages yet.").size(10.0).color(Color32::GRAY));
+                                } else {
+                                    for (sender, msg) in &app.chat_messages {
+                                        ui.horizontal(|ui| {
+                                            ui.label(RichText::new(format!("{sender}:")).size(11.0).strong().color(RAIL));
+                                            ui.label(RichText::new(msg).size(11.0).color(GAME_INK));
+                                        });
+                                    }
+                                }
+                            });
+
+                        ui.separator();
+                        ui.horizontal(|ui| {
+                            let input_resp = ui.add(
+                                egui::TextEdit::singleline(&mut app.chat_input)
+                                    .hint_text("Say something…")
+                                    .desired_width(240.0),
+                            );
+
+                            let send_clicked = ui.button("Send").clicked();
+                            let enter_pressed = input_resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+
+                            if send_clicked || enter_pressed {
+                                app.do_send_chat();
+                            }
+                        });
+                    });
                 });
-        });
+            });
+    } else {
+        // --- 🛠️ Inspector Mode (Original Explorer, Event Console & Logs) ---
+        egui::SidePanel::left("explorer")
+            .default_width(260.0)
+            .min_width(180.0)
+            .frame(
+                egui::Frame::default()
+                    .fill(GAME_PANEL)
+                    .inner_margin(egui::Margin::same(8)),
+            )
+            .show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label(RichText::new("🌍 World Explorer").color(RAIL).strong());
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        ui.label(
+                            RichText::new(format!("tick {}", app.snapshot.tick))
+                                .size(10.0)
+                                .color(GAME_WARN),
+                        );
+                    });
+                });
+                ui.separator();
+
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    if app.snapshot.instances.is_empty() {
+                        ui.label(
+                            RichText::new("(waiting for snapshot…)")
+                                .color(GAME_WARN)
+                                .italics(),
+                        );
+                    } else {
+                        for inst in &app.snapshot.instances.clone() {
+                            let name = inst.get("name").and_then(|v| v.as_str()).unwrap_or("?");
+                            let kind = inst.get("kind").and_then(|v| v.as_str()).unwrap_or("");
+                            let container =
+                                inst.get("container").and_then(|v| v.as_str()).unwrap_or("");
+
+                            ui.horizontal(|ui| {
+                                ui.label(RichText::new(instance_icon(kind)).size(13.0));
+                                ui.label(RichText::new(name).size(13.0).color(GAME_INK));
+                                ui.with_layout(
+                                    egui::Layout::right_to_left(egui::Align::Center),
+                                    |ui| {
+                                        ui.label(RichText::new(container).size(10.0).color(GAME_WARN));
+                                    },
+                                );
+                            });
+                        }
+                    }
+                });
+            });
+
+        egui::SidePanel::right("events")
+            .default_width(280.0)
+            .min_width(200.0)
+            .frame(
+                egui::Frame::default()
+                    .fill(GAME_PANEL)
+                    .inner_margin(egui::Margin::same(8)),
+            )
+            .show(ctx, |ui| {
+                ui.label(RichText::new("📡 Event Console").color(RAIL).strong());
+                ui.separator();
+
+                ui.label(RichText::new("Event name:").size(11.0).color(GAME_WARN));
+                ui.add(
+                    egui::TextEdit::singleline(&mut app.event_name)
+                        .hint_text("e.g. Jump")
+                        .min_size(Vec2::new(ui.available_width(), 26.0)),
+                );
+                ui.add_space(4.0);
+                ui.label(
+                    RichText::new("Args (JSON, comma-separated):")
+                        .size(11.0)
+                        .color(GAME_WARN),
+                );
+                ui.add(
+                    egui::TextEdit::singleline(&mut app.event_args)
+                        .hint_text(r#""Alice", 42"#)
+                        .min_size(Vec2::new(ui.available_width(), 26.0)),
+                );
+                ui.add_space(6.0);
+
+                if ui
+                    .add(
+                        egui::Button::new(RichText::new("🔥 Fire Event").color(GAME_INK))
+                            .fill(RAIL)
+                            .min_size(Vec2::new(ui.available_width(), 32.0)),
+                    )
+                    .clicked()
+                {
+                    app.do_fire();
+                }
+
+                ui.add_space(14.0);
+                ui.separator();
+                ui.label(RichText::new("Session").size(11.0).color(GAME_WARN));
+                ui.label(
+                    RichText::new(format!("endpoint  {}", app.connected_endpoint))
+                        .size(10.0)
+                        .color(GAME_WARN),
+                );
+                ui.label(
+                    RichText::new(format!("server    {}", app.server_name))
+                        .size(10.0)
+                        .color(GAME_WARN),
+                );
+            });
+
+        egui::CentralPanel::default()
+            .frame(
+                egui::Frame::default()
+                    .fill(GAME_BG)
+                    .inner_margin(egui::Margin::same(8)),
+            )
+            .show(ctx, |ui| {
+                ui.label(RichText::new("📋 Log").color(RAIL).strong());
+                ui.separator();
+
+                egui::ScrollArea::vertical()
+                    .auto_shrink([false; 2])
+                    .stick_to_bottom(true)
+                    .show(ui, |ui| {
+                        for entry in &app.log {
+                            let (icon, color) = match entry.kind {
+                                LogKind::System => ("·", GAME_WARN),
+                                LogKind::Event => ("↔", RAIL),
+                                LogKind::Error => ("✗", GAME_BAD),
+                            };
+                            ui.label(
+                                RichText::new(format!("{icon} {}", entry.text))
+                                    .size(12.0)
+                                    .color(color),
+                            );
+                        }
+                    });
+            });
+    }
 }
 
 // ── Drawing helpers ────────────────────────────────────────────────────────────

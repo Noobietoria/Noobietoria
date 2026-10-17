@@ -1,0 +1,27 @@
+[package]
+name = "nb-auth"
+description = "Authentication and user session management."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+nb-types.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+argon2.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+hex.workspace = true
+rand.workspace = true
+parking_lot.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+sqlx = { workspace = true, optional = true }
+
+[features]
+default = []
+sqlite = ["dep:sqlx"]
+postgres = ["dep:sqlx"]
+db = ["sqlite", "postgres"]

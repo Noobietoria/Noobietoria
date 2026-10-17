@@ -4,12 +4,13 @@ members = [
     "crates/nb-types",
     "crates/nb-world",
     "crates/nb-store",
-    "crates/nb-persistence",
     "crates/nb-api",
     "crates/nb-script",
     "crates/nb-net",
     "crates/nb-render",
     "crates/nb-http",
+    "crates/nb-auth",
+    "crates/nb-events",
     "apps/noobietoria-dedicated",
     "apps/noobietoria-client",
     "apps/noobietoria-studio",
@@ -28,39 +29,43 @@ authors = ["Noobietoria Team"]
 nb-types = { path = "crates/nb-types" }
 nb-world = { path = "crates/nb-world" }
 nb-store = { path = "crates/nb-store" }
-nb-persistence = { path = "crates/nb-persistence" }
 nb-api = { path = "crates/nb-api" }
 nb-script = { path = "crates/nb-script" }
 nb-net = { path = "crates/nb-net" }
 nb-render = { path = "crates/nb-render" }
 nb-http = { path = "crates/nb-http" }
+nb-auth = { path = "crates/nb-auth" }
+nb-events = { path = "crates/nb-events" }
 
+# External dependencies shared across workspace
 anyhow = "1"
+argon2 = "0.5"
+async-trait = "0.1"
+axum = { version = "0.8", features = ["multipart", "macros"] }
 base64 = "0.22"
+bytemuck = { version = "1", features = ["derive"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
 eframe = { version = "0.33", default-features = false, features = ["wgpu", "default_fonts", "wayland", "x11"] }
 egui = { version = "0.33", default-features = false }
+futures = "0.3"
+hex = "0.4"
+hmac = "0.12"
 image = { version = "0.25", default-features = false, features = ["png"] }
 mlua = { version = "0.12", features = ["luau", "vendored", "serialize", "send"] }
 parking_lot = "0.12"
 rand = "0.9"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "any", "postgres", "mysql", "sqlite", "chrono", "uuid"] }
 thiserror = "2"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "io-util", "time", "sync", "fs"] }
+tower-http = { version = "0.6", features = ["fs", "trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 wgpu = "27"
-bytemuck = { version = "1", features = ["derive"] }
-axum = { version = "0.8", features = ["multipart"] }
-tower-http = { version = "0.6", features = ["fs", "trace"] }
-argon2 = "0.5"
-hex = "0.4"
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "migrate", "any"] }
-s3 = { version = "0.13", default-features = false, features = ["rustls-tls"] }
-futures-util = "0.3"
 
 [profile.release]
 opt-level = 3

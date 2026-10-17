@@ -29,10 +29,12 @@
 //! assert_eq!(Value::from(3i64).as_i64(), Some(3));
 //! ```
 
+pub mod avatar;
 pub mod instance;
 pub mod math;
 pub mod value;
 
+pub use avatar::{AvatarCategory, AvatarConfig, CatalogItem, default_catalog};
 pub use instance::{Container, InstanceType};
 pub use math::{CFrame, Orientation, Rgba, Vector3};
 pub use value::Value;

@@ -1,4 +1,8 @@
-// Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.
 // PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING IS STRICTLY PROHIBITED.
 
 //! Noobietoria Web — site + API server.
@@ -83,7 +87,7 @@ fn find_static_dir() -> PathBuf {
 
 fn print_help() {
     println!("Noobietoria Web - Closed-Source Proprietary Gaming Platform");
-    println!("Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.");
+    println!("Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.");
     println!();
     println!("Usage: noobietoria-web [OPTIONS]");
     println!();
@@ -94,6 +98,7 @@ fn print_help() {
     println!();
     println!("Environment:");
     println!("  NOOBIE_SERVER_HOST   Hostname advertised in /api/v1/servers (default: 127.0.0.1)");
+    println!("  NOOBIE_AUTH_DB       SQLite auth database URL (default: sqlite://data/noobietoria_auth.db?mode=rwc)");
 }
 
 /// `GET /api/v1/servers` — every joinable server of the platform.
@@ -180,6 +185,7 @@ fn build_router(state: AppState, static_dir: &PathBuf) -> Router {
         .route("/auth/providers", get(routes::providers_handler))
         .route("/api/v1/auth/register", post(routes::register_handler))
         .route("/api/v1/auth/login", post(routes::login_handler))
+        .route("/api/v1/auth/logout", post(routes::logout_handler))
         .route("/api/v1/games", get(routes::list_games_handler))
         .route(
             "/api/v1/games/{place_id}",
@@ -188,6 +194,10 @@ fn build_router(state: AppState, static_dir: &PathBuf) -> Router {
         .route(
             "/api/v1/places/publish",
             post(routes::publish_place_handler),
+        )
+        .route(
+            "/api/v1/places/{place_id}/download",
+            get(routes::download_place_handler),
         )
         .route(
             "/api/v1/moderation/check",
@@ -199,6 +209,17 @@ fn build_router(state: AppState, static_dir: &PathBuf) -> Router {
         .route(
             "/api/v1/places/{place_id}/servers",
             get(place_servers_handler),
+        )
+        // ── Studs currency & Avatar routes ────────────────────────────────────
+        .route(
+            "/api/v1/user/daily-studs",
+            post(routes::claim_daily_studs_handler),
+        )
+        .route("/api/v1/catalog", get(routes::catalog_handler))
+        .route("/api/v1/user/avatar", post(routes::update_avatar_handler))
+        .route(
+            "/api/v1/users/{username}",
+            get(routes::get_user_profile_handler),
         )
         .fallback_service(serve_dir)
         .with_state(state)
@@ -235,7 +256,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         static_dir.display()
     );
 
-    let state = AppState::new();
+    // ── Auth backend selection ────────────────────────────────────────────────
+    let auth_scheme = std::env::var("NOOBIE_AUTH_SCHEME")
+        .as_deref()
+        .unwrap_or("sqlite")
+        .to_lowercase();
+    let auth_db = std::env::var("NOOBIE_AUTH_DB")
+        .as_deref()
+        .unwrap_or("sqlite://data/noobietoria_auth.db?mode=rwc")
+        .to_string();
+
+    let state = AppState::new_with_auth().await;
+
+    println!(
+        "[Noobietoria Web] Auth backend: {} ({auth_db})",
+        if &auth_scheme == "postgres" || &auth_scheme == "postgresql" {
+            "postgresql"
+        } else {
+            "sqlite"
+        }
+    );
     println!(
         "[Noobietoria Web] Advertised game host: {}",
         state.server_host
@@ -257,7 +297,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn run_selftest() -> Result<(), Box<dyn std::error::Error>> {
     println!("[Noobietoria Web] Running automated backend and moderation self-tests...");
 
-    let state = AppState::new();
+    let state = AppState::new_with_auth().await;
 
     // 1. Verify default published games
     let games = state.games.read();
@@ -360,7 +400,7 @@ async fn run_selftest() -> Result<(), Box<dyn std::error::Error>> {
         published[0].port
     );
 
-    // 5. GraphQL API compatibility
+    // 5. GraphQL API compatibility + SQLite auth round-trip
     println!("  [✓] Testing GraphQL API operations (/graphql)...");
     let req = graphql::GraphQLRequest {
         query: "query { me { username coins credits } }".to_owned(),

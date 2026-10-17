@@ -162,6 +162,12 @@ pub struct StudioApp {
     pub show_toolbox: bool,
     /// Show output panel.
     pub show_output: bool,
+    /// Inner server playtest character state.
+    pub playtest_character: Option<nb_render::CharacterState>,
+    /// Saved edit mode camera state restored on playtest stop.
+    pub saved_edit_camera: Option<CameraState>,
+    /// World state backup restored on playtest stop.
+    pub saved_world_backup: Option<World>,
 }
 
 impl StudioApp {
@@ -192,6 +198,9 @@ impl StudioApp {
             show_explorer: true,
             show_toolbox: true,
             show_output: true,
+            playtest_character: None,
+            saved_edit_camera: None,
+            saved_world_backup: None,
         };
         app.log(LogLevel::Info, "Welcome to Noobietoria Studio!");
         app.log(
@@ -203,6 +212,99 @@ impl StudioApp {
 
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         Self::new_headless()
+    }
+
+    /// Starts Solo Playtest with embedded inner server simulation and player character.
+    pub fn start_playtest_solo(&mut self) {
+        if self.playtest != PlaytestState::Stopped {
+            return;
+        }
+
+        // 1. Backup edit world and edit camera
+        self.saved_world_backup = Some(self.world.clone());
+        self.saved_edit_camera = Some(self.camera.clone());
+
+        // 2. Find spawn position (SpawnLocation if present)
+        let mut spawn_pos = Vector3::new(0.0, 3.0, 0.0);
+        for inst in self.world.iter_container(nb_types::Container::Workspace) {
+            if inst.kind == nb_types::InstanceType::SpawnLocation {
+                let p = inst.properties.position;
+                spawn_pos = Vector3::new(p.x, p.y + (inst.properties.size.y * 0.5) + 0.5, p.z);
+                break;
+            }
+        }
+
+        // 3. Spawn Playtest Avatar
+        let mut char_state = nb_render::CharacterState::default();
+        char_state.position = spawn_pos;
+        char_state.avatar = nb_types::AvatarConfig::classic_noob();
+        self.playtest_character = Some(char_state);
+
+        // 4. Focus camera on character in 3rd person follow mode
+        self.camera.target = Vector3::new(spawn_pos.x, spawn_pos.y + 2.5, spawn_pos.z);
+        self.camera.distance = 22.0;
+
+        self.playtest = PlaytestState::PlayingSolo;
+        self.status_text = "Inner Server: Playtest Solo Active".to_owned();
+        self.log(
+            LogLevel::Info,
+            "--- Starting Playtest (Solo Client + Inner Server) ---",
+        );
+        self.log(
+            LogLevel::Info,
+            format!("Character spawned at ({:.1}, {:.1}, {:.1}). Controls: WASD to move, Space to jump, Shift to run, RMB to rotate view.", spawn_pos.x, spawn_pos.y, spawn_pos.z),
+        );
+    }
+
+    /// Starts Server-only simulation (running scripts and physics without character).
+    pub fn start_playtest_server(&mut self) {
+        if self.playtest != PlaytestState::Stopped {
+            return;
+        }
+        self.saved_world_backup = Some(self.world.clone());
+        self.playtest = PlaytestState::RunningServer;
+        self.status_text = "Inner Server: Simulation Active".to_owned();
+        self.log(
+            LogLevel::Info,
+            "--- Starting Server-only Simulation (Inner Server Running) ---",
+        );
+    }
+
+    /// Stops simulation and cleanly resets world and camera to the pre-playtest edit state.
+    pub fn stop_playtest(&mut self) {
+        if let Some(backup) = self.saved_world_backup.take() {
+            self.world = backup;
+        }
+        if let Some(cam) = self.saved_edit_camera.take() {
+            self.camera = cam;
+        }
+        self.playtest_character = None;
+        self.playtest = PlaytestState::Stopped;
+        self.status_text = "Playtest Stopped (World Reset)".to_owned();
+        self.log(
+            LogLevel::Info,
+            "--- Simulation Stopped. Inner server halted & world reset to edit state. ---",
+        );
+    }
+
+    /// Respawns the playtest character back to the spawn location.
+    pub fn respawn_character(&mut self) {
+        let mut spawn_pos = Vector3::new(0.0, 3.0, 0.0);
+        for inst in self.world.iter_container(nb_types::Container::Workspace) {
+            if inst.kind == nb_types::InstanceType::SpawnLocation {
+                let p = inst.properties.position;
+                spawn_pos = Vector3::new(p.x, p.y + (inst.properties.size.y * 0.5) + 0.5, p.z);
+                break;
+            }
+        }
+        if let Some(ref mut c) = self.playtest_character {
+            c.position = spawn_pos;
+            c.velocity_y = 0.0;
+            c.is_grounded = true;
+            c.health = 100.0;
+            self.camera.target = Vector3::new(spawn_pos.x, spawn_pos.y + 2.5, spawn_pos.z);
+            self.log(LogLevel::Info, "Character respawned.");
+        }
     }
 
     pub fn log(&mut self, level: LogLevel, message: impl Into<String>) {

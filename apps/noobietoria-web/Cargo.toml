@@ -23,6 +23,7 @@ path = "src/main.rs"
 
 [dependencies]
 nb-api.workspace = true
+nb-auth = { workspace = true, features = ["sqlite", "postgres"] }
 nb-http.workspace = true
 nb-store.workspace = true
 nb-types.workspace = true

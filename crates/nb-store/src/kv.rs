@@ -18,7 +18,8 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use nb_types::Value;
-use parking_lot::RwLock;
+
+use crate::backend::{KvBackend, MemoryBackend};
 
 /// Errors a keyed store can raise.
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
@@ -63,10 +64,14 @@ pub enum StoreError {
 /// Shorthand for keyed-store results.
 pub type StoreResult<T> = Result<T, StoreError>;
 
-/// A thread-safe map from string keys to [`Value`]s.
+/// A thread-safe map from string keys to [`Value`]s, backed by a pluggable
+/// [`KvBackend`].
+///
+/// Clones share the same underlying storage, so copying a store is cheap and
+/// writes are visible through every clone.
 #[derive(Clone, Debug)]
 pub struct KeyedStore {
-    inner: Arc<RwLock<BTreeMap<String, Value>>>,
+    backend: Arc<dyn KvBackend>,
 }
 
 impl Default for KeyedStore {
@@ -76,11 +81,17 @@ impl Default for KeyedStore {
 }
 
 impl KeyedStore {
-    /// An empty store.
+    /// An empty store backed by [`MemoryBackend`] (in-memory only).
     pub fn new() -> Self {
         Self {
-            inner: Arc::new(RwLock::new(BTreeMap::new())),
+            backend: Arc::new(MemoryBackend::new()),
         }
+    }
+
+    /// Builds a store that shares `backend` with other stores. Use this when
+    /// several [`KeyedStore`] instances should persist to the same database.
+    pub fn with_backend(backend: Arc<dyn KvBackend>) -> Self {
+        Self { backend }
     }
 
     /// Builds a store from an iterator of pairs, for seeding defaults.
@@ -90,48 +101,45 @@ impl KeyedStore {
         K: Into<String>,
     {
         let store = Self::new();
-        {
-            let mut map = store.inner.write();
-            for (k, v) in pairs {
-                map.insert(k.into(), v);
-            }
+        for (k, v) in pairs {
+            store.set(k, v).expect("non-empty key");
         }
         store
     }
 
     /// Number of entries.
     pub fn len(&self) -> usize {
-        self.inner.read().len()
+        self.backend.keys().map(|k| k.len()).unwrap_or(0)
     }
 
     /// Whether the store holds nothing.
     pub fn is_empty(&self) -> bool {
-        self.inner.read().is_empty()
+        self.backend.keys().map(|k| k.is_empty()).unwrap_or(true)
     }
 
     /// Removes every entry.
-    pub fn clear(&self) {
-        self.inner.write().clear();
+    pub fn clear(&self) -> StoreResult<()> {
+        self.backend.clear()
     }
 
     /// Copies out every entry.
     pub fn snapshot(&self) -> BTreeMap<String, Value> {
-        self.inner.read().clone()
+        self.backend.snapshot().unwrap_or_default()
     }
 
     /// Replaces the contents wholesale; used when loading a save.
     pub fn restore(&self, data: BTreeMap<String, Value>) {
-        *self.inner.write() = data;
+        let _ = self.backend.restore(data);
     }
 
     /// Whether a key is present.
     pub fn contains(&self, key: &str) -> bool {
-        self.inner.read().contains_key(key)
+        self.backend.contains(key).unwrap_or(false)
     }
 
     /// Reads a value, or `None`.
     pub fn get(&self, key: &str) -> Option<Value> {
-        self.inner.read().get(key).cloned()
+        self.backend.get(key).ok().flatten()
     }
 
     /// Reads a value, raising [`StoreError::Missing`] when absent.
@@ -147,13 +155,12 @@ impl KeyedStore {
         if key.is_empty() {
             return Err(StoreError::EmptyKey);
         }
-        self.inner.write().insert(key, value);
-        Ok(())
+        self.backend.set(&key, &value)
     }
 
     /// Removes a key, returning what was there.
     pub fn remove(&self, key: &str) -> Option<Value> {
-        self.inner.write().remove(key)
+        self.backend.remove(key).ok().flatten()
     }
 
     /// Reads a number, defaulting to `0.0` when the key is absent.
@@ -212,10 +219,9 @@ impl KeyedStore {
     /// whether an overdraft is legal, which is why the currency service checks
     /// the balance separately.
     pub fn add_number(&self, key: &str, delta: f64) -> StoreResult<f64> {
-        let mut map = self.inner.write();
-        let current = match map.get(key) {
+        let current = match self.get(key) {
             None => 0.0,
-            Some(Value::Number(n)) => *n,
+            Some(Value::Number(n)) => n,
             Some(other) => {
                 return Err(StoreError::NotANumber {
                     key: key.to_owned(),
@@ -224,16 +230,15 @@ impl KeyedStore {
             }
         };
         let next = current + delta;
-        map.insert(key.to_owned(), Value::from(next));
+        self.set(key, Value::from(next))?;
         Ok(next)
     }
 
     /// Subtracts `amount` from a numeric entry, refusing to go negative.
     pub fn sub_number_checked(&self, key: &str, amount: f64) -> StoreResult<f64> {
-        let mut map = self.inner.write();
-        let current = match map.get(key) {
+        let current = match self.get(key) {
             None => 0.0,
-            Some(Value::Number(n)) => *n,
+            Some(Value::Number(n)) => n,
             Some(other) => {
                 return Err(StoreError::NotANumber {
                     key: key.to_owned(),
@@ -249,7 +254,7 @@ impl KeyedStore {
             });
         }
         let next = current - amount;
-        map.insert(key.to_owned(), Value::from(next));
+        self.set(key, Value::from(next))?;
         Ok(next)
     }
 
@@ -280,15 +285,14 @@ impl KeyedStore {
     /// Runs a closure with write access, for read-modify-write operations that
     /// must not interleave with another writer.
     pub fn update<R>(&self, key: &str, f: impl FnOnce(Option<Value>) -> (Option<Value>, R)) -> R {
-        let mut map = self.inner.write();
-        let current = map.get(key).cloned();
+        let current = self.get(key);
         let (next, result) = f(current);
         match next {
             Some(v) => {
-                map.insert(key.to_owned(), v);
+                let _ = self.set(key, v);
             }
             None => {
-                map.remove(key);
+                let _ = self.remove(key);
             }
         }
         result
@@ -296,21 +300,21 @@ impl KeyedStore {
 
     /// Every key, sorted.
     pub fn keys(&self) -> Vec<String> {
-        self.inner.read().keys().cloned().collect()
+        self.backend.keys().unwrap_or_default()
     }
 
     /// Every `(key, value)` pair, sorted by key.
     pub fn entries(&self) -> Vec<(String, Value)> {
-        self.inner
-            .read()
-            .iter()
-            .map(|(k, v)| (k.clone(), v.clone()))
+        self.backend
+            .snapshot()
+            .unwrap_or_default()
+            .into_iter()
             .collect()
     }
 
     /// JSON text of the whole store, for persistence and test output.
     pub fn to_json(&self) -> String {
-        let map: BTreeMap<String, Value> = self.inner.read().clone();
+        let map: BTreeMap<String, Value> = self.backend.snapshot().unwrap_or_default();
         serde_json::to_string(&Value::Map(map)).unwrap_or_else(|_| "{}".to_owned())
     }
 
@@ -475,7 +479,7 @@ mod tests {
         let s = KeyedStore::new();
         s.set("a", Value::from(1i64)).unwrap();
         let snap = s.snapshot();
-        s.clear();
+        s.clear().unwrap();
         assert!(s.is_empty());
         s.restore(snap);
         assert_eq!(s.get("a"), Some(Value::from(1i64)));

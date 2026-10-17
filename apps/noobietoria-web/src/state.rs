@@ -1,4 +1,8 @@
-// Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.
 // PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING IS STRICTLY PROHIBITED.
 
 use parking_lot::RwLock;
@@ -37,6 +41,35 @@ pub struct UserAccount {
     pub inventory: Vec<String>,
     #[serde(default)]
     pub equipped: Vec<String>,
+    #[serde(default = "default_studs")]
+    pub studs: i64,
+    #[serde(default)]
+    pub last_studs_claim: Option<String>,
+    #[serde(default)]
+    pub avatar: Option<nb_types::AvatarConfig>,
+}
+
+fn default_studs() -> i64 {
+    25
+}
+
+impl UserAccount {
+    /// Attempts to claim the daily 5 studs reward.
+    pub fn claim_daily_studs(&mut self) -> Result<i64, String> {
+        let now_days = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() / 86400)
+            .unwrap_or(0);
+        let today_token = format!("day_{now_days}");
+        if let Some(ref last) = self.last_studs_claim {
+            if last == &today_token {
+                return Err("Already claimed today's 5 studs. Come back tomorrow!".to_owned());
+            }
+        }
+        self.studs += 5;
+        self.last_studs_claim = Some(today_token);
+        Ok(self.studs)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -178,6 +211,16 @@ pub struct AppState {
     /// Live dedicated servers, keyed by `server_id`, with their last heartbeat.
     #[allow(dead_code)]
     pub registry: Arc<RwLock<HashMap<String, RegisteredServer>>>,
+    /// Universal blob storage for places and assets (Local filesystem, S3, R2, MinIO).
+    pub storage: Arc<nb_store::StorageManager>,
+    /// Real SQL database backend (PostgreSQL, MySQL, CockroachDB, SQLite).
+    pub db: Option<Arc<nb_store::SqlxBackend>>,
+    /// Authentication service (Argon2 hashing, session tokens).
+    pub auth: nb_auth::AuthService,
+    /// SQLite-backed auth for production persistence.
+    pub sql_auth: Option<nb_auth::SqliteAuthService>,
+    /// PostgreSQL-backed auth for production persistence.
+    pub pg_auth: Option<nb_auth::PostgresAuthService>,
 }
 
 /// A dedicated server that announced itself, plus when it last checked in.
@@ -227,6 +270,9 @@ impl AppState {
             worlds_count: 2,
             inventory: vec!["item_classic_cap".to_owned(), "item_sword".to_owned()],
             equipped: vec!["item_classic_cap".to_owned()],
+            studs: 50,
+            last_studs_claim: None,
+            avatar: Some(nb_types::AvatarConfig::classic_noob()),
         };
 
         tokens.insert("nb_jwt_1000".to_owned(), "PlayerOne".to_owned());
@@ -295,6 +341,35 @@ impl AppState {
             },
         );
 
+        let storage = Arc::new(nb_store::StorageManager::from_env());
+        let db_url = std::env::var("DATABASE_URL")
+            .unwrap_or_else(|_| "sqlite://data/noobietoria_web.db?mode=rwc".to_owned());
+        let _ = std::fs::create_dir_all("data");
+        let db = nb_store::SqlxBackend::connect(&db_url, "nb_web_store").ok().map(Arc::new);
+
+        // Restore stored users and games from DB if available
+        if let Some(ref d) = db {
+            use nb_store::KvBackend;
+            if let Ok(keys) = d.keys() {
+                for key in keys {
+                    if let Some(username) = key.strip_prefix("user:") {
+                        if let Ok(Some(val)) = d.get(&key) {
+                            if let Ok(user) = serde_json::from_value::<UserAccount>(serde_json::to_value(&val).unwrap_or_default()) {
+                                tokens.insert(format!("nb_jwt_{}", user.user_id), username.to_owned());
+                                users.insert(username.to_owned(), user);
+                            }
+                        }
+                    } else if let Some(place_id) = key.strip_prefix("game:") {
+                        if let Ok(Some(val)) = d.get(&key) {
+                            if let Ok(game) = serde_json::from_value::<PublishedGame>(serde_json::to_value(&val).unwrap_or_default()) {
+                                games.insert(place_id.to_owned(), game);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Self {
             users: Arc::new(RwLock::new(users)),
             tokens: Arc::new(RwLock::new(tokens)),
@@ -302,6 +377,163 @@ impl AppState {
             moderation: Arc::new(ModerationClient::from_env()),
             server_host: Arc::new(server_host()),
             registry: Arc::new(RwLock::new(HashMap::new())),
+            storage,
+            db,
+            auth: nb_auth::AuthService::new(),
+            sql_auth: None,
+            pg_auth: None,
+        }
+    }
+
+    /// Build a new AppState with the auth backend selected by the environment.
+    ///
+    /// `NOOBIE_AUTH_SCHEME` selects the backend: `sqlite` (default) or
+    /// `postgres`. `NOOBIE_AUTH_DB` supplies the connection URL.
+    #[allow(dead_code)]
+    pub async fn new_with_auth() -> Self {
+        let scheme = std::env::var("NOOBIE_AUTH_SCHEME")
+            .unwrap_or_else(|_| "sqlite".to_owned())
+            .to_lowercase();
+        let db_url = std::env::var("NOOBIE_AUTH_DB")
+            .unwrap_or_else(|_| "sqlite://data/noobietoria_auth.db?mode=rwc".to_owned());
+
+        if scheme == "postgres" || scheme == "postgresql" {
+            Self::new().with_pg_auth(&db_url).await
+        } else {
+            Self::new().with_sql_auth(&db_url).await
+        }
+    }
+
+    /// Attach a SQLite-backed auth service for durable production persistence.
+
+    /// Attach a SQLite-backed auth service for durable production persistence.
+    ///
+    /// Call this after [`AppState::new()`] with the URL of a SQLite database
+    /// (e.g. `sqlite://data/noobietoria_auth.db?mode=rwc`).
+    pub async fn with_sql_auth(mut self, database_url: &str) -> Self {
+        match nb_auth::SqliteAuthService::connect(database_url).await {
+            Ok(svc) => {
+                tracing::info!("SQLite auth service connected: {database_url}");
+                // Seed the demo account so logins that worked in-memory keep
+                // working against the durable backend (idempotent: ignored
+                // when the user already exists from a previous run).
+                let _ = svc
+                    .register("PlayerOne", "player@noobietoria.com", "password123")
+                    .await;
+                self.sql_auth = Some(svc);
+            }
+            Err(e) => {
+                tracing::warn!("SQLite auth unavailable ({e}); falling back to in-memory");
+            }
+        }
+        self
+    }
+
+    /// Attach a PostgreSQL-backed auth service for durable production persistence.
+    ///
+    /// Call this after [`AppState::new()`] with the connection string of a
+    /// PostgreSQL database (e.g. `postgres://user:pass@localhost/noobietoria`).
+    /// The service must already contain the required tables (run the
+    /// migrations from `nb-auth` separately if needed).
+    pub async fn with_pg_auth(mut self, database_url: &str) -> Self {
+        match nb_auth::PostgresAuthService::connect(database_url).await {
+            Ok(svc) => {
+                tracing::info!("PostgreSQL auth service connected: {database_url}");
+                let _ = svc
+                    .register("PlayerOne", "player@noobietoria.com", "password123")
+                    .await;
+                self.pg_auth = Some(svc);
+            }
+            Err(e) => {
+                tracing::warn!(
+                    "PostgreSQL auth unavailable ({e}); falling back to in-memory"
+                );
+            }
+        }
+        self
+    }
+
+    /// Register via SQLite or PostgreSQL when available, falling back to
+    /// in-memory. Priority: SQLite > PostgreSQL > in-memory.
+    pub async fn auth_register(
+        &self,
+        username: &str,
+        email: &str,
+        password: &str,
+    ) -> Result<nb_auth::UserRecord, nb_auth::AuthError> {
+        if let Some(ref sql) = self.sql_auth {
+            sql.register(username, email, password).await
+        } else if let Some(ref pg) = self.pg_auth {
+            pg.register(username, email, password).await
+        } else {
+            self.auth.register(username, email, password)
+        }
+    }
+
+    /// Login via SQLite or PostgreSQL when available, falling back to
+    /// in-memory. Priority: SQLite > PostgreSQL > in-memory.
+    pub async fn auth_login(
+        &self,
+        username: &str,
+        password: &str,
+    ) -> Result<String, nb_auth::AuthError> {
+        if let Some(ref sql) = self.sql_auth {
+            sql.login(username, password).await
+        } else if let Some(ref pg) = self.pg_auth {
+            pg.login(username, password).await
+        } else {
+            self.auth.login(username, password)
+        }
+    }
+
+    /// Validate a session token via the first available durable backend,
+    /// falling back to in-memory. Priority: SQLite > PostgreSQL > in-memory.
+    pub async fn auth_validate(
+        &self,
+        token: &str,
+    ) -> Result<nb_auth::UserRecord, nb_auth::AuthError> {
+        if let Some(ref sql) = self.sql_auth {
+            sql.validate(token).await
+        } else if let Some(ref pg) = self.pg_auth {
+            pg.validate(token).await
+        } else {
+            self.auth.validate(token)
+        }
+    }
+
+    /// Revoke a session token via the first available durable backend,
+    /// falling back to in-memory. Priority: SQLite > PostgreSQL > in-memory.
+    pub async fn auth_logout(&self, token: &str) {
+        if let Some(ref sql) = self.sql_auth {
+            let _ = sql.logout(token).await;
+        } else if let Some(ref pg) = self.pg_auth {
+            let _ = pg.logout(token).await;
+        } else {
+            self.auth.logout(token);
+        }
+    }
+
+    /// Persists a user account to the real database backend if configured.
+    pub fn persist_user(&self, user: &UserAccount) {
+        if let Some(ref db) = self.db {
+            use nb_store::KvBackend;
+            if let Ok(val) = serde_json::to_value(user) {
+                if let Ok(nb_val) = serde_json::from_value::<nb_types::Value>(val) {
+                    let _ = db.set(&format!("user:{}", user.username), &nb_val);
+                }
+            }
+        }
+    }
+
+    /// Persists a published game to the real database backend if configured.
+    pub fn persist_game(&self, game: &PublishedGame) {
+        if let Some(ref db) = self.db {
+            use nb_store::KvBackend;
+            if let Ok(val) = serde_json::to_value(game) {
+                if let Ok(nb_val) = serde_json::from_value::<nb_types::Value>(val) {
+                    let _ = db.set(&format!("game:{}", game.place_id), &nb_val);
+                }
+            }
         }
     }
 

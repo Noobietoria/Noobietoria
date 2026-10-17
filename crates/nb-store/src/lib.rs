@@ -24,12 +24,22 @@
 //! script that would be rejected by the real service is rejected identically by
 //! the Dedicated server and by the test suite.
 
+pub mod backend;
 pub mod budget;
 pub mod datastore;
 pub mod kv;
+#[cfg(feature = "storage")]
+pub mod storage;
 
+pub use backend::{KvBackend, MemoryBackend};
+#[cfg(feature = "sqlx")]
+pub use backend::SqlxBackend;
+#[cfg(feature = "storage")]
+pub use storage::{BlobStorage, LocalStorage, S3Storage, StorageError, StorageManager};
 pub use budget::{BudgetError, RequestKind, RequestLedger};
 pub use datastore::{
     DataStoreError, DataStoreLimits, DataStoreService, DataStoreValue, OrderedEntry, SessionId,
 };
 pub use kv::{KeyedStore, StoreError, StoreResult};
+
+

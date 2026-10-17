@@ -38,14 +38,11 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use nb_api::{ApiContext, PendingEvent, PlayerRecord, Side};
-use nb_persistence::SqlKvStore;
-use nb_store::DataStoreService;
 use nb_world::WorldFile;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::signal;
 use tokio::sync::mpsc;
 use tokio::time;
 use tracing::{error, info, warn};
@@ -113,25 +110,15 @@ struct ServerState {
     connections: HashMap<SocketAddr, Arc<RwLock<Conn>>>,
     max_players: u32,
     server_name: String,
-    kv_store: Arc<SqlKvStore>,
-    datastore: Arc<DataStoreService>,
 }
 
 impl ServerState {
-    fn new(
-        ctx: ApiContext,
-        max_players: u32,
-        server_name: String,
-        kv_store: Arc<SqlKvStore>,
-        datastore: Arc<DataStoreService>,
-    ) -> Self {
+    fn new(ctx: ApiContext, max_players: u32, server_name: String) -> Self {
         Self {
             ctx,
             connections: HashMap::new(),
             max_players,
             server_name,
-            kv_store,
-            datastore,
         }
     }
 
@@ -172,7 +159,6 @@ async fn main() -> Result<()> {
         println!("  --world <PATH>       .nbw world file to load");
         println!("  --max-players <N>    Maximum concurrent players  [default: 20]");
         println!("  --name <TEXT>        Server display name");
-        println!("  --data-dir <PATH>    Directory for SQLite database  [default: data/]");
         println!("  --selftest           Run a smoke test then exit");
         println!("  -h, --help           Print this help");
         return Ok(());
@@ -184,7 +170,6 @@ async fn main() -> Result<()> {
     let mut max_players: u32 = 20;
     let mut server_name = String::from("Noobietoria Server");
     let mut selftest = false;
-    let mut data_dir: PathBuf = PathBuf::from("data");
 
     let mut i = 1usize;
     while i < args.len() {
@@ -208,10 +193,6 @@ async fn main() -> Result<()> {
                 i += 1;
             }
             "--selftest" => selftest = true,
-            "--data-dir" if i + 1 < args.len() => {
-                data_dir = PathBuf::from(&args[i + 1]);
-                i += 1;
-            }
             _ => {}
         }
         i += 1;
@@ -231,22 +212,6 @@ async fn main() -> Result<()> {
     }
 
     ctx.runtime.record_visit();
-
-    // ── Persistence ─────────────────────────────────────────────────────────
-    std::fs::create_dir_all(&data_dir)
-        .with_context(|| format!("creating data dir {:?}", data_dir))?;
-    let db_path = data_dir.join("noobietoria.sqlite");
-    let kv_store = Arc::new(
-        SqlKvStore::sqlite(db_path.to_string_lossy().as_ref())
-            .await
-            .with_context(|| format!("opening sqlite database {:?}", db_path))?,
-    );
-    let datastore = Arc::new(DataStoreService::new());
-    datastore
-        .load_from(kv_store.as_ref(), "datastore")
-        .await
-        .with_context(|| "loading datastore from persistence")?;
-    info!("Persistence initialised at {:?}", db_path);
 
     // ── Self-test ─────────────────────────────────────────────────────────────
     if selftest {
@@ -270,13 +235,7 @@ async fn main() -> Result<()> {
     }
 
     // ── Shared state ──────────────────────────────────────────────────────────
-    let state = Arc::new(RwLock::new(ServerState::new(
-        ctx,
-        max_players,
-        server_name,
-        kv_store,
-        datastore,
-    )));
+    let state = Arc::new(RwLock::new(ServerState::new(ctx, max_players, server_name)));
 
     // ── TCP listener ──────────────────────────────────────────────────────────
     let addr: SocketAddr = format!("0.0.0.0:{port}").parse()?;
@@ -359,31 +318,16 @@ async fn main() -> Result<()> {
     }
 
     // ── Accept loop ───────────────────────────────────────────────────────────
-    let mut shutdown = std::pin::pin!(signal::ctrl_c());
     loop {
-        tokio::select! {
-            result = listener.accept() => {
-                let (stream, addr) = result?;
-                info!("New connection: {addr}");
+        let (stream, addr) = listener.accept().await?;
+        info!("New connection: {addr}");
 
-                let state = Arc::clone(&state);
-                tokio::spawn(async move {
-                    if let Err(e) = handle_conn(stream, addr, state).await {
-                        warn!("{addr}: {e:#}");
-                    }
-                });
+        let state = Arc::clone(&state);
+        tokio::spawn(async move {
+            if let Err(e) = handle_conn(stream, addr, state).await {
+                warn!("{addr}: {e:#}");
             }
-            _ = &mut shutdown => {
-                info!("Shutdown signal received – saving datastore…");
-                let srv = state.read();
-                if let Err(e) = srv.datastore.save_to(srv.kv_store.as_ref(), "datastore").await {
-                    warn!("failed to save datastore on shutdown: {e:#}");
-                } else {
-                    info!("Datastore saved.");
-                }
-                break Ok(());
-            }
-        }
+        });
     }
 }
 
@@ -427,7 +371,10 @@ fn spawn_registration(
     }
 
     tokio::spawn(async move {
-        let url = format!("{}/api/v1/servers/register", api_base.trim_end_matches('/'));
+        let url = format!(
+            "{}/api/v1/servers/register",
+            api_base.trim_end_matches('/')
+        );
         let client = match reqwest::Client::builder()
             .timeout(Duration::from_secs(5))
             .build()
@@ -665,6 +612,43 @@ async fn handle_conn(
                     continue;
                 };
                 info!("{addr}: `{username}` fired `{event}`");
+
+                // Relay multiplayer Move and Chat directly to peers
+                if event == "Move" {
+                    let mut b_args = vec![serde_json::Value::String(username.clone())];
+                    b_args.extend(args.iter().cloned());
+                    let b_msg = ServerMsg::Event {
+                        event: "Move".to_owned(),
+                        args: b_args,
+                    };
+                    let txs: Vec<_> = state
+                        .read()
+                        .connections
+                        .iter()
+                        .filter(|(a, c)| **a != addr && c.read().username.is_some())
+                        .map(|(_, c)| c.read().tx.clone())
+                        .collect();
+                    for peer_tx in txs {
+                        let _ = peer_tx.try_send(b_msg.clone());
+                    }
+                } else if event == "Chat" {
+                    let mut b_args = vec![serde_json::Value::String(username.clone())];
+                    b_args.extend(args.iter().cloned());
+                    let b_msg = ServerMsg::Event {
+                        event: "Chat".to_owned(),
+                        args: b_args,
+                    };
+                    let txs: Vec<_> = state
+                        .read()
+                        .connections
+                        .values()
+                        .filter(|c| c.read().username.is_some())
+                        .map(|c| c.read().tx.clone())
+                        .collect();
+                    for peer_tx in txs {
+                        let _ = peer_tx.try_send(b_msg.clone());
+                    }
+                }
 
                 let pending = PendingEvent {
                     event: event.clone(),

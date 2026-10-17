@@ -8,10 +8,21 @@ license.workspace = true
 
 [dependencies]
 nb-types.workspace = true
-nb-persistence = { path = "../nb-persistence", features = ["sqlite"] }
 parking_lot.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
+uuid.workspace = true
 tokio.workspace = true
-tracing.workspace = true
+reqwest = { workspace = true, optional = true }
+sha2 = { workspace = true, optional = true }
+hex = { workspace = true, optional = true }
+hmac = { workspace = true, optional = true }
+# Real database backends supported: SQLite, Postgres, MySQL, CockroachDB
+sqlx = { workspace = true, optional = true }
+
+[features]
+default = ["sqlx", "storage"]
+sqlx = ["dep:sqlx"]
+storage = ["dep:reqwest", "dep:sha2", "dep:hex", "dep:hmac"]
+

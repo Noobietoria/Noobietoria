@@ -1,4 +1,8 @@
-// Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.
 // PROPRIETARY AND CONFIDENTIAL. UNAUTHORIZED COPYING IS STRICTLY PROHIBITED.
 
 mod graphql;
@@ -32,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if args.iter().any(|a| a == "--help" || a == "-h") {
         println!("Noobietoria Web - Closed-Source Proprietary Gaming Platform");
-        println!("Copyright (c) 2026 - present Noobietoria LLC (Công ty TNHH Trò chơi Noobietoria). All Rights Reserved.");
+        println!("Copyright (c) 2026 Noobietoria Inc. All Rights Reserved.");
         println!();
         println!("Usage: noobietoria-web [OPTIONS]");
         println!();
@@ -54,7 +58,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         static_dir.display()
     );
 
-    let state = AppState::new();
+    let state = AppState::new_with_auth().await;
+    println!("Auth backend ready");
     let serve_dir = ServeDir::new(&static_dir).append_index_html_on_directories(true);
 
     let app = Router::new()
@@ -62,6 +67,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/auth/providers", get(routes::providers_handler))
         .route("/api/v1/auth/register", post(routes::register_handler))
         .route("/api/v1/auth/login", post(routes::login_handler))
+        .route("/api/v1/auth/logout", post(routes::logout_handler))
         .route("/api/v1/games", get(routes::list_games_handler))
         .route(
             "/api/v1/games/{place_id}",
@@ -93,7 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn run_selftest() -> Result<(), Box<dyn std::error::Error>> {
     println!("[Noobietoria Web] Running automated backend and moderation self-tests...");
 
-    let state = AppState::new();
+    let state = AppState::new_with_auth().await;
 
     // 1. Verify default published games
     let games = state.games.read();
@@ -197,7 +203,10 @@ async fn run_selftest() -> Result<(), Box<dyn std::error::Error>> {
     let token = login_val["data"]["login"]["token"]
         .as_str()
         .expect("Token should be returned");
-    assert!(token.starts_with("nb_tok_"), "Valid token returned");
+    assert!(
+        token.starts_with("nb_tok_") || token.starts_with("nb_"),
+        "Valid token returned"
+    );
     println!("  [✓] GraphQL login mutation verified compatible (issued token)");
 
     // Test Static assets directory

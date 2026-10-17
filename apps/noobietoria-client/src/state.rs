@@ -19,13 +19,38 @@
 //! places and their joinable servers from the website API and dials whichever
 //! server was picked.
 
+use std::collections::HashMap;
 use std::time::Instant;
 
 use eframe::{egui, Frame};
+use serde::{Deserialize, Serialize};
 use serde_json::Value as JsVal;
 
 use crate::api::{ApiCmd, ApiHandle, ApiMsg, ServerInfo, WorldInfo};
 use crate::net::{NetCmd, NetHandle, NetMsg, ServerMsg};
+
+// ── Profile Persistence ────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocalProfile {
+    pub studs: i64,
+    pub last_studs_claim: Option<String>,
+    pub avatar: nb_types::AvatarConfig,
+}
+
+impl Default for LocalProfile {
+    fn default() -> Self {
+        Self {
+            studs: 25,
+            last_studs_claim: None,
+            avatar: nb_types::AvatarConfig::classic_noob(),
+        }
+    }
+}
+
+fn profile_file_path() -> std::path::PathBuf {
+    std::env::temp_dir().join("noobietoria_client_profile.json")
+}
 
 // ── Screens ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +66,14 @@ pub enum Screen {
     Connecting,
     /// In-game: world view, chat, event console.
     Lobby,
+}
+
+/// In-game lobby view mode: 3D interactive playable viewport vs developer console.
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
+pub enum LobbyTab {
+    #[default]
+    Game,
+    DevInspector,
 }
 
 // ── Rail sections ─────────────────────────────────────────────────────────────
@@ -154,11 +187,31 @@ pub struct ClientApp {
     /// Which server the TCP handshake is currently aimed at.
     pub joining_server: Option<ServerInfo>,
 
-    // ── Player ────────────
+    // ── Player & Economy ───
     pub username: String,
+    pub studs: i64,
+    pub last_studs_claim: Option<String>,
+    pub daily_claim_status: Option<String>,
 
-    // ── Screen ────────────
+    // ── Avatar & Shop ──────
+    pub avatar: nb_types::AvatarConfig,
+    pub catalog: Vec<nb_types::CatalogItem>,
+    pub shop_category: nb_types::AvatarCategory,
+    pub shop_preview_yaw: f32,
+    pub shop_feedback: Option<String>,
+
+    // ── Screen & Lobby ─────
     pub screen: Screen,
+    pub lobby_tab: LobbyTab,
+
+    // ── In-game 3D Gameplay ───
+    pub character: nb_render::CharacterState,
+    pub camera: nb_render::Camera3D,
+    pub other_players: HashMap<String, nb_render::CharacterState>,
+    pub last_move_broadcast: Option<Instant>,
+    pub chat_messages: Vec<(String, String)>,
+    pub chat_input: String,
+    pub is_chatting: bool,
 
     // ── Server metadata ───
     pub server_name: String,
@@ -207,7 +260,23 @@ impl ClientApp {
             servers_error: None,
             joining_server: None,
             username: username.into(),
+            studs: 25,
+            last_studs_claim: None,
+            daily_claim_status: None,
+            avatar: nb_types::AvatarConfig::classic_noob(),
+            catalog: nb_types::default_catalog(),
+            shop_category: nb_types::AvatarCategory::BodyColor,
+            shop_preview_yaw: 0.0,
+            shop_feedback: None,
             screen: Screen::Home,
+            lobby_tab: LobbyTab::Game,
+            character: nb_render::CharacterState::default(),
+            camera: nb_render::Camera3D::default(),
+            other_players: HashMap::new(),
+            last_move_broadcast: None,
+            chat_messages: Vec::new(),
+            chat_input: String::new(),
+            is_chatting: false,
             server_name: String::new(),
             max_players: 0,
             connected_endpoint: String::new(),
@@ -255,7 +324,23 @@ impl ClientApp {
             servers_error: None,
             joining_server: None,
             username,
+            studs: 25,
+            last_studs_claim: None,
+            daily_claim_status: None,
+            avatar: nb_types::AvatarConfig::classic_noob(),
+            catalog: nb_types::default_catalog(),
+            shop_category: nb_types::AvatarCategory::BodyColor,
+            shop_preview_yaw: 0.0,
+            shop_feedback: None,
             screen: Screen::Home,
+            lobby_tab: LobbyTab::Game,
+            character: nb_render::CharacterState::default(),
+            camera: nb_render::Camera3D::default(),
+            other_players: HashMap::new(),
+            last_move_broadcast: None,
+            chat_messages: Vec::new(),
+            chat_input: String::new(),
+            is_chatting: false,
             server_name: String::new(),
             max_players: 0,
             connected_endpoint: String::new(),
@@ -269,6 +354,7 @@ impl ClientApp {
             api,
             net,
         };
+        app.load_local_profile();
         app.refresh_worlds();
         app
     }
@@ -464,6 +550,37 @@ impl ClientApp {
                     self.snapshot = Snapshot { tick, instances };
                 }
                 NetMsg::Server(ServerMsg::Event { event, args }) => {
+                    if event == "Move" && args.len() >= 6 {
+                        if let Some(uname) = args[0].as_str() {
+                            if uname != self.username {
+                                let x = args[1].as_f64().unwrap_or(0.0);
+                                let y = args[2].as_f64().unwrap_or(0.0);
+                                let z = args[3].as_f64().unwrap_or(0.0);
+                                let yaw = args[4].as_f64().unwrap_or(0.0) as f32;
+                                let is_moving = args[5].as_bool().unwrap_or(false);
+
+                                let player_state = self.other_players.entry(uname.to_owned()).or_insert_with(|| {
+                                    let mut p = nb_render::CharacterState::default();
+                                    p.avatar = nb_types::AvatarConfig::classic_noob();
+                                    p
+                                });
+                                player_state.position = nb_types::Vector3::new(x, y, z);
+                                player_state.yaw = yaw;
+                                player_state.is_moving = is_moving;
+                                if is_moving {
+                                    player_state.walk_cycle += 0.25;
+                                }
+                            }
+                        }
+                    } else if event == "Chat" && args.len() >= 2 {
+                        let sender = args[0].as_str().unwrap_or("Player").to_owned();
+                        let text = args[1].as_str().unwrap_or("").to_owned();
+                        self.chat_messages.push((sender, text));
+                        if self.chat_messages.len() > 100 {
+                            self.chat_messages.remove(0);
+                        }
+                    }
+
                     self.log.push(LogEntry::event(format!(
                         "← {event}({})",
                         args.iter()
@@ -482,6 +599,122 @@ impl ClientApp {
         }
     }
 
+    // ── Local Profile & Economy Persistence ───────────────────────────────────
+
+    pub fn load_local_profile(&mut self) {
+        if let Ok(data) = std::fs::read_to_string(profile_file_path()) {
+            if let Ok(prof) = serde_json::from_str::<LocalProfile>(&data) {
+                self.studs = prof.studs;
+                self.last_studs_claim = prof.last_studs_claim;
+                self.avatar = prof.avatar.clone();
+                self.character.avatar = prof.avatar;
+            }
+        }
+    }
+
+    pub fn save_local_profile(&self) {
+        let prof = LocalProfile {
+            studs: self.studs,
+            last_studs_claim: self.last_studs_claim.clone(),
+            avatar: self.avatar.clone(),
+        };
+        if let Ok(data) = serde_json::to_string_pretty(&prof) {
+            let _ = std::fs::write(profile_file_path(), data);
+        }
+    }
+
+    pub fn can_claim_daily_studs(&self) -> bool {
+        let now_days = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() / 86400)
+            .unwrap_or(0);
+        let today_token = format!("day_{now_days}");
+        match &self.last_studs_claim {
+            Some(last) => last != &today_token,
+            None => true,
+        }
+    }
+
+    pub fn do_claim_daily_studs(&mut self) {
+        let now_days = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() / 86400)
+            .unwrap_or(0);
+        let today_token = format!("day_{now_days}");
+        if let Some(ref last) = self.last_studs_claim {
+            if last == &today_token {
+                self.daily_claim_status = Some("You already claimed your 5 studs today! Come back tomorrow.".to_owned());
+                return;
+            }
+        }
+        self.studs += 5;
+        self.last_studs_claim = Some(today_token);
+        self.daily_claim_status = Some("🎉 Claimed +5 Studs today! Happy playing!".to_owned());
+        self.save_local_profile();
+        self.log.push(LogEntry::system("Claimed +5 daily Studs."));
+    }
+
+    pub fn buy_or_equip_item(&mut self, item: &nb_types::CatalogItem) {
+        // If it costs studs and isn't equipped, check balance
+        if item.price_studs > 0 {
+            if self.studs < item.price_studs as i64 {
+                self.shop_feedback = Some("Not enough Studs! Claim your daily studs to afford this item.".to_owned());
+                return;
+            }
+            self.studs -= item.price_studs as i64;
+        }
+
+        match item.category {
+            nb_types::AvatarCategory::Face => {
+                self.avatar.face = item.id.clone();
+            }
+            nb_types::AvatarCategory::Shirt => {
+                self.avatar.shirt = item.id.clone();
+            }
+            nb_types::AvatarCategory::Pants => {
+                self.avatar.pants = item.id.clone();
+            }
+            nb_types::AvatarCategory::BodyColor => {
+                match item.id.as_str() {
+                    "preset_noob" => {
+                        self.avatar = nb_types::AvatarConfig::classic_noob();
+                    }
+                    "preset_skin" => {
+                        self.avatar.set_uniform_color(nb_types::Rgba::new(255.0, 220.0, 185.0, 255.0));
+                    }
+                    "preset_dark" => {
+                        self.avatar.set_uniform_color(nb_types::Rgba::new(45.0, 45.0, 50.0, 255.0));
+                    }
+                    "preset_gold" => {
+                        self.avatar.set_uniform_color(nb_types::Rgba::new(255.0, 215.0, 0.0, 255.0));
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        self.character.avatar = self.avatar.clone();
+        self.save_local_profile();
+        self.shop_feedback = Some(format!("Equipped {}!", item.name));
+    }
+
+    pub fn do_send_chat(&mut self) {
+        let msg = self.chat_input.trim().to_owned();
+        if msg.is_empty() {
+            return;
+        }
+        self.chat_input.clear();
+        self.is_chatting = false;
+        self.chat_messages.push((self.username.clone(), msg.clone()));
+        if self.chat_messages.len() > 100 {
+            self.chat_messages.remove(0);
+        }
+        let _ = self.net.cmd_tx.send(NetCmd::Fire {
+            event: "Chat".to_owned(),
+            args: vec![serde_json::Value::String(msg)],
+        });
+    }
+
     // ── In-game actions ───────────────────────────────────────────────────────
 
     pub fn do_disconnect(&mut self) {
@@ -492,6 +725,7 @@ impl ClientApp {
         } else {
             Screen::Home
         };
+        self.other_players.clear();
         self.log.push(LogEntry::system("Left the server."));
     }
 
@@ -516,8 +750,67 @@ impl eframe::App for ClientApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
         self.poll_api();
         self.poll_net();
+
+        // 3D Character Physics & Movement when in Lobby Game view
+        if self.screen == Screen::Lobby && self.lobby_tab == LobbyTab::Game {
+            let dt = ctx.input(|i| i.stable_dt as f32).min(0.05);
+
+            let typing = ctx.memory(|m| m.focused().is_some()) || self.is_chatting;
+            if !typing {
+                let (w, s, a, d, space, shift) = ctx.input(|i| {
+                    (
+                        i.key_down(egui::Key::W) || i.key_down(egui::Key::ArrowUp),
+                        i.key_down(egui::Key::S) || i.key_down(egui::Key::ArrowDown),
+                        i.key_down(egui::Key::A) || i.key_down(egui::Key::ArrowLeft),
+                        i.key_down(egui::Key::D) || i.key_down(egui::Key::ArrowRight),
+                        i.key_down(egui::Key::Space),
+                        i.modifiers.shift,
+                    )
+                });
+
+                let input = nb_render::PlayerInput {
+                    move_forward: w,
+                    move_backward: s,
+                    move_left: a,
+                    move_right: d,
+                    jump: space,
+                    sprint: shift,
+                };
+
+                self.character.update(dt, &input, self.camera.yaw, 196.2 * 0.15);
+                self.character.avatar = self.avatar.clone();
+
+                // Camera follow character
+                let target_cam = nb_types::Vector3::new(
+                    self.character.position.x,
+                    self.character.position.y + 2.5,
+                    self.character.position.z,
+                );
+                self.camera.target = target_cam;
+
+                // Broadcast Move at ~20 Hz
+                let should_send = self
+                    .last_move_broadcast
+                    .map(|t| t.elapsed() >= std::time::Duration::from_millis(50))
+                    .unwrap_or(true);
+                if should_send && (self.character.is_moving || self.last_move_broadcast.map(|t| t.elapsed() >= std::time::Duration::from_millis(500)).unwrap_or(true)) {
+                    self.last_move_broadcast = Some(Instant::now());
+                    let _ = self.net.cmd_tx.send(crate::net::NetCmd::Fire {
+                        event: "Move".to_owned(),
+                        args: vec![
+                            serde_json::json!(self.character.position.x),
+                            serde_json::json!(self.character.position.y),
+                            serde_json::json!(self.character.position.z),
+                            serde_json::json!(self.character.yaw),
+                            serde_json::json!(self.character.is_moving),
+                        ],
+                    });
+                }
+            }
+        }
+
         crate::ui::draw(self, ctx);
-        // Keep rendering so we keep polling both channels.
-        ctx.request_repaint_after(std::time::Duration::from_millis(50));
+        // Fast repaint for smooth 3D rendering and movement
+        ctx.request_repaint_after(std::time::Duration::from_millis(16));
     }
 }
